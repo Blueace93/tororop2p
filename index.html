@@ -162,6 +162,60 @@ main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08
 .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--mut);padding:10px;cursor:pointer;display:flex}.eye:hover{color:var(--tx)}.eye svg{width:20px;height:20px}
 .trust{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}.trust span{font-size:12px;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:99px;padding:5px 11px}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* ===== Visual v3: tarjetas con borde degradado, billetera con logos, botones flotantes ===== */
+body:before{content:"";position:fixed;inset:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:22px 22px;-webkit-mask-image:linear-gradient(#000,transparent 65%);mask-image:linear-gradient(#000,transparent 65%);pointer-events:none;z-index:0}
+#app{position:relative;z-index:1}
+header:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,rgba(124,108,255,.7),rgba(76,201,240,.5),transparent)}
+main>h2{font-size:25px}
+main>h3{display:flex;align-items:center;gap:8px;color:#a9aed0}main>h3:before{content:"";width:4px;height:15px;border-radius:2px;background:var(--g)}
+.card{border:1px solid transparent;border-radius:24px;background:linear-gradient(180deg,#151729,#101220) padding-box,linear-gradient(150deg,rgba(124,108,255,.55),rgba(255,255,255,.05) 40%,rgba(76,201,240,.25)) border-box;box-shadow:0 18px 44px -26px rgba(0,0,0,.9)}
+.card.hl{border-color:transparent;background:linear-gradient(180deg,#11231f,#0f1b1d) padding-box,linear-gradient(150deg,rgba(61,220,151,.8),rgba(61,220,151,.08) 55%,rgba(76,201,240,.3)) border-box}
+.card.dg{border-color:transparent;background:linear-gradient(180deg,#25141a,#1a1015) padding-box,linear-gradient(150deg,rgba(242,104,93,.85),rgba(242,104,93,.08)) border-box}
+.card[data-o]{border-left:4px solid var(--acc)}
+.tile{border:1px solid transparent;border-radius:20px;background:linear-gradient(180deg,#151729,#101220) padding-box,linear-gradient(150deg,rgba(124,108,255,.5),rgba(255,255,255,.05) 45%,rgba(76,201,240,.22)) border-box;font-weight:600;padding:13px 4px}
+.tile .tc{border-radius:16px;min-width:46px;height:46px;font-size:22px}
+.tiles .tile:nth-child(1) .tc{background:rgba(124,108,255,.2)}.tiles .tile:nth-child(2) .tc{background:rgba(76,201,240,.2)}.tiles .tile:nth-child(3) .tc{background:rgba(245,185,74,.2)}.tiles .tile:nth-child(4) .tc{background:rgba(61,220,151,.2)}.tiles .tile:nth-child(5) .tc{background:rgba(242,104,93,.2)}.tiles .tile:nth-child(6) .tc{background:rgba(168,85,247,.22)}
+button.b{border-radius:16px;padding:13px 18px;letter-spacing:.01em}
+button.b:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-130%);transition:transform .7s}
+button.b:hover:before{transform:translateX(130%)}button.b.gh:before{display:none}
+.px{background:linear-gradient(135deg,rgba(61,220,151,.2),rgba(61,220,151,.05));border:1px solid rgba(61,220,151,.5);border-radius:16px}.px b{font-size:16px}
+.usr{display:flex;align-items:center;gap:8px}.av{width:28px;height:28px;border-radius:50%;background:var(--g);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;box-shadow:var(--glow)}
+.chip[data-as]{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 7px}
+.seg{border-radius:18px;padding:5px}.seg button{border-radius:14px;padding:11px}
+/* logos de moneda */
+.ci{display:inline-flex;flex:none;border-radius:50%;overflow:hidden;box-shadow:0 8px 18px -8px rgba(0,0,0,.8),0 0 0 2px rgba(255,255,255,.14)}.ci svg{width:100%;height:100%;display:block}
+.pill .ci{box-shadow:0 0 0 1.5px rgba(255,255,255,.2)}.pill{padding-left:8px;gap:7px}
+/* billetera */
+.wal{position:relative;overflow:hidden;border-radius:30px;padding:18px;margin-bottom:14px;color:#fff;background:radial-gradient(120% 130% at 0% 0%,#5b45ff 0%,transparent 55%),radial-gradient(100% 120% at 100% 100%,#0ea5c6 0%,transparent 58%),linear-gradient(135deg,#1c1670,#150f48);border:1px solid rgba(255,255,255,.16);box-shadow:0 28px 64px -28px rgba(91,69,255,.9),inset 0 1px 0 rgba(255,255,255,.2)}
+.wal:before{content:"";position:absolute;right:-50px;top:-50px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.07)}.wal:after{content:"";position:absolute;left:-30px;bottom:-60px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.05)}
+.wal>*{position:relative;z-index:1}
+.wal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.wal-t{font-weight:700;letter-spacing:.03em;opacity:.92}
+.wal-a{color:#fff;background:rgba(255,255,255,.16);padding:6px 13px;border-radius:99px;font-size:12px;text-decoration:none;font-weight:600;backdrop-filter:blur(6px);transition:background .2s}.wal-a:hover{background:rgba(255,255,255,.26)}
+.wal-main{display:flex;align-items:center;gap:14px}
+.wal-b{font-size:36px;font-weight:800;letter-spacing:-1.2px;line-height:1.05;font-variant-numeric:tabular-nums;text-shadow:0 4px 24px rgba(0,0,0,.35)}
+.wal-l{font-size:12px;opacity:.85}.wal-l span{opacity:.7}
+.wal-lk{margin-left:auto;font-size:11px;background:rgba(0,0,0,.28);padding:5px 10px;border-radius:99px;white-space:nowrap}
+.wal-sub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.wal-c{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:11px;backdrop-filter:blur(8px);min-width:0;transition:transform .15s,background .2s}.wal-c:active{transform:scale(.97)}
+.wal-c b{font-size:19px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.wal-c small{opacity:.75;font-size:11px;margin-left:2px}
+.wal-c>div{min-width:0}
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:-2px 0 14px}
+.qb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:20px;border:1px solid transparent;background:linear-gradient(180deg,#151729,#101220) padding-box,linear-gradient(150deg,rgba(124,108,255,.5),rgba(255,255,255,.05) 45%,rgba(76,201,240,.22)) border-box;color:var(--tx);font:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:transform .15s}.qb:active{transform:scale(.95)}
+.qb i{font-style:normal;width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(124,108,255,.18)}.qb:nth-child(2) i{background:rgba(61,220,151,.18)}.qb:nth-child(3) i{background:rgba(245,185,74,.18)}
+/* botones flotantes */
+.fab-bg{position:fixed;inset:0;background:rgba(3,4,10,.55);backdrop-filter:blur(4px);z-index:7;display:none;animation:fade .2s}
+.fab{position:fixed;right:16px;bottom:96px;z-index:8;display:none;flex-direction:column;align-items:flex-end;gap:12px}.fab.show{display:flex}
+.fab-m{width:58px;height:58px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:32px;line-height:1;cursor:pointer;box-shadow:0 16px 36px -8px rgba(124,108,255,.95);transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}.fab-m:active{transform:scale(.92)}
+.fab.open .fab-m{transform:rotate(135deg)}
+.fab-items{display:flex;flex-direction:column;gap:12px;align-items:flex-end;pointer-events:none}.fab.open .fab-items{pointer-events:auto}
+.fab-items button{display:flex;align-items:center;gap:10px;border:0;background:none;color:#fff;font:inherit;font-weight:600;cursor:pointer;opacity:0;transform:translateY(16px) scale(.9);transition:opacity .22s,transform .22s}
+.fab-items button span{background:rgba(14,15,24,.94);border:1px solid rgba(255,255,255,.12);padding:8px 13px;border-radius:99px;font-size:13px;box-shadow:0 10px 24px -10px #000}
+.fab-items button i{font-style:normal;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#242749,#171a2e);border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 26px -8px #000;font-size:20px}
+.fab.open .fab-items button{opacity:1;transform:none}.fab.open .fab-items button:nth-child(2){transition-delay:.05s}.fab.open .fab-items button:nth-child(1){transition-delay:.1s}
+.up{position:fixed;right:20px;bottom:96px;z-index:6;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(20,22,38,.9);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 12px 26px -10px #000;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .25s,transform .25s}
+.up.show{opacity:1;transform:none;pointer-events:auto}.fab.show~.up{bottom:166px}
+.wa{left:14px;right:auto;bottom:96px;border-radius:99px;padding:11px 15px;background:linear-gradient(135deg,#25d366,#128c7e);color:#042815;box-shadow:0 12px 28px -8px rgba(37,211,102,.7)}
 </style>
 </head>
 <body>
@@ -211,8 +265,7 @@ const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-S.fee
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
-<div class="card"><div class="row"><b>Mi billetera</b><a href="#" id="tw">Depositar / retirar</a></div>
-<div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}</div></div>
+${walletCard()}
 <div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
 <div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
 const bindTop=()=>{$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
@@ -292,6 +345,30 @@ sb.auth.onAuthStateChange(ev=>{
   if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);renderAuth()}
   if(ev==='PASSWORD_RECOVERY')renderReset()});
 
+/* ---- Logos de moneda y tarjeta de billetera ---- */
+const CI={
+ USDT:'<rect width="40" height="40" fill="#26A17B"/><rect x="10" y="9.5" width="20" height="4.6" rx="1.2" fill="#fff"/><rect x="17.8" y="14" width="4.4" height="18" fill="#fff"/><ellipse cx="20" cy="19.5" rx="10.5" ry="3.3" fill="none" stroke="#fff" stroke-width="2.2"/>',
+ USD:'<defs><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs><rect width="40" height="40" fill="url(#gu)"/><text x="20" y="28" text-anchor="middle" font-size="23" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">$</text>',
+ CUP:'<rect width="40" height="40" fill="#fff"/><rect width="40" height="8" fill="#002a8f"/><rect y="16" width="40" height="8" fill="#002a8f"/><rect y="32" width="40" height="8" fill="#002a8f"/><path d="M0 0L24 20L0 40Z" fill="#cf142b"/><path d="M8 14.8l1.23 3.5 3.72.09-2.95 2.26 1.06 3.56L8 22.1l-3.06 2.11 1.06-3.56-2.95-2.26 3.72-.09z" fill="#fff"/>',
+ MOVIL:'<defs><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect width="40" height="40" fill="url(#gm)"/><rect x="13.5" y="8.5" width="13" height="23" rx="3.2" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="20" cy="27.6" r="1.4" fill="#fff"/>'};
+const cIco=(k,z=34)=>`<span class="ci" style="width:${z}px;height:${z}px"><svg viewBox="0 0 40 40" aria-hidden="true">${CI[k]||CI.USD}</svg></span>`;
+const walletCard=full=>`<div class="wal"><div class="wal-h"><span class="wal-t">Mi billetera</span>${full?'':'<a href="#" id="tw" class="wal-a">Depositar / retirar →</a>'}</div>
+ <div class="wal-main">${cIco('USDT',50)}<div><div class="wal-l">${full?'Disponible · ':''}USDT <span>Tether</span></div><div class="wal-b">${n(S.wallet?.available,2)}</div></div>${(S.wallet?.locked>0)?`<div class="wal-lk">🔒 ${n(S.wallet.locked,2)} en ofertas</div>`:''}</div>
+ <div class="wal-sub"><div class="wal-c">${cIco('CUP',36)}<div><div class="wal-l">Saldo CUP</div><b>${n(S.bal?.CUP,0)}</b><small>CUP</small></div></div>
+ <div class="wal-c">${cIco('USD',36)}<div><div class="wal-l">Saldo Clásica</div><b>${n(S.bal?.USD,2)}</b><small>USD</small></div></div></div></div>`;
+/* ---- Botones flotantes ---- */
+const updFab=v=>{const f=$('fab');if(!f)return;f.classList.remove('open');if($('fabg'))$('fabg').style.display='none';f.classList.toggle('show',v==='market'||v==='wallet')};
+const toEl=id=>{let k=0;const t=setInterval(()=>{const e=$(id);if(e||++k>25){clearInterval(t);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})}},120)};
+function bindFab(){
+  const f=$('fab'),g=$('fabg'),up=$('up');if(!f)return;
+  const set=o=>{f.classList.toggle('open',o);g.style.display=o?'block':'none'};
+  $('fabm').onclick=()=>set(!f.classList.contains('open'));g.onclick=()=>set(false);
+  f.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{set(false);const a=b.dataset.fa;
+    if(a==='pub'){S.mk='ads';go('market');if($('adn'))$('adn').click()}else{go('wallet');toEl(a==='dep'?'depcard':'wcard')}});
+  window.onscroll=()=>up.classList.toggle('show',window.scrollY>480);up.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+  updFab(S.view)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-sc],[data-gv]');if(!b)return;if(b.dataset.sc){const t=$(b.dataset.sc);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})}else go(b.dataset.gv)});
+
 /* Efecto de pulsación (ripple) en botones y tarjetas-botón */
 document.addEventListener('pointerdown',e=>{const t=e.target.closest('button.b,.tile,.chip,.pill');if(!t||t.disabled)return;const r=t.getBoundingClientRect(),d=Math.max(r.width,r.height)*1.6,x=document.createElement('span');x.className='rp';x.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;t.appendChild(x);setTimeout(()=>x.remove(),600)},{passive:true});
 const _ic=p=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -337,13 +414,15 @@ function renderReset(){
 
 function render(){
   const admin=S.profile?.is_admin;
-  $app.innerHTML=`<header>${brand(30)}<span class="hr"><button class="pill" id="bal" aria-label="Billetera"><span id="hb">${n(S.wallet?.available,2)}</span><small>USDT</small><i class="plus">+</i></button><button class="ib" id="bell" aria-label="Operaciones">${IC.bell}</button><a href="#" id="av" style="display:flex">${avatar(36)}</a></span></header>
+  $app.innerHTML=`<header>${brand(30)}<span class="hr"><button class="pill" id="bal" aria-label="Billetera">${cIco('USDT',24)}<span id="hb">${n(S.wallet?.available,2)}</span><small>USDT</small><i class="plus">+</i></button><button class="ib" id="bell" aria-label="Operaciones">${IC.bell}</button><a href="#" id="av" style="display:flex">${avatar(36)}</a></span></header>
     <main id="main"></main>${(S.settings.whatsapp||CFG.whatsapp)?`<a class="wa" href="https://wa.me/${esc(S.settings.whatsapp||CFG.whatsapp)}" target="_blank" rel="noopener">💬 Soporte</a>`:''}
+    <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><div class="fab-items"><button data-fa="pub"><span>Publicar anuncio</span><i>📣</i></button><button data-fa="dep"><span>Depositar</span><i>⬇️</i></button><button data-fa="wit"><span>Retirar</span><i>⬆️</i></button></div><button class="fab-m" id="fabm" aria-label="Acciones rápidas">+</button></div><button class="up" id="up" aria-label="Subir">↑</button>
     <nav><button data-v="market">${IC.market}Mercado</button>
     <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
     <button data-v="profile">${IC.profile}Perfil</button>
     ${admin?`<button data-v="admin">${IC.admin}Admin<i class="bd" id="adbd" style="display:none"></i></button>`:''}</nav>`;
+  bindFab();
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('notifs');
   $('av').onclick=e=>{e.preventDefault();go('profile')};
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
@@ -353,7 +432,7 @@ async function refreshBadge(){
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
-  S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);
+  S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
   ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,alerts:viewAlerts,calc:viewCalc,saved:viewSaved,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
   window.scrollTo(0,0)}
@@ -470,7 +549,7 @@ async function viewAds(){
   main().innerHTML=`${topHtml()}
   <div class="card"><div class="row"><b>Mercado</b><button class="b sm" id="adn">+ Publicar anuncio</button></div>
    <div class="seg"><button class="${A.tab==='buy'?'on':''}" data-tab="buy">Comprar</button><button class="${A.tab==='sell'?'on':''}" data-tab="sell">Vender</button></div>
-   <div class="chips">${Object.entries(ASSETS).map(([k,v])=>`<button class="chip ${A.asset===k?'on':''}" data-as="${k}">${v.chip}</button>`).join('')}</div>
+   <div class="chips">${Object.entries(ASSETS).map(([k,v])=>`<button class="chip ${A.asset===k?'on':''}" data-as="${k}">${cIco(k,20)}<span>${v.chip}</span></button>`).join('')}</div>
    ${A.asset==='MOVIL'?`<div class="warnbox">📱 Saldo móvil es una transferencia externa. <b>Tanto si compras como si vendes</b>, debes subir la foto del envío del saldo y esperar la aprobación del administrador. El pago queda retenido hasta entonces.<br><button class="b sm" style="margin-top:8px" id="medb">🛡️ Mediación de admin</button></div>`:''}
    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="amine" style="width:auto;margin:0" ${A.mine?'checked':''}> Solo mis anuncios</label></div>
   <h3>Anuncios</h3><div id="adl">${skel(3)}</div>`;
@@ -507,8 +586,8 @@ function drawAds(){
   const l=(S.ads||[]).filter(o=>A.mine?o.user_id===S.user.id:o.side===(A.tab==='buy'?'sell':'buy')).sort((a,b)=>A.tab==='buy'?a.price-b.price:b.price-a.price);
   if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios aquí todavía. Publica el tuyo.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
-    return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.user_id)?' · '+repTxt(o.user_id):''}</span></div>
-    <div class="row" style="margin-top:8px"><b style="font-size:18px">${n(o.amount,2)} ${L}</b><span class="px"><small>Precio por unidad</small><b>${n(o.price,o.price<1?4:2)} ${o.quote}</b></span></div>
+    return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="usr"><span class="av">${esc((o.profiles?.username||'?')[0].toUpperCase())}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.user_id)?' · '+repTxt(o.user_id):''}</span></span></div>
+    <div class="row" style="margin-top:8px"><span class="usr">${cIco(o.asset,32)}<b style="font-size:18px">${n(o.amount,2)} ${L}</b></span><span class="px"><small>Precio por unidad</small><b>${n(o.price,o.price<1?4:2)} ${o.quote}</b></span></div>
     <div class="mut" style="margin:6px 0">Total: ${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
     ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}%: la paga el vendedor desde su saldo.</p>`;
   box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadMe();viewAds()},'Anuncio cancelado'));
@@ -755,18 +834,17 @@ async function viewWallet(){
   const fl=await sb.from('site_flags').select('key,blocked'),BF={};(fl.data||[]).forEach(x=>BF[x.key]=x.blocked);
   const blkMsg=(BF.deposits||BF.withdrawals)?`<div class="warnbox bad">⛔ ${[BF.deposits&&'Depósitos y recargas',BF.withdrawals&&'Retiros'].filter(Boolean).join(' y ')} bloqueados temporalmente por el administrador.</div>`:'';
   main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}${blkMsg}
-  <div class="card"><div class="grid2">
-    <div><div class="mut">Disponible</div><div class="big">${n(S.wallet.available,2)}</div><div class="mut">USDT</div></div>
-    <div><div class="mut">Bloqueado en ofertas</div><div class="big">${n(S.wallet.locked,2)}</div><div class="mut">USDT</div></div></div></div>
+  ${walletCard(true)}
+  <div class="qa"><button class="qb" data-sc="depcard"><i>⬇️</i>Depositar</button><button class="qb" data-sc="wcard"><i>⬆️</i>Retirar</button><button class="qb" data-gv="hist"><i>🧾</i>Historial</button></div>
   <div id="cupcard">${skel(1)}</div>
-  <div class="card" id="depcard"><h3>Depositar USDT</h3>${skel(1)}</div>
+  <div class="card" id="depcard"><h3 style="display:flex;align-items:center;gap:8px">${cIco('USDT',24)} Depositar USDT</h3>${skel(1)}</div>
   <details class="card"><summary class="mut">Depósito manual (solo si el automático falla)</summary>
     <p class="mut">Envía a la dirección de depósito del administrador y avisa aquí; él lo acreditará a mano.</p>
     ${st.deposit_address?`<p><code>${esc(st.deposit_address)}</code> ${cpBtn(st.deposit_address)}</p>`:''}
     <label>Monto enviado</label><input id="da" type="number" step="any" inputmode="decimal">
     <label>ID de la transacción (TxID)</label><input id="dt" placeholder="0x...">
     <button class="b gh w" id="dep">Avisar depósito</button></details>
-  <div class="card"><h3>Retirar USDT</h3>
+  <div class="card" id="wcard"><h3 style="display:flex;align-items:center;gap:8px">${cIco('USDT',24)} Retirar USDT</h3>
     <label>Monto (USDT) <button class="b gh sm" id="wmax" type="button">Máx</button></label><input id="wa" type="number" step="any" inputmode="decimal"><div class="mut" id="wfee" style="margin:-4px 0 8px"></div>
     <label>Red</label><select id="wn"><option value="BEP20">BNB Smart Chain (BEP20)</option><option value="ARBITRUM">Arbitrum One</option></select>
     <label>Dirección de destino (0x…, de la red elegida)</label>${savedSel('wsv','wallet')}<input id="wd" placeholder="0x...">
@@ -806,7 +884,7 @@ async function renderCup(){
   if(!$('cupcard'))return;
   const ST={pending:['Pendiente','warn'],approved:['Acreditado','ok'],done:['Enviado','ok'],rejected:['Rechazado','bad']};
   const hist=(a,l,c)=>(a||[]).filter(x=>x.currency===c.k).slice(0,4).map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-top:6px"><span class="mut">${l} ${n(x.amount,c.d)} ${c.k} · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join('');
-  box.innerHTML=C.map(c=>`<div class="card hl"><div class="mut">${c.name}</div><div class="big">${n(S.bal[c.k],c.d)} <span class="mut">${c.k}</span></div>
+  box.innerHTML=C.map(c=>`<div class="card hl"><div class="row" style="justify-content:flex-start;flex-wrap:nowrap;gap:12px">${cIco(c.k,44)}<div><div class="mut">${c.name}</div><div class="big">${n(S.bal[c.k],c.d)} <span class="mut">${c.k}</span></div></div></div>
     <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div>${hist(t.data,'Recarga',c)}${hist(w.data,'Retiro',c)}</div>`).join('');
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
     const c=C.find(x=>x.k===b.dataset.in);
