@@ -89,6 +89,117 @@ h2{font-size:22px}.lg svg{flex:none}.auth .logo{font-size:30px}
 @keyframes sk{to{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.sk{animation:none}}
 .ph{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}.ph .it{position:relative;min-width:0}.ph .it button{position:absolute;top:6px;right:6px}.ph img{display:block;width:100%;height:150px;object-fit:contain;background:var(--bg);border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
+
+/* ===== TEMA 2 · Tororo ===== */
+:root{--bg:#070b16;--card:#0e1526;--card2:#162039;--line:#1f2d4b;--tx:#eef2ff;--mut:#8f9bb9;--ok:#2ee6a6;--warn:#ffb547;--bad:#ff6b5e;--acc:#6f6bff;--acc2:#2bb6ff;--gold:#ffc861;--r:20px;--ease:cubic-bezier(.2,.8,.2,1)}
+body{background:radial-gradient(90% 40% at 12% -6%,rgba(111,107,255,.26),transparent 70%) no-repeat,radial-gradient(70% 34% at 100% 4%,rgba(43,182,255,.16),transparent 70%) no-repeat,var(--bg);background-attachment:fixed;font-variant-numeric:tabular-nums;padding-bottom:108px;-webkit-tap-highlight-color:transparent}
+header{background:rgba(7,11,22,.74);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border-bottom:1px solid rgba(255,255,255,.06);padding:10px 16px}
+.pill{background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,var(--acc),var(--acc2)) border-box;border:1px solid transparent;transition:transform .15s}
+.pill:active,.ib:active,.tile:active,.chip:active{transform:scale(.96)}
+.pill .plus{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.ib{border-radius:14px;transition:transform .15s,border-color .2s}.ib:hover{border-color:var(--acc)}
+main{padding:14px 16px}
+h2{font-size:24px;font-weight:800;letter-spacing:-.025em;margin:6px 0 14px}
+main>h3{font-size:16px;font-weight:700;letter-spacing:-.01em;text-transform:none;color:var(--tx);margin:26px 0 10px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0) 60%),var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 14px 30px -24px rgba(0,0,0,.9)}
+.card.hl{border-color:rgba(46,230,166,.4);box-shadow:0 14px 34px -24px rgba(46,230,166,.55)}
+.card.dg{border-color:rgba(255,107,94,.5)}
+.card[data-o]{border-left:3px solid var(--acc)}
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:18px;margin-bottom:14px;color:#fff;background:radial-gradient(120% 120% at 100% 0%,rgba(43,182,255,.4),transparent 55%),linear-gradient(135deg,#1c2468,#2a2e92 55%,#1d5bb4);border:1px solid rgba(255,255,255,.14);box-shadow:0 24px 44px -26px rgba(79,141,255,.8)}
+.hero:after{content:"";position:absolute;right:-46px;bottom:-70px;width:190px;height:190px;border-radius:50%;border:28px solid rgba(255,255,255,.06);pointer-events:none}
+.hero .mut{color:rgba(255,255,255,.72)}.hero a{color:#fff;font-weight:700;font-size:13px;text-decoration:none;background:rgba(255,255,255,.16);padding:7px 13px;border-radius:99px}
+.hero-n{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.1;margin:10px 0 14px}.hero-n small{font-size:14px;font-weight:700;opacity:.8;margin-left:6px;letter-spacing:0}
+.hero-sub{display:flex;gap:10px;position:relative;z-index:1}.hero-sub div{flex:1;min-width:0;background:rgba(7,11,22,.3);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 12px;font-size:12px;color:rgba(255,255,255,.72)}.hero-sub b{display:block;font-size:18px;color:#fff;letter-spacing:-.02em;overflow-wrap:anywhere}
+button.b{min-height:46px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));font-weight:700;letter-spacing:.005em;box-shadow:0 10px 22px -12px rgba(79,120,255,.9);transition:transform .15s,filter .15s,box-shadow .15s}
+button.b:active{transform:translateY(1px) scale(.98);box-shadow:none}
+button.b.sm{min-height:36px}
+button.b.ok{background:linear-gradient(135deg,#2ee6a6,#19b98a);color:#03281d;box-shadow:0 10px 22px -12px rgba(46,230,166,.8)}
+button.b.bad{background:linear-gradient(135deg,#ff7a6b,#e8493c);color:#2a0a06;box-shadow:0 10px 22px -12px rgba(255,107,94,.8)}
+button.b.gh{background:rgba(255,255,255,.03);box-shadow:none;border:1px solid var(--line)}button.b.gh:hover{border-color:var(--acc)}
+input,textarea,select{background:#0a1120;border:1px solid var(--line);border-radius:14px;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc2);box-shadow:0 0 0 3px rgba(43,182,255,.18)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+label{font-weight:500}
+.tag{padding:3px 10px;font-weight:600}
+.big{letter-spacing:-.03em}
+.px{background:rgba(255,200,97,.08);border:1px solid rgba(255,200,97,.28);color:var(--gold);border-radius:14px}.px b{font-size:16px}
+.chip{padding:8px 14px;transition:transform .15s,background .2s,border-color .2s}
+.chip.on{background:linear-gradient(135deg,rgba(111,107,255,.32),rgba(43,182,255,.2));border-color:rgba(111,107,255,.75);color:#fff;font-weight:600}
+.seg{background:#0a1120;border:1px solid var(--line);border-radius:16px}.seg button{border-radius:12px;transition:background .25s,color .25s}.seg button.on{background:linear-gradient(135deg,var(--acc),var(--acc2))}
+.tile{background:var(--card);border-radius:18px;padding:12px 6px;font-weight:600;transition:transform .15s,border-color .2s}.tile:hover{border-color:var(--acc)}
+.nt{border-left:3px solid var(--line)}.nt.un{border-left-color:var(--acc2)}
+.warnbox{border-radius:14px}
+nav{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:rgba(14,21,38,.82);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 18px 40px -16px rgba(0,0,0,.9)}
+nav button{isolation:isolate;padding:8px 2px;font-size:11px;font-weight:600;transition:color .2s}
+nav button.on{color:#fff}
+nav button.on:before{content:"";position:absolute;z-index:-1;inset:0;left:4px;right:4px;top:0;height:auto;border-radius:18px;background:linear-gradient(135deg,rgba(111,107,255,.42),rgba(43,182,255,.24));border:1px solid rgba(255,255,255,.1)}
+nav .bd{left:auto;right:calc(50% - 22px);top:2px}
+.wa{bottom:104px;right:12px;box-shadow:0 12px 26px -12px rgba(37,211,102,.8)}
+#toast{bottom:108px;background:rgba(7,11,22,.94);backdrop-filter:blur(10px);box-shadow:0 14px 30px -12px #000}
+.ov{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(3,6,14,.66)}
+.md{border-radius:26px;animation:pop .22s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}}
+.sk{border-radius:var(--r)}
+/* --- Pantalla de entrada --- */
+body:has(.au){padding-bottom:0}
+.au{position:relative;min-height:100vh;min-height:100dvh;max-width:440px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center;gap:22px}
+.au-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.au-bg i{position:absolute;border-radius:50%;filter:blur(70px)}
+.au-bg .o1{width:300px;height:300px;left:-90px;top:-70px;background:#6f6bff;opacity:.5;animation:drift 14s ease-in-out infinite alternate}
+.au-bg .o2{width:280px;height:280px;right:-110px;top:32%;background:#2bb6ff;opacity:.3;animation:drift 18s ease-in-out infinite alternate-reverse}
+.au-bg .o3{width:220px;height:220px;left:-60px;bottom:-60px;background:#ffb547;opacity:.16}
+@keyframes drift{to{transform:translate(40px,30px) scale(1.12)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+.au-hero{text-align:center;animation:rise .7s var(--ease) both}
+.au-orb{position:relative;width:170px;height:170px;margin:0 auto 12px}
+.au-orb .ring{position:absolute;border-radius:50%;border:1px dashed rgba(255,255,255,.24);animation:spin 24s linear infinite}
+.au-orb .r1{inset:0}.au-orb .r2{inset:28px;border-color:rgba(255,255,255,.16);animation-direction:reverse;animation-duration:17s}
+.coin{position:absolute;display:grid;place-items:center;width:36px;height:36px;margin-left:-18px;left:50%;top:-18px;border-radius:50%;font-weight:800;font-size:15px;animation:spin 24s linear infinite reverse}
+.c1{background:linear-gradient(135deg,#2ee6a6,#13a67a);color:#03281d;box-shadow:0 8px 22px -6px rgba(46,230,166,.75)}
+.c2{font-size:10px;background:linear-gradient(135deg,#ffd37a,#ff9f3d);color:#3a2100;box-shadow:0 8px 22px -6px rgba(255,159,61,.7);animation-direction:normal;animation-duration:17s}
+.au-orb .core{position:absolute;inset:46px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(111,107,255,.5),transparent 70%)}
+.au-name{font-size:15px}
+.au-hero h1{font-size:27px;line-height:1.15;letter-spacing:-.03em;font-weight:800;margin:8px auto 8px;max-width:15em;text-wrap:balance}
+.au-hero p{margin:0 auto;color:var(--mut);max-width:24em}
+.au-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.au-chips span{font-size:12px;padding:6px 11px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#cfd6ee}
+.au-card{background:rgba(14,21,38,.72);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:16px;box-shadow:0 30px 60px -30px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.08);animation:rise .7s .12s var(--ease) both}
+.au-card h3{font-size:19px;margin:2px 0 4px}
+.au-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:rgba(7,11,22,.7);border:1px solid var(--line);border-radius:18px;padding:4px;margin-bottom:14px}
+.au-pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 8px 20px -10px rgba(79,120,255,.9);transition:transform .38s cubic-bezier(.3,1.4,.5,1)}
+.reg .au-pill{transform:translateX(100%)}
+.au-tabs button{position:relative;z-index:1;border:0;background:none;color:var(--mut);padding:11px 6px;font:inherit;font-weight:700;cursor:pointer;transition:color .25s}
+.au-tabs button[aria-selected=true]{color:#fff}
+.fl{position:relative;margin-bottom:12px}
+.fl input{margin:0;height:54px;padding:20px 46px 6px 44px;border-radius:16px;background:rgba(7,11,22,.7)}
+.fl label{position:absolute;left:44px;top:16px;margin:0;font-size:15px;color:var(--mut);pointer-events:none;transition:top .18s var(--ease),font-size .18s var(--ease),color .18s}
+.fl input:focus+label,.fl input:not(:placeholder-shown)+label{top:7px;font-size:11px;color:#8fd4ff}
+.fl .fi{position:absolute;left:15px;top:17px;width:20px;height:20px;color:var(--mut);transition:color .2s;pointer-events:none}
+.fl:focus-within>.fi{color:#8fd4ff}
+.fl .eye{position:absolute;right:6px;top:6px;width:42px;height:42px;border:0;background:none;color:var(--mut);cursor:pointer;border-radius:12px;padding:0;display:grid;place-items:center}
+.fl .eye .fi{position:static}.fl .eye:hover{color:#fff}
+.au-collapse{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .35s var(--ease),opacity .25s}
+.au-collapse>div{overflow:hidden;min-height:0}
+.reg .au-collapse{grid-template-rows:1fr;opacity:1}
+.pw-m{height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.pw-m i{display:block;height:100%;width:0;border-radius:4px;transition:width .3s var(--ease),background .3s}
+.pw-t{font-size:12px;color:var(--mut);margin:6px 2px 12px}
+.au-go{position:relative;width:100%;height:54px;font-size:16px;border-radius:16px;margin-top:4px;overflow:hidden}
+.au-go:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-120%);transition:transform .6s}
+.au-go:hover:before{transform:translateX(120%)}
+.au-go.ld span{opacity:0}
+.au-go.ld:after{content:"";position:absolute;inset:0;margin:auto;width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+.au-links{text-align:center;margin:14px 0 0;min-height:20px}
+.au-help{display:block;text-align:center;font-size:12.5px;margin-top:10px;color:var(--mut);text-decoration:none}.au-help:hover{color:#fff}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.au-go.ld:after{animation:spin 1.2s linear infinite!important}}
+@media(max-height:700px){.au-orb{width:120px;height:120px}.au-orb .r2{inset:20px}.au-orb .core{inset:32px}.au-orb .core svg{width:40px;height:40px}.au-hero h1{font-size:22px}.au-chips{display:none}}
+
+header .lg{gap:7px;flex:none}header .logo{font-size:17px;white-space:nowrap}header .hr{gap:8px}
+.pill{padding:4px 5px 4px 12px;gap:6px}.pill small{display:none}
+#tAnn,#tInfo{flex-direction:row;justify-content:center;gap:8px;padding:12px 8px;font-size:14px}#tAnn .tc,#tInfo .tc{font-size:18px!important}
+.au.reg .au-chips{display:none}
+.wa{font-size:12px;padding:8px 12px;opacity:.94;bottom:100px;right:10px}
 </style>
 </head>
 <body>
@@ -137,8 +248,9 @@ document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
-<div class="card"><div class="row"><b>Mi billetera</b><a href="#" id="tw">Depositar / retirar</a></div>
-<div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}</div></div>
+<div class="hero"><div class="row"><span class="mut">Mi billetera</span><a href="#" id="tw">Depositar / retirar</a></div>
+<div class="hero-n">${n(S.wallet?.available,2)}<small>USDT</small></div>
+<div class="hero-sub"><div>Saldo CUP<b>${n(S.bal?.CUP,0)}</b></div><div>Saldo Clásica<b>${n(S.bal?.USD,2)} USD</b></div></div></div>
 <div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
 <div class="grid2" style="margin-bottom:12px"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button></div>`;
 const bindTop=()=>{$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
@@ -223,37 +335,58 @@ sb.auth.onAuthStateChange(ev=>{
   if(ev==='PASSWORD_RECOVERY')renderReset()});
 
 function renderAuth(mode='login'){
-  const reg=mode==='register';
-  $app.innerHTML=`<div class="auth">
-    <div style="display:flex;justify-content:center;margin-bottom:6px">${brand(46)}</div>
-    <p class="mut" style="text-align:center;margin:0 0 16px">Cambia USDT por CUP o saldo móvil, con un administrador que respalda cada operación.</p>
-    <div class="card"><h3>${reg?'Crear cuenta':'Iniciar sesión'}</h3>
-      ${reg?'<label>Nombre de usuario</label><input id="u" autocomplete="username">':''}
-      <label>Correo</label><input id="em" type="email" autocomplete="email">
-      <label>Contraseña</label><input id="pw" type="password" autocomplete="${reg?'new-password':'current-password'}">
-      <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sh" style="width:auto;margin:0"> Mostrar contraseña</label>
-      <button class="b w" id="go" style="margin-top:10px">${reg?'Registrarme':'Entrar'}</button>
-      <p class="mut" style="text-align:center;margin:12px 0 0"><a href="#" id="sw">${reg?'¿Ya tienes cuenta? Entra':'¿No tienes cuenta? Regístrate'}</a>
-      ${reg?'':' · <a href="#" id="fg">Olvidé mi contraseña</a>'}</p></div></div>`;
-  $('sh').onchange=e=>$('pw').type=e.target.checked?'text':'password';
-  $('sw').onclick=e=>{e.preventDefault();renderAuth(reg?'login':'register')};
-  if($('fg'))$('fg').onclick=e=>{e.preventDefault();const em=$('em').value.trim();if(!em)return toast('Escribe tu correo primero','err');
+  let reg=mode==='register';
+  const ic=p=>`<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const eye='<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',eyeOff='<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/>';
+  $app.innerHTML=`<div class="au" id="au">
+   <div class="au-bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>
+   <div class="au-hero">
+     <div class="au-orb" aria-hidden="true"><span class="ring r1"><b class="coin c1">₮</b></span><span class="ring r2"><b class="coin c2">CUP</b></span><span class="core">${logoSvg(56)}</span></div>
+     <div class="logo au-name">Tororo<i> P2P</i></div>
+     <h1>Compra y vende USDT, CUP y saldo móvil</h1>
+     <p>Cada operación la respalda un administrador.</p>
+     <div class="au-chips"><span>🔒 Pago retenido hasta confirmar</span><span>🛡️ Mediación del admin</span><span>💱 CUP · USD · saldo móvil</span></div>
+   </div>
+   <div class="au-card">
+     <div class="au-tabs" role="tablist"><i class="au-pill"></i><button type="button" role="tab" data-m="login">Entrar</button><button type="button" role="tab" data-m="register">Crear cuenta</button></div>
+     <div class="au-collapse" id="uw"><div><div class="fl">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')}<input id="u" placeholder=" " autocomplete="username" autocapitalize="none" spellcheck="false"><label for="u">Nombre de usuario</label></div></div></div>
+     <div class="fl">${ic('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/>')}<input id="em" type="email" placeholder=" " autocomplete="email" autocapitalize="none" spellcheck="false" inputmode="email"><label for="em">Correo</label></div>
+     <div class="fl">${ic('<rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>')}<input id="pw" type="password" placeholder=" "><label for="pw">Contraseña</label><button type="button" class="eye" id="eye" aria-label="Mostrar contraseña">${ic(eye)}</button></div>
+     <div class="au-collapse" id="pm"><div><div class="pw-m"><i id="pwb"></i></div><div class="pw-t" id="pwt">Usa al menos 6 caracteres</div></div></div>
+     <button class="b au-go" id="go" type="button"><span id="gol"></span></button>
+     <p class="au-links"><a href="#" id="fg">Olvidé mi contraseña</a></p>
+     ${CFG.whatsapp?`<a class="au-help" href="https://wa.me/${esc(CFG.whatsapp)}" target="_blank" rel="noopener">¿Necesitas ayuda? Escríbenos por WhatsApp</a>`:''}
+   </div></div>`;
+  const setMode=m=>{reg=m==='register';$('au').classList.toggle('reg',reg);$('uw').inert=!reg;$('pm').inert=!reg;
+    $('gol').textContent=reg?'Crear mi cuenta':'Entrar';$('pw').autocomplete=reg?'new-password':'current-password';$('fg').style.display=reg?'none':'';
+    document.querySelectorAll('.au-tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.m===m))};
+  setMode(mode);
+  document.querySelectorAll('.au-tabs button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  $('eye').onclick=()=>{const t=$('pw').type==='password';$('pw').type=t?'text':'password';$('eye').innerHTML=ic(t?eyeOff:eye);$('eye').setAttribute('aria-label',t?'Ocultar contraseña':'Mostrar contraseña')};
+  $('pw').oninput=()=>{const v=$('pw').value;let sc=0;if(v.length>=6)sc++;if(v.length>=9)sc++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))sc++;if(/\d/.test(v)&&/[^A-Za-z0-9]/.test(v))sc++;
+    const L=['Usa al menos 6 caracteres','Débil','Aceptable','Buena','Muy fuerte'],C=['transparent','#ff6b5e','#ffb547','#2bb6ff','#2ee6a6'];
+    if(v.length&&v.length<6)sc=0;$('pwb').style.width=(v?Math.max(sc,1)*25:0)+'%';$('pwb').style.background=C[v?Math.max(sc,1):0];
+    $('pwt').textContent=v.length&&v.length<6?'Muy corta: mínimo 6 caracteres':L[v?Math.max(sc,1):0]};
+  $('fg').onclick=e=>{e.preventDefault();const em=$('em').value.trim();if(!em)return toast('Escribe tu correo primero','err');
     sb.auth.resetPasswordForEmail(em,{redirectTo:location.href.split('#')[0]}).then(({error})=>error?toast(friendly(error),'err'):toast('Te enviamos un enlace al correo','good'))};
-  const submit=ev=>act(ev.target,async()=>{
-    const email=$('em').value.trim(),password=$('pw').value;
-    if(!email||!password)throw new Error('Completa correo y contraseña');
-    if(reg){
-      const username=($('u').value||'').trim();if(username.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');
-      const{data,error}=await sb.auth.signUp({email,password,options:{data:{username}}});
-      if(error)throw error;
-      if(!data.session){toast('Cuenta creada. Revisa tu correo para confirmarla.','good');return}
-    }else{const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}
-    await boot()});
-  $('go').onclick=submit;$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()}}
+  $('go').onclick=()=>{const btn=$('go');btn.classList.add('ld');
+    act(btn,async()=>{
+      const email=$('em').value.trim(),password=$('pw').value;
+      if(!email||!password)throw new Error('Completa correo y contraseña');
+      if(reg){
+        const username=($('u').value||'').trim();if(username.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');
+        const{data,error}=await sb.auth.signUp({email,password,options:{data:{username}}});
+        if(error)throw error;
+        if(!data.session){toast('Cuenta creada. Revisa tu correo para confirmarla.','good');return}
+      }else{const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}
+      await boot()}).finally(()=>btn.classList.remove('ld'))};
+  $('au').onkeydown=e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')$('go').click()}}
 function renderReset(){
-  $app.innerHTML=`<div class="auth"><div class="card"><h3>Nueva contraseña</h3><input id="np" type="password" minlength="6" autocomplete="new-password">
-  <button class="b w" id="sv">Guardar contraseña</button></div></div>`;
-  $('sv').onclick=ev=>act(ev.target,async()=>{const{error}=await sb.auth.updateUser({password:$('np').value});if(error)throw error;await boot()},'Contraseña actualizada')}
+  $app.innerHTML=`<div class="au"><div class="au-bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>
+  <div class="au-card"><h3>Crea tu nueva contraseña</h3><p class="mut" style="margin:0 0 14px">Elige una que no uses en otros sitios.</p>
+  <div class="fl"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="np" type="password" minlength="6" placeholder=" " autocomplete="new-password"><label for="np">Nueva contraseña</label></div>
+  <button class="b au-go" id="sv"><span>Guardar contraseña</span></button></div></div>`;
+  $('sv').onclick=ev=>act(ev.currentTarget,async()=>{const{error}=await sb.auth.updateUser({password:$('np').value});if(error)throw error;await boot()},'Contraseña actualizada')}
 
 function render(){
   const admin=S.profile?.is_admin;
