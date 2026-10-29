@@ -168,6 +168,7 @@ function friendly(e){
   if(/Password should/i.test(m))return'La contraseña debe tener al menos 6 caracteres';
   if(/order_messages/i.test(m))return'Falta crear la tabla del chat (ejecuta el archivo SQL)';
   if(/Failed to fetch|NetworkError/i.test(m))return'Sin conexión. Revisa tu internet';
+  if(/announcements|site_info|bucket/i.test(m)&&/relation|schema cache|not found|does not exist/i.test(m))return'Falta crear las tablas de información/anuncios (ejecuta el archivo SQL)';
   return m}
 async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
 async function act(btn,fn,okMsg){
@@ -254,15 +255,15 @@ function render(){
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('notifs');
   $('av').onclick=e=>{e.preventDefault();go('profile')};
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
-  go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs()}
+  go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs();checkAnn()}
 async function refreshBadge(){
   const{count}=await sb.from('orders').select('id',{count:'exact',head:true})
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
   S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,admin:viewAdmin}[v]||viewMarket)();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='ann'||v==='info'?'market':v)));
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,admin:viewAdmin,ann:viewAnn,info:viewInfo}[v]||viewMarket)();
   window.scrollTo(0,0)}
 
 /* ---------- Mercado ---------- */
@@ -791,6 +792,89 @@ async function viewProfile(){
     await rpc('submit_kyc',{p_name:nm,p_id:id,p_front:pa,p_back:pb,p_selfie:pc});await loadMe();viewProfile()},'Verificación enviada');
 }
 
+/* ---------- Información y Anuncios ---------- */
+const lsAnn='annSeen';
+async function checkAnn(){
+  const{data}=await sb.from('announcements').select('created_at').order('created_at',{ascending:false}).limit(1);
+  const last=data?.[0]?.created_at;
+  S.annNew=!!last&&new Date(last)>new Date(lsGet(lsAnn)||0);updAnn()}
+const backBtn='<button class="b gh sm" id="bk" style="margin-bottom:10px">← Volver</button>';
+const bindBack=()=>{const b=$('bk');if(b)b.onclick=()=>go('market')};
+
+async function viewAnn(){
+  const my=NAV;main().innerHTML=backBtn+'<h2>Anuncios</h2>'+skel(2);bindBack();
+  const{data,error}=await sb.from('announcements').select('id,title,body,created_at').order('created_at',{ascending:false}).limit(50);
+  if(my!==NAV)return;
+  if(error)return main().innerHTML=backBtn+'<h2>Anuncios</h2><div class="warnbox bad">'+esc(friendly(error))+'</div>',bindBack();
+  main().innerHTML=backBtn+'<h2>Anuncios</h2>'+((data||[]).length?data.map(a=>`<div class="card nt"><b>${esc(a.title)}</b><div class="pre" style="margin:6px 0">${esc(a.body)}</div><div class="mut">${when(a.created_at)}</div></div>`).join(''):'<div class="card mut">No hay anuncios por ahora.</div>');
+  bindBack();
+  if(data?.[0]){lsSet(lsAnn,data[0].created_at);S.annNew=false;updAnn()}}
+
+async function viewInfo(){
+  const my=NAV;main().innerHTML=backBtn+'<h2>Información</h2>'+skel(2);bindBack();
+  const{data,error}=await sb.from('site_info').select('title,body,photos').eq('id',1).maybeSingle();
+  if(my!==NAV)return;
+  if(error)return main().innerHTML=backBtn+'<h2>Información</h2><div class="warnbox bad">'+esc(friendly(error))+'</div>',bindBack();
+  if(!data||(!data.title&&!data.body&&!(data.photos||[]).length))return main().innerHTML=backBtn+'<h2>Información</h2><div class="card mut">Aún no hay información publicada.</div>',bindBack();
+  const ph=await Promise.all((data.photos||[]).map(async p=>({l:p.label,u:(await sb.storage.from('info').createSignedUrl(p.path,3600)).data?.signedUrl})));
+  if(my!==NAV)return;
+  main().innerHTML=backBtn+`<h2>Información</h2><div class="card">${data.title?`<h3>${esc(data.title)}</h3>`:''}${data.body?`<div class="pre">${esc(data.body)}</div>`:''}</div>`+
+    (ph.length?`<div class="ph">${ph.map(p=>p.u?`<div class="it"><img src="${esc(p.u)}" alt="${esc(p.l||'Foto')}" data-z="${esc(p.u)}">${p.l?`<div class="mut">${esc(p.l)}</div>`:''}</div>`:'').join('')}</div>`:'');
+  bindBack();main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z))}
+
+/* Admin: editor de "Información" y "Anuncios" */
+async function adminCms(my){
+  const box=document.createElement('div');box.id='cms';main().appendChild(box);
+  const draw=async()=>{
+    const[a,i]=await Promise.all([
+      sb.from('announcements').select('id,title,body,created_at').order('created_at',{ascending:false}).limit(50),
+      sb.from('site_info').select('title,body,photos').eq('id',1).maybeSingle()]);
+    if(my!==NAV)return;
+    if(a.error||i.error){box.innerHTML=`<h3 id="s-ann">Información y anuncios</h3><div class="warnbox bad">${esc(friendly(a.error||i.error))}</div>`;return}
+    const info=i.data||{},photos=info.photos||[];
+    const urls=await Promise.all(photos.map(async p=>(await sb.storage.from('info').createSignedUrl(p.path,3600)).data?.signedUrl));
+    if(my!==NAV)return;
+    box.innerHTML=`<h3 id="s-ann">Anuncios para los usuarios</h3>
+    <div class="card"><label for="ca_t">Título</label><input id="ca_t" maxlength="120" placeholder="Ej: Actualización el viernes">
+    <label for="ca_b">Mensaje</label><textarea id="ca_b" rows="4" maxlength="2000" placeholder="Ej: A partir del 1 de noviembre cambia la comisión…"></textarea>
+    <button class="b w" id="ca_p">Publicar anuncio</button></div>
+    ${(a.data||[]).map(x=>`<div class="card nt"><div class="row"><b>${esc(x.title)}</b><button class="b bad sm" data-ad="${x.id}">Eliminar</button></div><div class="pre" style="margin:6px 0">${esc(x.body)}</div><div class="mut">${when(x.created_at)}</div></div>`).join('')}
+    <h3 id="s-info">Mi información (se muestra en “Información”)</h3>
+    <div class="card"><label for="ci_t">Título / nombre</label><input id="ci_t" maxlength="120" value="${esc(info.title||'')}">
+    <label for="ci_b">Texto</label><textarea id="ci_b" rows="6" maxlength="4000">${esc(info.body||'')}</textarea>
+    <button class="b w" id="ci_s">Guardar texto</button>
+    <div class="mut" style="margin-top:14px">Fotos (carnet u otras)</div>
+    ${photos.length?`<div class="ph">${photos.map((p,k)=>`<div class="it">${urls[k]?`<img src="${esc(urls[k])}" alt="Foto" data-z="${esc(urls[k])}">`:''}<button class="b bad sm" data-pd="${k}" aria-label="Quitar foto">✕</button>${p.label?`<div class="mut">${esc(p.label)}</div>`:''}</div>`).join('')}</div>`:''}
+    <label for="ci_l">Descripción de la foto (opcional)</label><input id="ci_l" maxlength="80" placeholder="Ej: Carnet, frente">
+    <input type="file" id="ci_f" accept="image/*">
+    <button class="b gh w" id="ci_u">Subir foto</button>
+    <div class="warnbox" style="margin-top:10px">Las fotos solo las ven los usuarios que han iniciado sesión.</div></div>`;
+    box.querySelectorAll('[data-z]').forEach(im=>im.onclick=()=>zoom(im.dataset.z));
+    $('ca_p').onclick=e=>act(e.target,async()=>{
+      const t=$('ca_t').value.trim(),b=$('ca_b').value.trim();
+      if(!t||!b)throw new Error('Escribe el título y el mensaje');
+      const{error}=await sb.from('announcements').insert({title:t,body:b});if(error)throw new Error(friendly(error));
+      await draw()},'Anuncio publicado');
+    box.querySelectorAll('[data-ad]').forEach(b=>b.onclick=async()=>{
+      const m=await ask('Eliminar anuncio','<p>Dejará de verse para los usuarios.</p>','Eliminar','bad');if(!m)return;m.remove();
+      act(b,async()=>{const{error}=await sb.from('announcements').delete().eq('id',b.dataset.ad);if(error)throw new Error(friendly(error));await draw()},'Anuncio eliminado')});
+    $('ci_s').onclick=e=>act(e.target,async()=>{
+      const{error}=await sb.from('site_info').upsert({id:1,title:$('ci_t').value.trim(),body:$('ci_b').value.trim(),updated_at:new Date().toISOString()});
+      if(error)throw new Error(friendly(error))},'Información guardada');
+    $('ci_u').onclick=e=>act(e.target,async()=>{
+      const path=await upImg('info','foto',$('ci_f').files[0],6);
+      const{data:cur}=await sb.from('site_info').select('photos').eq('id',1).maybeSingle();
+      const{error}=await sb.from('site_info').upsert({id:1,photos:[...(cur?.photos||[]),{path,label:$('ci_l').value.trim()}]});
+      if(error)throw new Error(friendly(error));await draw()},'Foto subida');
+    box.querySelectorAll('[data-pd]').forEach(b=>b.onclick=async()=>{
+      const m=await ask('Quitar foto','<p>Se borrará y dejará de verse para los usuarios.</p>','Quitar','bad');if(!m)return;m.remove();
+      act(b,async()=>{
+        const{data:cur}=await sb.from('site_info').select('photos').eq('id',1).maybeSingle();
+        const arr=[...(cur?.photos||[])],[p]=arr.splice(+b.dataset.pd,1);
+        const{error}=await sb.from('site_info').upsert({id:1,photos:arr});if(error)throw new Error(friendly(error));
+        if(p)await sb.storage.from('info').remove([p.path]);await draw()},'Foto eliminada')})};
+  draw()}
+
 /* ---------- Admin ---------- */
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
@@ -816,7 +900,7 @@ async function viewAdmin(){
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
+  const tiles=`<div class="tiles"><button class="tile" data-go="s-ann"><span class="tc">📣</span><span>Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc">ℹ️</span><span>Mi info</span></button>${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   ${tiles}
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
@@ -857,7 +941,8 @@ async function viewAdmin(){
   bind('data-ca','admin_approve_fiat_topup','Saldo acreditado');
   bind('data-cr','admin_reject_fiat_topup','Recarga rechazada');
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
-  bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto')}
+  bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
+  adminCms(my)}
 
 boot();
 </script>
