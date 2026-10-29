@@ -74,7 +74,7 @@ main>h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(-
 .px{background:#0f241e;border:1px solid #1f5b4a;color:var(--ok);border-radius:14px;padding:6px 14px;text-align:center}.px small{display:block;font-size:11px;opacity:.8}
 #q{background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%238c90a8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M13 13l4 4'/%3E%3C/svg%3E") no-repeat 13px center;padding-left:40px}
 .hi{color:var(--mut);margin:2px 0 12px}.hi b{color:var(--tx)}
-.wts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.wts{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin-top:10px}
 .wt{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:10px;min-width:0}.wt .big{font-size:20px;overflow-wrap:anywhere}
 .card[data-o]{border-left:3px solid var(--acc)}.card[data-o]:active{background:var(--card2)}
 h2{font-size:22px}.lg svg{flex:none}.auth .logo{font-size:30px}
@@ -82,6 +82,7 @@ h2{font-size:22px}.lg svg{flex:none}.auth .logo{font-size:30px}
 .sk{height:76px;border-radius:var(--r);background:linear-gradient(90deg,var(--card),var(--card2),var(--card));background-size:200% 100%;animation:sk 1.2s infinite;margin-bottom:12px}
 @keyframes sk{to{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.sk{animation:none}}
+.kpv{display:none;max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--line);margin:0 0 10px}
 </style>
 </head>
 <body>
@@ -93,7 +94,7 @@ const SUPABASE_URL="https://uduktuflwyauvoawemll.supabase.co";
 const SUPABASE_KEY="sb_publishable_HlRCiVFRT3CWkif1VbuPyw_UWrTFL1v";
 const APP_NAME="Tororo";
 /* Rellena estos datos tú mismo (no los pegues en chats). Si tu get_public_settings devuelve cup_card, cup_holder o whatsapp, tienen prioridad. */
-const CFG={card:"9227 0699 9899 2229",card_usd:"9760 0390 0799 6464",holder:"",whatsapp:"5352510320"}; // card: recargas CUP · card_usd: recargas Saldo Clásica (USD) · holder: nombre del titular (opcional)
+const CFG={card:"9227 0699 9899 2229",card_usd:"9760 0390 0799 6464",holder:"",whatsapp:"5352510320",movil:"5352510320"}; // movil: número al que los usuarios envían saldo móvil para recargar · card: recargas CUP · card_usd: recargas Saldo Clásica (USD) · holder: nombre del titular (opcional)
 const avUrl=p=>p?sb.storage.from('avatars').getPublicUrl(p).data.publicUrl:'';
 const avatar=(z=26)=>{const u=avUrl(S.profile?.avatar_path);return u?`<img src="${esc(u)}" width="${z}" height="${z}" style="border-radius:50%;object-fit:cover" alt="">`:`<span style="display:inline-flex;width:${z}px;height:${z}px;border-radius:50%;background:var(--card2);align-items:center;justify-content:center;font-weight:700;color:var(--ok);font-size:${Math.round(z/2)}px">${esc((S.profile?.username||'?')[0].toUpperCase())}</span>`};
 const needKyc=()=>!S.kycOff&&!S.profile?.is_admin&&S.profile?.kyc_status!=='approved';
@@ -101,34 +102,48 @@ const kycChk=()=>{if(needKyc())throw new Error('Debes verificar tu identidad (KY
 const gate=()=>{if(needKyc()){toast('Verifica tu identidad (KYC) para operar o retirar','err');go('profile');return true}return false};
 const kycBanner=()=>{if(!needKyc())return'';const st=S.profile?.kyc_status;
   return`<div class="warnbox">🪪 ${st==='pending'?'Tu verificación está en revisión. Podrás operar y retirar cuando el administrador la apruebe.':st==='rejected'?'Tu verificación fue rechazada'+(S.profile.kyc_note?': '+esc(S.profile.kyc_note):'')+'. Envíala de nuevo.':'Verifica tu identidad (KYC) para comprar, vender y retirar.'}${st==='pending'?'':'<br><button class="b sm" style="margin-top:8px" onclick="go(\'profile\')">Verificar ahora</button>'}</div>`};
+async function shrinkImg(file,max=1600,q=.85){
+  try{
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type))return file;
+    const bmp=await createImageBitmap(file);
+    const k=Math.min(1,max/Math.max(bmp.width,bmp.height));
+    if(k===1&&file.size<600*1024){if(bmp.close)bmp.close();return file}
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);if(bmp.close)bmp.close();
+    const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',q));
+    return blob&&blob.size<file.size?blob:file}catch(e){return file}}
 async function upImg(bucket,name,file,mb){
   if(!file)throw new Error('Falta una imagen');
   if(!/^image\//.test(file.type))throw new Error('El archivo debe ser una imagen');
-  if(file.size>mb*1024*1024)throw new Error(`La imagen pesa más de ${mb} MB`);
-  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  if(file.size>40*1024*1024)throw new Error('La imagen es demasiado grande');
+  const blob=await shrinkImg(file),jpg=blob!==file;
+  if(blob.size>mb*1024*1024)throw new Error(`La imagen pesa más de ${mb} MB`);
+  const ext=jpg?'jpg':((file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg');
   const path=`${S.user.id}/${name}-${Date.now()}.${ext}`;
-  const{error}=await sb.storage.from(bucket).upload(path,file,{contentType:file.type});
+  const{error}=await sb.storage.from(bucket).upload(path,blob,{contentType:jpg?'image/jpeg':file.type});
   if(error)throw new Error(friendly(error));return path}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${S.fees.withdraw}%: ${n(a*S.fees.withdraw/100,d)} ${u} · Recibirás: ${n(a-a*S.fees.withdraw/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-S.fees.withdraw/100);
-document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
+document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,(k==='CUP'||k==='MOVIL')?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 <div class="card"><div class="row"><b>Mi billetera</b><a href="#" id="tw">Depositar / retirar</a></div>
-<div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}</div></div>
+<div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}${wtile('Saldo Móvil',S.bal?.MOVIL,'CUP móvil',0)}</div></div>
 <div class="chips"><button class="chip ${S.mk==='usd'?'':'on'}" data-mk="usdt">Comprar / vender USDT</button><button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambiar USD Clásica ⇄ CUP</button></div>`;
 const bindTop=()=>{$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
-const mny=(v,c)=>n(v,c==='CUP'?0:2);
-const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
-const balCur=(c,m)=>c==='CUP'?(m.includes('Saldo CUP')?'CUP':null):c==='Saldo Clásica'?(m.includes('Saldo Clásica')?'USD':null):null;
+const isCupLike=c=>c==='CUP'||c==='Saldo Móvil'||c==='MOVIL';
+const mny=(v,c)=>n(v,isCupLike(c)?0:2);
+const BCN={CUP:'CUP',USD:'Clásica (USD)',MOVIL:'Móvil'};
+const due=(o,c)=>isCupLike(c)?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
+const balCur=(c,m)=>c==='CUP'?(m.includes('Saldo CUP')?'CUP':null):c==='Saldo Clásica'?(m.includes('Saldo Clásica')?'USD':null):c==='Saldo Móvil'?(m.includes('Saldo Móvil')?'MOVIL':null):null;
 const logoSvg=(s=30)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lgG)"/><circle cx="20" cy="20" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30.5" cy="9.5" r="3" fill="#ef6a5b"/></svg>`;
 const brand=(s=30)=>`<span class="lg">${logoSvg(s)}<span class="logo">Tororo<i> P2P</i></span></span>`;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $app=document.getElementById('app'),$=id=>document.getElementById(id),main=()=>$('main');
-const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',sort:'asc',mine:false},of:'all',active:0};
+const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',c:'',sort:'asc',mine:false},of:'all',active:0};
 let NAV=0,POLL=null;
 
 const STATUS={
@@ -184,12 +199,13 @@ async function boot(){
   if(!S.user)return renderAuth();
   await loadMe();render()}
 async function loadMe(){
-  const[p,w,st,cw,fr]=await Promise.all([
-    sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single(),
+  let[p,w,st,cw,fr]=await Promise.all([
+    sb.rpc('get_my_profile').single(),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
     sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),sb.from('fee_rates').select('kind,pct')]);
+  if(p.error){const q0=await sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single();if(!q0.error)p=q0}
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
-  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};S.settings=st.data||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
+  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};S.settings=st.data||{};S.bal={CUP:0,USD:0,MOVIL:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
   if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);renderAuth()}
   if(ev==='PASSWORD_RECOVERY')renderReset()});
@@ -270,6 +286,7 @@ async function viewMarket(){if(S.mk==='usd')return viewFx();
   <div class="card"><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
     <div class="row"><select id="srt" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
     <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="mine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div>
+    <div class="chips" id="fc" style="margin-bottom:8px"><button class="chip ${F.c?'':'on'}" data-c="">Todas las monedas</button>${CURS.map(c=>`<button class="chip ${F.c===c?'on':''}" data-c="${c}">Pago en ${c==='Saldo Clásica'?'USD Clásica':c}</button>`).join('')}</div>
     <div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></div>
   <h3>Ofertas disponibles</h3><div id="offers">${skel(3)}</div>`;
   $('srt').value=F.sort;bindTop();
@@ -289,6 +306,7 @@ async function viewMarket(){if(S.mk==='usd')return viewFx();
   const rf=()=>drawOffers();
   $('q').oninput=e=>{F.q=e.target.value;rf()};$('srt').onchange=e=>{F.sort=e.target.value;rf()};
   $('mine').onchange=e=>{F.mine=e.target.checked;rf()};
+  $('fc').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;F.c=b.dataset.c;$('fc').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));rf()};
   $('fm').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;F.m=b.dataset.m;$('fm').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));rf()};
   const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username)').eq('status','open');
   if(my!==NAV)return;
@@ -296,10 +314,10 @@ async function viewMarket(){if(S.mk==='usd')return viewFx();
   S.offers=data||[];drawOffers()}
 function drawOffers(){
   const box=$('offers');if(!box)return;const F=S.f,q=F.q.toLowerCase();
-  let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
+  let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!F.c||parseM(o.methods).c===F.c)&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
   l.sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount-a.amount);
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
-  const fee=+S.settings.fee_percent||0;
+  const fee=+S.fees.trade||0;
   box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id,{m,c}=parseM(o.methods);
     return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
@@ -410,7 +428,7 @@ async function viewOrder(){
 
   let act_='';
   const bc=balCur(cur,meths);
-  if(isBuyer&&o.status==='awaiting_payment'&&bc)act_+=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">Paga al instante con tu saldo ${bc==='USD'?'Clásica (USD)':'CUP'} (${mny(S.bal[bc],cur)} disponibles). Sin captura: el vendedor lo recibe en su saldo cuando se liberen los USDT.</div><button class="b ok w" id="paybal" ${S.bal[bc]>=due(o,cur)?'':'disabled'}>Pagar ${mny(due(o,cur),cur)} ${bc} con mi saldo</button><p class="mut" style="text-align:center">o paga fuera de la plataforma:</p>`;
+  if(isBuyer&&o.status==='awaiting_payment'&&bc)act_+=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">Paga al instante con tu saldo ${BCN[bc]} (${mny(S.bal[bc],cur)} disponibles). Sin captura: el vendedor lo recibe en su saldo cuando se liberen los USDT.</div><button class="b ok w" id="paybal" ${S.bal[bc]>=due(o,cur)?'':'disabled'}>Pagar ${mny(due(o,cur),cur)} ${bc} con mi saldo</button><p class="mut" style="text-align:center">o paga fuera de la plataforma:</p>`;
   if(isBuyer&&o.status==='awaiting_payment')act_+=`<div class="warnbox">Envía <b>${mny(due(o,cur),cur)} ${esc(cur)}</b> con los datos de arriba y sube la <b>captura de tu pago</b> (obligatoria).</div>${uploader('sendB','Ya pagué · enviar captura','')}
     <button class="b gh w" id="cancel" style="margin-top:8px">Cancelar operación</button>`;
   if(isSeller&&o.status==='payment_sent')act_+=`<div class="warnbox">El comprador dice que ya pagó. Comprueba que llegó y sube la <b>captura del recibo de pago</b> (obligatoria).</div>${uploader('sendS','Recibí el pago · enviar captura','ok')}`;
@@ -421,7 +439,7 @@ async function viewOrder(){
   if(admin&&['payment_sent','seller_confirmed','disputed'].includes(o.status))act_+=`<div class="grid2" style="margin-top:10px"><button class="b ok" id="rel">Liberar USDT al comprador</button><button class="b bad" id="ref">Devolver al vendedor</button></div>`;
   if(admin&&o.status==='awaiting_payment')act_+=`<button class="b bad sm" id="ref">Devolver al vendedor</button>`;
 
-  if(o.cup_paid>0)act_=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">💰 Pagado con saldo de la plataforma (${n(o.cup_paid,2)} ${o.bal_cur==='USD'?'USD':'CUP'}). ${isSeller?'Lo recibirás en tu saldo cuando se liberen los USDT.':''}</div>`+act_;
+  if(o.cup_paid>0)act_=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">💰 Pagado con saldo de la plataforma (${n(o.cup_paid,2)} ${o.bal_cur==='USD'?'USD':o.bal_cur==='MOVIL'?'CUP (saldo móvil)':'CUP'}). ${isSeller?'Lo recibirás en tu saldo cuando se liberen los USDT.':''}</div>`+act_;
   main().innerHTML=`<p><a href="#" id="back">← Volver</a></p>
   <div class="card ${dis?'dg':o.status==='released'?'hl':''}">
     <div class="row"><h3 style="margin:0">Operación ${esc(o.id.slice(0,8))}</h3><span class="tag ${c}">${t}</span></div>
@@ -530,7 +548,8 @@ async function renderCup(){
   const box=$('cupcard');if(!box)return;
   const H=S.settings.cup_holder||CFG.holder;
   const C=[{k:'CUP',name:'Saldo CUP',card:S.settings.cup_card||CFG.card,d:0,tx:'Úsalo para comprar USDT en ofertas en CUP. Si vendes USDT y el comprador paga con saldo, lo recibes aquí.'},
-           {k:'USD',name:'Saldo Clásica (USD)',card:S.settings.usd_card||CFG.card_usd,d:2,tx:'Tu dinero en dólares de la tarjeta Clásica. Úsalo en ofertas en Saldo Clásica; si vendes, lo recibes aquí.'}];
+           {k:'USD',name:'Saldo Clásica (USD)',card:S.settings.usd_card||CFG.card_usd,d:2,tx:'Tu dinero en dólares de la tarjeta Clásica. Úsalo en ofertas en Saldo Clásica; si vendes, lo recibes aquí.'},
+           {k:'MOVIL',name:'Saldo Móvil',card:S.settings.movil_phone||CFG.movil,d:0,tx:'Tu saldo móvil guardado en la plataforma. Al pagar con él, queda retenido hasta que el administrador libere: protege al que envía y al que recibe.'}];
   const[t,w]=await Promise.all([
     sb.from('fiat_topups').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12),
     sb.from('fiat_withdrawals').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12)]);
@@ -541,10 +560,10 @@ async function renderCup(){
     <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div>${hist(t.data,'Recarga',c)}${hist(w.data,'Retiro',c)}</div>`).join('');
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
     const c=C.find(x=>x.k===b.dataset.in);
-    if(!c.card)return toast('La tarjeta de recarga aún no está configurada. Contacta al soporte','err');
-    const m=await ask('Recargar '+c.name,`<div class="warnbox">Transfiere ${c.k} a esta tarjeta y sube la captura. El administrador acredita tu saldo al verificarla.</div>
+    if(!c.card)return toast('El dato de recarga aún no está configurado. Contacta al soporte','err');
+    const m=await ask('Recargar '+c.name,`<div class="warnbox">${c.k==='MOVIL'?'Envía el saldo móvil a este número y sube la captura del mensaje de confirmación.':'Transfiere '+c.k+' a esta tarjeta y sube la captura.'} El administrador acredita tu saldo al verificarla.</div>
       <div class="row"><span><code>${esc(c.card)}</code><br><span class="mut">${esc(H)}</span></span>${cpBtn(c.card)}</div>
-      <label>Monto transferido (${c.k})</label><input id="ta" type="number" min="0.01" step="any" inputmode="decimal">
+      <label>Monto ${c.k==='MOVIL'?'enviado (saldo móvil)':'transferido ('+c.k+')'}</label><input id="ta" type="number" min="0.01" step="any" inputmode="decimal">
       <label>Captura de la transferencia</label><input id="tf" type="file" accept="image/*">`,'Enviar recarga','ok');
     if(!m)return;const a=+m.querySelector('#ta').value,fl=m.querySelector('#tf').files[0];m.remove();
     act(b,async()=>{if(!(a>0))throw new Error('Indica el monto');
@@ -552,10 +571,11 @@ async function renderCup(){
   box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const c=C.find(x=>x.k===b.dataset.out);
     const m=await ask('Retirar '+c.name,`<p class="mut">Disponible: ${n(S.bal[c.k],c.d)} ${c.k}</p><label>Monto (${c.k})</label><input id="ra" data-k="${c.k}" type="number" step="any" inputmode="decimal"><div class="mut" id="rfee" style="margin:-4px 0 8px"></div><div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</div>
-      <label>Tarjeta donde recibirás (16 dígitos)</label><input id="rc" inputmode="numeric">`,'Solicitar retiro');
+      <label>${c.k==='MOVIL'?'Número de teléfono donde recibirás el saldo':'Tarjeta donde recibirás (16 dígitos)'}</label><input id="rc" inputmode="numeric">`,'Solicitar retiro');
     if(!m)return;const a=+m.querySelector('#ra').value,cd=m.querySelector('#rc').value.replace(/\s/g,'');m.remove();
     act(b,async()=>{if(!(a>0)||a>S.bal[c.k])throw new Error('Monto inválido o saldo insuficiente');
-      if(!/^\d{16}$/.test(cd))throw new Error('La tarjeta debe tener 16 dígitos');
+      if(c.k==='MOVIL'){if(!/^\d{8,12}$/.test(cd))throw new Error('Escribe el número de teléfono (solo dígitos)')}
+      else if(!/^\d{16}$/.test(cd))throw new Error('La tarjeta debe tener 16 dígitos');
       await rpc('request_fiat_withdrawal',{p_cur:c.k,p_amount:a,p_card:cd});await loadMe();viewWallet()},'Retiro solicitado')})}
 
 async function renderDepositCard(){
@@ -590,17 +610,19 @@ async function renderDepositCard(){
 async function viewProfile(){
   const P=S.profile,st=P.kyc_status||'none';
   const TG={none:['Sin verificar','bad'],pending:['En revisión','warn'],approved:['Verificado','ok'],rejected:['Rechazado','bad']}[st]||['','' ];
-  const kyc=S.kycOff||P.is_admin?'':st==='approved'?'<div class="card hl"><h3>✅ Identidad verificada</h3><p class="mut" style="margin:0">Ya puedes comprar, vender y retirar.</p></div>'
+  const kyc0=S.kycOff?'<div class="card dg"><h3>🪪 Verificación no disponible</h3><p class="mut" style="margin:0">'+(P.is_admin?'Falta activar el KYC en Supabase: ejecuta kyc_perfil.sql y parche_privacidad.sql en el SQL Editor y recarga la página.':'La verificación de identidad aún no está disponible. Inténtalo más tarde.')+'</p></div>':st==='approved'?'<div class="card hl"><h3>✅ Identidad verificada</h3><p class="mut" style="margin:0">Ya puedes comprar, vender y retirar.</p></div>'
    :st==='pending'?'<div class="card"><h3>⏳ Verificación en revisión</h3><p class="mut" style="margin:0">El administrador revisará tus documentos. Te avisaremos aquí cuando esté lista.</p></div>'
    :`<div class="card"><h3>🪪 Verificación de identidad (KYC)</h3>
      ${st==='rejected'?`<div class="warnbox bad">Rechazada: ${esc(P.kyc_note||'revisa que las fotos se vean claras')}. Envíala de nuevo.</div>`:''}
      <p class="mut">Obligatoria para comprar, vender y retirar. Tus documentos solo los ve el administrador.</p>
+     <p class="mut">Consejos: usa buena luz, evita reflejos y comprueba que se lean todos los datos. En la selfie deben verse tu cara y el carnet a la vez.</p>
      <label>Nombre completo (como en tu carnet)</label><input id="kn" autocomplete="name">
      <label>Número de carnet de identidad o pasaporte</label><input id="ki">
-     <label>Foto del carnet · frente</label><input type="file" id="k1" accept="image/*">
-     <label>Foto del carnet · reverso</label><input type="file" id="k2" accept="image/*">
-     <label>Selfie sosteniendo tu carnet</label><input type="file" id="k3" accept="image/*">
+     <label>Foto del carnet · frente</label><input type="file" id="k1" accept="image/*"><img id="p1" class="kpv" alt="Vista previa del frente">
+     <label>Foto del carnet · reverso</label><input type="file" id="k2" accept="image/*"><img id="p2" class="kpv" alt="Vista previa del reverso">
+     <label>Selfie sosteniendo tu carnet</label><input type="file" id="k3" accept="image/*"><img id="p3" class="kpv" alt="Vista previa del selfie">
      <button class="b w" id="ks">Enviar verificación</button></div>`;
+  const kyc=P.is_admin&&!S.kycOff?'<div class="warnbox">👑 Eres administrador y no necesitas verificarte. Esto es lo que ven tus usuarios.</div>'+kyc0:kyc0;
   main().innerHTML=`<h2>Mi perfil</h2>
   <div class="card"><div class="row" style="justify-content:flex-start;gap:14px">${avatar(64)}<div><b style="font-size:18px">@${esc(P.username)}</b><br><span class="tag ${TG[1]}">${S.kycOff?'KYC no activado':P.is_admin?'Administrador':TG[0]}</span></div></div>
     <label style="margin-top:12px">Foto de perfil</label><input type="file" id="avf" accept="image/*"><button class="b gh sm" id="avb" disabled>Guardar foto</button></div>
@@ -612,6 +634,7 @@ async function viewProfile(){
   $('avb').onclick=ev=>act(ev.target,async()=>{const p=await upImg('avatars','avatar',$('avf').files[0],3);await rpc('set_avatar',{p_path:p});await loadMe();render()},'Foto actualizada');
   $('npb').onclick=ev=>act(ev.target,async()=>{const v=$('np').value;if(v.length<6)throw new Error('La contraseña debe tener al menos 6 caracteres');
     const{error}=await sb.auth.updateUser({password:v});if(error)throw error;$('np').value=''},'Contraseña actualizada');
+  ['k1','k2','k3'].forEach((id,i)=>{const el=$(id);if(!el)return;el.onchange=()=>{const f=el.files[0],im=$('p'+(i+1));if(!im)return;if(f){im.src=URL.createObjectURL(f);im.style.display='block'}else im.style.display='none'}});
   if($('ks'))$('ks').onclick=ev=>act(ev.target,async()=>{
     const nm=$('kn').value.trim(),id=$('ki').value.trim();
     if(nm.length<5)throw new Error('Escribe tu nombre completo');
@@ -635,9 +658,9 @@ async function viewAdmin(){
     sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fee_ledger').select('*,profiles(username)').order('created_at',{ascending:false}).limit(1000)]);
   if(my!==NAV)return;
-  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT'};
+  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',retiro_movil:'Retiro de Saldo Móvil',compra_usdt:'Compra de USDT'};
   const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});
-  const fd=c=>c==='CUP'?0:c==='USD'?2:4;
+  const fd=c=>(c==='CUP'||c==='MOVIL')?0:c==='USD'?2:4;
   const feeHtml=`<h3>Comisiones cobradas</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Total',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(x.profiles?.username||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?'<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p>':''}</div>`;
   const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
