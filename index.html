@@ -118,7 +118,7 @@ const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="b
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 <div class="card"><div class="row"><b>Mi billetera</b><a href="#" id="tw">Depositar / retirar</a></div>
 <div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}</div></div>
-<div class="chips"><button class="chip ${S.mk==='usd'||S.mk==='mob'?'':'on'}" data-mk="usdt">Comprar / vender USDT</button><button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambiar USD Clásica ⇄ CUP</button><button class="chip ${S.mk==='mob'?'on':''}" data-mk="mob">📱 Saldo Móvil</button></div>`;
+<div class="chips"><button class="chip ${S.mk==='usd'?'':'on'}" data-mk="usdt">Comprar / vender USDT</button><button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambiar USD Clásica ⇄ CUP</button></div>`;
 const bindTop=()=>{$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
@@ -135,14 +135,10 @@ const STATUS={
   awaiting_payment:['Esperando pago del comprador','warn'],
   payment_sent:['Pago enviado · falta recibo del vendedor','warn'],
   seller_confirmed:['Vendedor confirmó · revisión del admin','warn'],
-  awaiting_send:['Esperando que el vendedor envíe el saldo','warn'],
-  sent:['Saldo enviado · falta captura del comprador','warn'],
-  buyer_confirmed:['Recibido · revisión del admin','warn'],
   disputed:['En disputa con el administrador','bad'],
   released:['Completada','ok'],refunded:['Devuelta al vendedor','bad'],cancelled:['Cancelada','bad']};
 const METHODS=['Transfermóvil','EnZona','Saldo CUP','Saldo Clásica','Saldo Móvil','Efectivo'];
 const CURS=['CUP','Saldo Clásica','Saldo Móvil'];
-const MOVW='<div class="warnbox">📱 <b>Saldo Móvil = transferencia fuera de la página.</b><br>El pago queda <b>bloqueado</b> hasta que ambas partes suban su captura (la del <b>envío</b> del saldo y la del <b>recibo</b>) y el administrador las revise y apruebe. Sin capturas no se liberan los fondos.</div>';
 const SEP=' | Moneda: ';
 const parseM=s=>{const [m,c]=String(s||'').split(SEP);return{m:m||'',c:c||'CUP'}};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -158,7 +154,6 @@ function friendly(e){
   if(/already registered/i.test(m))return'Ese correo ya está registrado';
   if(/Password should/i.test(m))return'La contraseña debe tener al menos 6 caracteres';
   if(/order_messages/i.test(m))return'Falta crear la tabla del chat (ejecuta el archivo SQL)';
-  if(/fx_orders|_escrow|fx_submit|fx_cancel|fx_open|admin_fx|mobile_/i.test(m)&&/does not exist|not find|schema cache/i.test(m))return'Falta ejecutar el archivo SQL (cambio_en_custodia.sql o saldo_movil.sql) en Supabase';
   if(/Failed to fetch|NetworkError/i.test(m))return'Sin conexión. Revisa tu internet';
   return m}
 async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
@@ -240,27 +235,24 @@ function render(){
     <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
     <button data-v="profile">${IC.profile}Perfil</button>
-    ${admin?'<button data-v="admin">${IC.admin}Admin</button>':''}</nav>`;
+    ${admin?`<button data-v="admin">${IC.admin}Admin</button>`:''}</nav>`;
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('orders');
   $('av').onclick=e=>{e.preventDefault();go('profile')};
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
-  go(isOrd(S.view)?'orders':S.view);refreshBadge()}
+  go(S.view==='order'?'orders':S.view);refreshBadge()}
 async function refreshBadge(){
   const{count}=await sb.from('orders').select('id',{count:'exact',head:true})
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
-  const f2=await sb.from('fx_orders').select('id',{count:'exact',head:true}).or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
-  const f3=await sb.from('mobile_orders').select('id',{count:'exact',head:true}).or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_send','sent','buyer_confirmed','disputed']);
-  S.active=(count||0)+(f2.count||0)+(f3.count||0);$('bell')?.classList.toggle('dot',S.active>0);const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
-const isOrd=v=>['order','fxorder','mobord'].includes(v);
+  S.active=count||0;$('bell')?.classList.toggle('dot',S.active>0);const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
   S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(isOrd(v)?'orders':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,fxorder:viewFxOrder,mobord:viewMobOrder,wallet:viewWallet,profile:viewProfile,admin:viewAdmin}[v]||viewMarket)();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'?'orders':v)));
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,admin:viewAdmin}[v]||viewMarket)();
   window.scrollTo(0,0)}
 
 /* ---------- Mercado ---------- */
 const chipsHtml=(sel,id)=>`<div class="chips" id="${id}">${METHODS.map(m=>`<button type="button" class="chip ${m.startsWith('Saldo')?'sc':''} ${sel.includes(m)?'on':''}" data-m="${m}">${m}</button>`).join('')}</div>`;
-async function viewMarket(){if(S.mk==='usd')return viewFx();if(S.mk==='mob')return viewMob();
+async function viewMarket(){if(S.mk==='usd')return viewFx();
   const my=NAV,F=S.f;
   main().innerHTML=`${topHtml()}
   <div class="card"><div class="row"><div><b>Vender USDT</b><div class="mut">Disponible: ${n(S.wallet?.available,2)} USDT</div></div>
@@ -268,7 +260,6 @@ async function viewMarket(){if(S.mk==='usd')return viewFx();if(S.mk==='mob')retu
     <div id="sell" class="hide" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
       <label>Cantidad de USDT <button class="b gh sm" id="omax" type="button">Máx</button></label><input id="oa" type="number" min="1" step="any" inputmode="decimal">
       <label>Moneda que quieres recibir</label><select id="oc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
-      <div id="movw" style="display:none">${MOVW}</div>
       <label id="opl">Precio por 1 USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
       <div class="mut" id="otot"></div>
       <label>Métodos de pago que aceptas</label>${chipsHtml([],'om')}
@@ -284,7 +275,7 @@ async function viewMarket(){if(S.mk==='usd')return viewFx();if(S.mk==='mob')retu
   $('srt').value=F.sort;bindTop();
   $('tg').onclick=()=>{if(gate())return;const s=$('sell');s.style.display=s.style.display==='none'?'block':'none'};
   $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)*100)/100;calc()};
-  const calc=()=>{const c=$('oc').value;$('movw').style.display=c==='Saldo Móvil'?'block':'none';$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;$('otot').textContent=t>0?`Recibirás en total: ${mny(t,c)} ${c}`:''};
+  const calc=()=>{const c=$('oc').value;$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;$('otot').textContent=t>0?`Recibirás en total: ${mny(t,c)} ${c}`:''};
   ['oa','op','oc'].forEach(i=>$(i).oninput=calc);
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
@@ -293,7 +284,6 @@ async function viewMarket(){if(S.mk==='usd')return viewFx();if(S.mk==='mob')retu
     if(a>(S.wallet?.available||0))throw new Error('Saldo insuficiente');
     if(!ms.length)throw new Error('Elige al menos un método de pago');
     if(!d)throw new Error('Indica los datos donde recibirás el pago');
-    if(c==='Saldo Móvil'){const mm=await ask('Saldo Móvil · transferencia fuera de la página',MOVW,'Entiendo, publicar');if(!mm)return;mm.remove()}
     await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c,p_details:d});
     await loadMe();viewMarket()},'Oferta publicada');
   const rf=()=>drawOffers();
@@ -318,7 +308,7 @@ function drawOffers(){
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}% sobre los USDT que recibe el comprador.</p>`:'');
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.offers.find(x=>x.id===b.dataset.buy),{c}=parseM(o.methods),net=o.amount*(1-fee/100);
-    const m=await ask('Confirmar compra',`${c==='Saldo Móvil'?MOVW:''}<p>Recibirás <b>${n(net,2)} USDT</b>${fee?` (comisión ${fee}%)`:''}.</p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>`,'Iniciar compra');
+    const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b>${fee?` (comisión ${fee}%)`:''}.</p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
   box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadMe();viewMarket()},'Oferta cancelada'))}
@@ -332,8 +322,7 @@ async function viewFx(){
    <label>Cantidad de USD <button class="b gh sm" id="xmax" type="button">Máx</button></label><input id="xa" type="number" min="0.01" step="any" inputmode="decimal">
    <label>Precio por 1 USD (en CUP)</label><input id="xp" type="number" min="1" step="any" inputmode="decimal">
    <div class="mut" id="xtot"></div>
-   <label>Datos donde recibirás los CUP (solo los verá quien te compre)</label><textarea id="xd" rows="2" placeholder="Ej: tarjeta 9205 …, a nombre de …"></textarea>
-   <p class="mut">Tus USD quedan congelados en la oferta. Cuando alguien compra, te paga los CUP directamente y sube su captura; tú subes la captura de que los recibiste y el administrador libera los USD al comprador. Si cancelas, recuperas tus USD.</p>
+   <p class="mut">Tus USD quedan retenidos en la oferta. Cuando alguien la compra, recibes los CUP en tu saldo al instante. Si la cancelas, recuperas tus USD.</p>
    <button class="b w" id="xk">Publicar oferta</button></div></div>
   <div class="card"><div class="row"><select id="xsort" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="xmine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div></div>
@@ -346,7 +335,7 @@ async function viewFx(){
   $('xk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('xa').value,p=+$('xp').value;
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
     if(a>S.bal.USD)throw new Error('Saldo Clásica insuficiente');
-    const d=$('xd').value.trim();if(d.length<5)throw new Error('Indica dónde recibirás los CUP');await rpc('create_fx_offer_escrow',{p_amount:a,p_price:p,p_details:d});await loadMe();viewFx()},'Oferta publicada');
+    await rpc('create_fx_offer',{p_amount:a,p_price:p});await loadMe();viewFx()},'Oferta publicada');
   $('xsort').onchange=e=>{F.sort=e.target.value;drawFx()};$('xmine').onchange=e=>{F.mine=e.target.checked;drawFx()};
   const{data,error}=await sb.from('fx_offers').select('id,seller_id,amount_usd,price_cup,profiles(username)').eq('status','open');
   if(my!==NAV)return;
@@ -362,31 +351,27 @@ function drawFx(){
     ${mine?`<button class="b gh sm" data-xc="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-xb="${o.id}">Comprar</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${S.fees.trade}% sobre los USD que recibe el comprador.</p>`;
   box.querySelectorAll('[data-xb]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.fxo.find(x=>x.id===b.dataset.xb),tot=Math.round(o.amount_usd*o.price_cup*100)/100;
-    const m=await ask('Confirmar compra',`<p>Pagarás <b>${n(tot,2)} CUP</b> directamente al vendedor (verás sus datos) y deberás <b>subir la captura de tu pago</b>.</p><p>Recibirás <b>${n(o.amount_usd*(1-S.fees.trade/100),2)} USD</b> en tu Saldo Clásica cuando el vendedor confirme el recibo y el administrador revise y libere (comisión ${S.fees.trade}%).</p>`,'Iniciar compra','ok');
-    if(!m)return;m.remove();act(b,async()=>{const id=await rpc('take_fx_offer_escrow',{p_offer:o.id});go('fxorder',id)})});
+    if((S.bal.CUP||0)<tot)return toast(`Necesitas ${n(tot,0)} CUP en tu saldo. Recarga en la billetera`,'err');
+    const m=await ask('Confirmar compra',`<p>Pagarás <b>${n(tot,0)} CUP</b> de tu saldo y recibirás <b>${n(o.amount_usd*(1-S.fees.trade/100),2)} USD</b> en tu Saldo Clásica, al instante (comisión de la plataforma: ${S.fees.trade}%).</p>`,'Comprar','ok');
+    if(!m)return;m.remove();act(b,async()=>{await rpc('take_fx_offer',{p_id:o.id});await loadMe();viewFx()},'¡Compra realizada!')});
   box.querySelectorAll('[data-xc]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_fx_offer',{p_id:b.dataset.xc});await loadMe();viewFx()},'Oferta cancelada'))}
 
 /* ---------- Operaciones ---------- */
-const ACTIVE=['awaiting_payment','payment_sent','seller_confirmed','awaiting_send','sent','buyer_confirmed','disputed'];
+const ACTIVE=['awaiting_payment','payment_sent','seller_confirmed','disputed'];
 async function viewOrders(){
   const my=NAV;main().innerHTML='<h2>Mis operaciones</h2>'+skel(3);
   const{data,error}=await sb.from('orders').select('id,seller_id,buyer_id,amount,price_cup,total_cup,status,methods,created_at')
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).order('created_at',{ascending:false});
   if(my!==NAV)return;
   if(error){main().innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
-  const fxr=await sb.from('fx_orders').select('id,buyer_id,seller_id,amount_usd,total_cup,status,created_at').or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`);
-  if(my!==NAV)return;
-  const mbr=await sb.from('mobile_orders').select('id,buyer_id,seller_id,credit,price,pay_cur,status,created_at').or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`);
-  if(my!==NAV)return;
-  const all=[...data,...(fxr.data||[]).map(x=>({...x,fx:1})),...(mbr.data||[]).map(x=>({...x,mob:1}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   const tabs={all:'Todas',act:'Activas',ok:'Completadas',x:'Canceladas'};
   const flt=o=>S.of==='all'||(S.of==='act'&&ACTIVE.includes(o.status))||(S.of==='ok'&&o.status==='released')||(S.of==='x'&&['cancelled','refunded'].includes(o.status));
-  const l=all.filter(flt);
+  const l=data.filter(flt);
   main().innerHTML='<h2>Mis operaciones</h2><div class="chips">'+Object.entries(tabs).map(([k,v])=>`<button class="chip ${S.of===k?'on':''}" data-t="${k}">${v}</button>`).join('')+'</div>'+
     (l.length?l.map(o=>{const[t,c]=STATUS[o.status]||[o.status,''],role=o.buyer_id===S.user.id?'Compra':'Venta',cu=parseM(o.methods).c;
-      return`<div class="card" style="cursor:pointer" data-o="${o.id}" ${o.fx?'data-fx="1"':''} ${o.mob?'data-mob="1"':''}><div class="row"><b>${role} · ${o.mob?n(o.credit,0)+' CUP Saldo Móvil':o.fx?n(o.amount_usd,2)+' USD':n(o.amount,2)+' USDT'}</b><span class="tag ${c}">${t}</span></div>
-      <div class="mut">${o.mob?n(o.price,2)+' '+o.pay_cur:o.fx?n(o.total_cup,2)+' CUP':mny(due(o,cu),cu)+' '+esc(cu)} · ${when(o.created_at)}</div></div>`}).join(''):'<div class="card mut">No hay operaciones en esta lista.</div>');
-  main().querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>go(el.dataset.mob?'mobord':el.dataset.fx?'fxorder':'order',el.dataset.o));
+      return`<div class="card" style="cursor:pointer" data-o="${o.id}"><div class="row"><b>${role} · ${n(o.amount,2)} USDT</b><span class="tag ${c}">${t}</span></div>
+      <div class="mut">${mny(due(o,cu),cu)} ${esc(cu)} · ${when(o.created_at)}</div></div>`}).join(''):'<div class="card mut">No hay operaciones en esta lista.</div>');
+  main().querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>go('order',el.dataset.o));
   main().querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{S.of=b.dataset.t;viewOrders()});
   refreshBadge()}
 
@@ -402,7 +387,7 @@ async function uploadProof(orderId,role,file){
   const path=`${orderId}/${role}-${Date.now()}.${ext}`;
   const{error}=await sb.storage.from('proofs').upload(path,file,{contentType:file.type});
   if(error)throw new Error(friendly(error));return path}
-const stepIdx=s=>({awaiting_payment:0,payment_sent:1,seller_confirmed:2,awaiting_send:0,sent:1,buyer_confirmed:2,released:3}[s]??-1);
+const stepIdx=s=>({awaiting_payment:0,payment_sent:1,seller_confirmed:2,released:3}[s]??-1);
 function uploader(btnId,label,cls){
   return`<input type="file" id="f" accept="image/*"><img id="pv" class="proof hide" style="display:none" alt="Vista previa">
   <button class="b ${cls} w" id="${btnId}" disabled>${label}</button>`}
@@ -447,7 +432,6 @@ async function viewOrder(){
     <p class="mut">Métodos: ${esc(meths)} · Moneda: ${esc(cur)}</p>
     ${showDetails?`<div class="row"><span><b>Datos para pagar:</b><br><code>${esc(o.payment_details)}</code></span>${cpBtn(o.payment_details||'')}</div>`:''}
   </div>${stepper}
-  ${cur==='Saldo Móvil'?MOVW:''}
   ${dis?'<div class="warnbox bad">Esta operación está en disputa. Habla con el administrador en el chat de abajo y aporta pruebas.</div>':''}
   <div class="grid2"><div class="card"><h3>Pago del comprador</h3>${bp}</div><div class="card"><h3>Recibo del vendedor</h3>${sp}</div></div>
   <div class="card">${act_||'<span class="mut">No hay acciones pendientes.</span>'}</div>
@@ -497,159 +481,6 @@ async function viewOrder(){
     const{data:u}=await sb.from('orders').select('status,updated_at').eq('id',o.id).single();
     if(u&&u.status+u.updated_at!==last){last=u.status+u.updated_at;toast('La operación se actualizó');await loadMe();viewOrder()}
     else if(dis&&document.activeElement?.id!=='cm')drawChat()},10000)}
-
-/* ---------- Cambio USD ⇄ CUP en custodia ---------- */
-async function viewFxOrder(){
-  const my=NAV;main().innerHTML=skel(3);
-  const{data:o,error}=await sb.from('fx_orders').select('*').eq('id',S.orderId).single();
-  if(my!==NAV)return;
-  if(error||!o){main().innerHTML='<div class="card mut">No se encontró la operación.</div>';return}
-  const admin=S.profile.is_admin,isB=o.buyer_id===S.user.id,isS=o.seller_id===S.user.id;
-  const[t,c]=STATUS[o.status]||[o.status,''];
-  const{data:ps}=await sb.from('profiles').select('id,username').in('id',[o.buyer_id,o.seller_id]);
-  const name=id=>'@'+esc((ps||[]).find(p=>p.id===id)?.username||'?');
-  const seen=(p,w)=>`<p class="mut">${p?'✓ '+w+' subió su captura.':w+' aún no sube la captura.'}</p>`;
-  const[bp,sp]=await Promise.all([admin||isB?proofImg(o.buyer_proof,'El comprador'):seen(o.buyer_proof,'El comprador'),admin||isS?proofImg(o.seller_proof,'El vendedor'):seen(o.seller_proof,'El vendedor')]);
-  if(my!==NAV)return;
-  const si=stepIdx(o.status),dis=o.status==='disputed',done=o.status==='released';
-  const labels=['Pago del comprador','Recibo del vendedor','Revisión admin','Completada'];
-  const stepper=['cancelled','refunded'].includes(o.status)?'':`<div class="steps">${labels.map((l,i)=>`<div class="st ${i<si||done?'d':i===si&&!dis?'c':''}"><b>${i<si||done?'✓':i+1}</b>${l}</div>`).join('')}</div>`;
-  let a='';
-  if(isB&&o.status==='awaiting_payment')a+=`<div class="warnbox">Envía <b>${n(o.total_cup,2)} CUP</b> con los datos de arriba y sube la <b>captura de tu pago</b> (obligatoria).</div>${uploader('sendB','Ya pagué · enviar captura','')}<button class="b gh w" id="cancel" style="margin-top:8px">Cancelar operación</button>`;
-  if(isS&&o.status==='awaiting_payment')a+='<p class="mut">Esperando que el comprador envíe el pago y suba su captura.</p>';
-  if(isS&&o.status==='payment_sent')a+=`<div class="warnbox">El comprador dice que ya pagó. Comprueba que llegaron <b>${n(o.total_cup,2)} CUP</b> y sube la <b>captura de que recibiste el dinero</b> (obligatoria).</div>${uploader('sendS','Recibí el dinero · enviar captura','ok')}`;
-  if(isB&&o.status==='payment_sent')a+='<p class="mut">Captura enviada. Esperando que el vendedor confirme el recibo.</p>';
-  if((isB||isS)&&o.status==='seller_confirmed')a+='<p class="mut">Ambas capturas enviadas. El administrador las revisará y liberará los USD.</p>';
-  if((isB||isS)&&['payment_sent','seller_confirmed'].includes(o.status))a+='<button class="b gh w" id="disp" style="margin-top:10px">⚖️ Hay un problema · avisar al administrador</button>';
-  if(admin&&['payment_sent','seller_confirmed','disputed'].includes(o.status))a+='<div class="grid2" style="margin-top:10px"><button class="b ok" id="rel">Liberar USD al comprador</button><button class="b bad" id="ref">Devolver al vendedor</button></div>';
-  if(admin&&o.status==='awaiting_payment')a+='<button class="b bad sm" id="ref">Devolver al vendedor</button>';
-  main().innerHTML=`<p><a href="#" id="back">← Volver</a></p>
-  <div class="card ${dis?'dg':done?'hl':''}">
-    <div class="row"><h3 style="margin:0">Cambio ${esc(o.id.slice(0,8))}</h3><span class="tag ${c}">${t}</span></div>
-    <p class="mut" style="margin:6px 0">Comprador: ${name(o.buyer_id)} · Vendedor: ${name(o.seller_id)}</p>
-    <div class="big">${n(o.amount_usd,2)} USD</div>
-    <div>${n(o.total_cup,2)} CUP <span class="mut">(${n(o.price_cup,2)} por USD)</span></div>
-    ${o.fee_usd>0?`<div class="mut">Comisión: ${n(o.fee_usd,2)} USD</div>`:''}
-    <p class="mut">Los USD del vendedor están congelados hasta que el administrador revise las capturas y libere la operación.</p>
-    ${isB||admin?`<div class="row"><span><b>Datos para pagar:</b><br><code>${esc(o.payment_details)}</code></span>${cpBtn(o.payment_details||'')}</div>`:''}
-  </div>${stepper}
-  ${dis?'<div class="warnbox bad">Operación en disputa: el administrador la revisará. Si lo necesitas, escribe a Soporte.</div>':''}
-  <div class="grid2"><div class="card"><h3>Pago del comprador</h3>${bp}</div><div class="card"><h3>Recibo del vendedor</h3>${sp}</div></div>
-  <div class="card">${a||'<span class="mut">No hay acciones pendientes.</span>'}</div>`;
-  main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-  $('back').onclick=e=>{e.preventDefault();go(admin&&!isB&&!isS?'admin':'orders')};
-  const reload=async()=>{await loadMe();viewFxOrder()};
-  if($('f'))$('f').onchange=()=>{const f=$('f').files[0],b=$('sendB')||$('sendS');
-    if(f&&/^image\//.test(f.type)){$('pv').src=URL.createObjectURL(f);$('pv').style.display='block';b.disabled=false}else{$('pv').style.display='none';b.disabled=true}};
-  const send=(id,role,fn,msg)=>{if($(id))$(id).onclick=ev=>act(ev.target,async()=>{const p=await uploadProof('topup/'+S.user.id,role,$('f').files[0]);await rpc(fn,{p_order:o.id,p_path:p});await reload()},msg)};
-  send('sendB','fxcomprador','fx_submit_buyer_proof','Captura de pago enviada');
-  send('sendS','fxvendedor','fx_submit_seller_proof','Recibo enviado');
-  if($('cancel'))$('cancel').onclick=async ev=>{const m=await ask('Cancelar operación','<p>¿Seguro? La oferta volverá a estar disponible.</p>','Sí, cancelar','bad');if(!m)return;m.remove();
-    act(ev.target,async()=>{await rpc('fx_cancel_order',{p_order:o.id});go('orders')},'Operación cancelada')};
-  if($('disp'))$('disp').onclick=async ev=>{const m=await ask('Avisar al administrador','<p class="mut">El administrador revisará las capturas de ambas partes y decidirá.</p>','Enviar','bad');if(!m)return;m.remove();
-    act(ev.target,async()=>{await rpc('fx_open_dispute',{p_order:o.id});await reload()},'El administrador ya puede revisarla')};
-  const adm=(id,fn,q,msg,cls)=>{if($(id))$(id).onclick=async ev=>{const m=await ask('Confirmar',`<p>${q}</p>`,'Confirmar',cls);if(!m)return;m.remove();act(ev.target,async()=>{await rpc(fn,{p_order:o.id});await reload()},msg)}};
-  adm('rel','admin_fx_release','¿Liberar los USD al comprador? No se puede deshacer.','USD liberados','ok');
-  adm('ref','admin_fx_refund','¿Devolver los USD al vendedor?','Devuelto al vendedor','bad');
-  let last=o.status+o.updated_at;
-  POLL=setInterval(async()=>{
-    if(my!==NAV)return clearInterval(POLL);
-    const{data:u}=await sb.from('fx_orders').select('status,updated_at').eq('id',o.id).single();
-    if(u&&u.status+u.updated_at!==last){toast('La operación se actualizó');await loadMe();viewFxOrder()}},10000)}
-
-/* ---------- Saldo Móvil (envío fuera de la página, pago bloqueado) ---------- */
-async function viewMob(){
-  const my=NAV;
-  main().innerHTML=`${topHtml()}
-  <div class="card"><div class="row"><div><b>Vender Saldo Móvil</b><div class="mut">Lo envías fuera de la página</div></div><button class="b sm" id="mt">+ Publicar</button></div>
-   <div id="mf" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">${MOVW}
-    <label>Saldo móvil que vendes (en CUP)</label><input id="ma" type="number" min="1" step="any" inputmode="decimal">
-    <label>Moneda con la que te pagan</label><select id="mc"><option value="CUP">Saldo CUP</option><option value="USDT">USDT</option></select>
-    <label>Cuánto cobras en total</label><input id="mp" type="number" min="0.01" step="any" inputmode="decimal">
-    <button class="b w" id="mk2">Publicar oferta</button></div></div>
-  <h3>Ofertas de Saldo Móvil</h3><div id="ml">${skel(2)}</div>`;
-  bindTop();
-  $('mt').onclick=()=>{if(gate())return;const e=$('mf');e.style.display=e.style.display==='none'?'block':'none'};
-  $('mk2').onclick=ev=>act(ev.target,async()=>{kycChk();
-    const a=+$('ma').value,p=+$('mp').value,c=$('mc').value;
-    if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
-    const m=await ask('Saldo Móvil · transferencia fuera de la página',MOVW,'Entiendo, publicar');if(!m)return;m.remove();
-    await rpc('create_mobile_offer',{p_credit:a,p_price:p,p_cur:c});viewMob()},'Oferta publicada');
-  const{data,error}=await sb.from('mobile_offers').select('id,seller_id,credit,price,pay_cur,profiles(username)').eq('status','open').order('created_at',{ascending:false});
-  if(my!==NAV)return;
-  if(error){$('ml').innerHTML=`<div class="card mut">${esc(friendly(error))}</div>`;return}
-  S.mbo=data||[];drawMob()}
-function drawMob(){
-  const box=$('ml');if(!box)return;const l=S.mbo||[];
-  if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas todavía. Publica la tuya.</div>';return}
-  box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id,pc=o.pay_cur==='CUP'?'CUP':'USDT';
-    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.credit,0)} CUP</b><span class="px"><small>Paga</small><b>${n(o.price,pc==='CUP'?2:4)} ${pc}</b></span></div>
-    <div class="mut" style="margin:6px 0">Saldo Móvil · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
-    ${mine?`<button class="b gh sm" data-mc="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-mb="${o.id}">Comprar</button>`}</div>`}).join('');
-  box.querySelectorAll('[data-mb]').forEach(b=>b.onclick=async()=>{if(gate())return;
-    const o=S.mbo.find(x=>x.id===b.dataset.mb),pc=o.pay_cur==='CUP'?'CUP':'USDT',have=pc==='CUP'?(S.bal.CUP||0):(S.wallet?.available||0);
-    if(have<o.price)return toast(`Necesitas ${n(o.price,2)} ${pc} en tu saldo`,'err');
-    const m=await ask('Comprar Saldo Móvil',`${MOVW}<p>Recibirás <b>${n(o.credit,0)} CUP</b> de Saldo Móvil. Se bloquearán <b>${n(o.price,pc==='CUP'?2:4)} ${pc}</b> de tu saldo hasta que el administrador apruebe.</p><label>Número de teléfono donde recibirás el saldo</label><input id="mph" inputmode="tel" placeholder="Ej: 5351234567">`,'Iniciar compra','ok');
-    if(!m)return;const ph=m.querySelector('#mph').value.trim();m.remove();
-    act(b,async()=>{if(ph.replace(/\D/g,'').length<8)throw new Error('Escribe el número donde recibirás el saldo');
-      const id=await rpc('take_mobile_offer',{p_offer:o.id,p_phone:ph});await loadMe();go('mobord',id)})});
-  box.querySelectorAll('[data-mc]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_mobile_offer',{p_id:b.dataset.mc});viewMob()},'Oferta cancelada'))}
-
-async function viewMobOrder(){
-  const my=NAV;main().innerHTML=skel(3);
-  const{data:o,error}=await sb.from('mobile_orders').select('*').eq('id',S.orderId).single();
-  if(my!==NAV)return;
-  if(error||!o){main().innerHTML='<div class="card mut">No se encontró la operación.</div>';return}
-  const admin=S.profile.is_admin,isB=o.buyer_id===S.user.id,isS=o.seller_id===S.user.id;
-  const[t,c]=STATUS[o.status]||[o.status,''],pc=o.pay_cur==='CUP'?'CUP':'USDT',pd=pc==='CUP'?2:4;
-  const{data:ps}=await sb.from('profiles').select('id,username').in('id',[o.buyer_id,o.seller_id]);
-  const name=id=>'@'+esc((ps||[]).find(p=>p.id===id)?.username||'?');
-  const seen=(p,w)=>`<p class="mut">${p?'✓ '+w+' subió su captura.':w+' aún no sube la captura.'}</p>`;
-  const[sp,bp]=await Promise.all([admin||isS?proofImg(o.seller_proof,'El vendedor'):seen(o.seller_proof,'El vendedor'),admin||isB?proofImg(o.buyer_proof,'El comprador'):seen(o.buyer_proof,'El comprador')]);
-  if(my!==NAV)return;
-  const si=stepIdx(o.status),dis=o.status==='disputed',done=o.status==='released';
-  const labels=['Envío del vendedor','Recibo del comprador','Revisión admin','Completada'];
-  const stepper=['cancelled','refunded'].includes(o.status)?'':`<div class="steps">${labels.map((l,i)=>`<div class="st ${i<si||done?'d':i===si&&!dis?'c':''}"><b>${i<si||done?'✓':i+1}</b>${l}</div>`).join('')}</div>`;
-  let a='';
-  if(isS&&o.status==='awaiting_send')a+=`<div class="warnbox">Envía <b>${n(o.credit,0)} CUP</b> de Saldo Móvil al número <b>${esc(o.phone)}</b> y sube la <b>captura del envío</b> (obligatoria).</div>${uploader('sendS','Ya envié el saldo · enviar captura','')}`;
-  if(isB&&o.status==='awaiting_send')a+=`<p class="mut">Esperando que el vendedor envíe el saldo. Tu pago está bloqueado.</p><button class="b gh w" id="cancel" style="margin-top:8px">Cancelar operación</button>`;
-  if(isB&&o.status==='sent')a+=`<div class="warnbox">El vendedor dice que ya envió el saldo. Comprueba que llegó y sube la <b>captura de que lo recibiste</b> (obligatoria).</div>${uploader('sendB','Recibí el saldo · enviar captura','ok')}`;
-  if(isS&&o.status==='sent')a+='<p class="mut">Captura enviada. Esperando que el comprador confirme el recibo.</p>';
-  if((isB||isS)&&o.status==='buyer_confirmed')a+='<p class="mut">Ambas capturas enviadas. El administrador las revisará y aprobará el pago.</p>';
-  if((isB||isS)&&['awaiting_send','sent','buyer_confirmed'].includes(o.status))a+='<button class="b gh w" id="disp" style="margin-top:10px">⚖️ Hay un problema · avisar al administrador</button>';
-  if(admin&&['sent','buyer_confirmed','disputed'].includes(o.status))a+='<div class="grid2" style="margin-top:10px"><button class="b ok" id="rel">Aprobar y pagar al vendedor</button><button class="b bad" id="ref">Devolver al comprador</button></div>';
-  if(admin&&o.status==='awaiting_send')a+='<button class="b bad sm" id="ref">Devolver al comprador</button>';
-  main().innerHTML=`<p><a href="#" id="back">← Volver</a></p>
-  <div class="card ${dis?'dg':done?'hl':''}">
-    <div class="row"><h3 style="margin:0">Saldo Móvil ${esc(o.id.slice(0,8))}</h3><span class="tag ${c}">${t}</span></div>
-    <p class="mut" style="margin:6px 0">Comprador: ${name(o.buyer_id)} · Vendedor: ${name(o.seller_id)}</p>
-    <div class="big">${n(o.credit,0)} CUP</div><div class="mut">de Saldo Móvil · número: <code>${esc(o.phone)}</code></div>
-    <div style="margin-top:6px">Pago bloqueado: <b>${n(o.price,pd)} ${pc}</b></div>
-    ${o.fee>0?`<div class="mut">Comisión: ${n(o.fee,pd)} ${pc} (se descuenta al vendedor)</div>`:''}
-  </div>${MOVW}${stepper}
-  ${dis?'<div class="warnbox bad">Operación en disputa: el administrador la revisará. Si lo necesitas, escribe a Soporte.</div>':''}
-  <div class="grid2"><div class="card"><h3>Envío del vendedor</h3>${sp}</div><div class="card"><h3>Recibo del comprador</h3>${bp}</div></div>
-  <div class="card">${a||'<span class="mut">No hay acciones pendientes.</span>'}</div>`;
-  main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-  $('back').onclick=e=>{e.preventDefault();go(admin&&!isB&&!isS?'admin':'orders')};
-  const reload=async()=>{await loadMe();viewMobOrder()};
-  if($('f'))$('f').onchange=()=>{const f=$('f').files[0],b=$('sendB')||$('sendS');
-    if(f&&/^image\//.test(f.type)){$('pv').src=URL.createObjectURL(f);$('pv').style.display='block';b.disabled=false}else{$('pv').style.display='none';b.disabled=true}};
-  const send=(id,role,fn,msg)=>{if($(id))$(id).onclick=ev=>act(ev.target,async()=>{const p=await uploadProof('topup/'+S.user.id,role,$('f').files[0]);await rpc(fn,{p_order:o.id,p_path:p});await reload()},msg)};
-  send('sendS','movvendedor','mobile_submit_seller_proof','Captura de envío enviada');
-  send('sendB','movcomprador','mobile_submit_buyer_proof','Captura de recibo enviada');
-  if($('cancel'))$('cancel').onclick=async ev=>{const m=await ask('Cancelar operación','<p>¿Seguro? Tu pago se devolverá a tu saldo.</p>','Sí, cancelar','bad');if(!m)return;m.remove();
-    act(ev.target,async()=>{await rpc('mobile_cancel_order',{p_order:o.id});await loadMe();go('orders')},'Operación cancelada')};
-  if($('disp'))$('disp').onclick=async ev=>{const m=await ask('Avisar al administrador','<p class="mut">El administrador revisará las capturas de ambas partes y decidirá.</p>','Enviar','bad');if(!m)return;m.remove();
-    act(ev.target,async()=>{await rpc('mobile_open_dispute',{p_order:o.id});await reload()},'El administrador ya puede revisarla')};
-  const adm=(id,fn,q,msg,cls)=>{if($(id))$(id).onclick=async ev=>{const m=await ask('Confirmar',`<p>${q}</p>`,'Confirmar',cls);if(!m)return;m.remove();act(ev.target,async()=>{await rpc(fn,{p_order:o.id});await reload()},msg)}};
-  adm('rel','admin_mobile_release','¿Aprobar y pagar al vendedor? No se puede deshacer.','Pago liberado al vendedor','ok');
-  adm('ref','admin_mobile_refund','¿Devolver el pago al comprador?','Devuelto al comprador','bad');
-  let last=o.status+o.updated_at;
-  POLL=setInterval(async()=>{
-    if(my!==NAV)return clearInterval(POLL);
-    const{data:u}=await sb.from('mobile_orders').select('status,updated_at').eq('id',o.id).single();
-    if(u&&u.status+u.updated_at!==last){toast('La operación se actualizó');await loadMe();viewMobOrder()}},10000)}
 
 /* ---------- Billetera ---------- */
 async function viewWallet(){
@@ -795,24 +626,27 @@ async function viewProfile(){
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
-  const[o,d,w,ct,cw,ks,fo,mo]=await Promise.all([
+  const[o,d,w,ct,cw,ks,fl]=await Promise.all([
     sb.from('orders').select('id,amount,price_cup,total_cup,status,methods,created_at').in('status',['payment_sent','seller_confirmed','disputed','awaiting_payment']).order('updated_at',{ascending:false}),
     sb.from('deposits').select('id,amount,txid,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fiat_topups').select('id,currency,amount,proof_path,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fiat_withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,created_at,profiles(username)').eq('status','pending').order('created_at'),
-    sb.from('fx_orders').select('id,amount_usd,total_cup,status,created_at').in('status',['payment_sent','seller_confirmed','disputed','awaiting_payment']).order('updated_at',{ascending:false}),
-    sb.from('mobile_orders').select('id,credit,price,pay_cur,status,created_at').in('status',['awaiting_send','sent','buyer_confirmed','disputed']).order('updated_at',{ascending:false})]);
+    sb.from('fee_ledger').select('*,profiles(username)').order('created_at',{ascending:false}).limit(1000)]);
   if(my!==NAV)return;
-  const prio={disputed:0,seller_confirmed:1,buyer_confirmed:1,payment_sent:2,sent:2,awaiting_payment:3,awaiting_send:3};
-  const orders=[...(o.data||[]),...((fo&&fo.data)||[]).map(x=>({...x,fx:1})),...((mo&&mo.data)||[]).map(x=>({...x,mob:1}))].sort((a,b)=>prio[a.status]-prio[b.status]);
+  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT'};
+  const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});
+  const fd=c=>c==='CUP'?0:c==='USD'?2:4;
+  const feeHtml=`<h3>Comisiones cobradas</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Total',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(x.profiles?.username||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?'<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p>':''}</div>`;
+  const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
+  const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   main().innerHTML=`<h2>Panel de administrador</h2>
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
   <div class="card" style="margin:0"><div class="mut">Depósitos / retiros</div><div class="big">${(d.data||[]).length} / ${(w.data||[]).length}</div></div></div>
-  <h3>Operaciones por revisar</h3>`+(orders.length?orders.map(x=>{const[t,c]=STATUS[x.status];
-    return`<div class="card ${x.status==='disputed'?'dg':''}" style="cursor:pointer" data-o="${x.id}" ${x.fx?'data-fx="1"':''} ${x.mob?'data-mob="1"':''}><div class="row"><b>${x.mob?'📱 '+n(x.credit,0)+' CUP Saldo Móvil · '+n(x.price,2)+' '+x.pay_cur:x.fx?n(x.amount_usd,2)+' USD · '+n(x.total_cup,2)+' CUP':`${n(x.amount,2)} USDT · ${mny(due(x,parseM(x.methods).c),parseM(x.methods).c)} ${esc(parseM(x.methods).c)}`}</b><span class="tag ${c}">${t}</span></div><div class="mut">${when(x.created_at)}</div></div>`}).join(''):'<div class="card mut">Nada pendiente.</div>')+
+  ${feeHtml}<h3>Operaciones por revisar</h3>`+(orders.length?orders.map(x=>{const[t,c]=STATUS[x.status];
+    return`<div class="card ${x.status==='disputed'?'dg':''}" style="cursor:pointer" data-o="${x.id}"><div class="row"><b>${n(x.amount,2)} USDT · ${mny(due(x,parseM(x.methods).c),parseM(x.methods).c)} ${esc(parseM(x.methods).c)}</b><span class="tag ${c}">${t}</span></div><div class="mut">${when(x.created_at)}</div></div>`}).join(''):'<div class="card mut">Nada pendiente.</div>')+
   `<h3>Depósitos pendientes</h3>`+((d.data||[]).length?d.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
     <div class="mut">TxID: ${esc(x.txid||'—')}</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-da="${x.id}">Acreditar</button><button class="b bad sm" data-dr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>')+
   `<h3>Retiros pendientes</h3>`+((w.data||[]).length?w.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
@@ -829,7 +663,7 @@ async function viewAdmin(){
   main().querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar verificación','<label>Motivo (el usuario lo verá)</label><input id="kmo" placeholder="Ej: la selfie no se ve clara">','Rechazar','bad');if(!m)return;const nt=m.querySelector('#kmo').value.trim();m.remove();
     act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.kr,p_ok:false,p_note:nt||'Documentos no válidos'});viewAdmin()},'Verificación rechazada')});
   main().querySelectorAll('[data-pv]').forEach(b=>b.onclick=async()=>{const{data}=await sb.storage.from('proofs').createSignedUrl(b.dataset.pv,3600);data?zoom(data.signedUrl):toast('No se pudo cargar la captura','err')});
-  main().querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>go(el.dataset.mob?'mobord':el.dataset.fx?'fxorder':'order',el.dataset.o));
+  main().querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>go('order',el.dataset.o));
   const bind=(attr,fn,okMsg)=>main().querySelectorAll(`[${attr}]`).forEach(b=>b.onclick=async()=>{
     const m=await ask('Confirmar','<p>¿Seguro? Esta acción no se puede deshacer.</p>');if(!m)return;m.remove();
     act(b,async()=>{await rpc(fn,{p_id:b.getAttribute(attr)});viewAdmin()},okMsg)});
