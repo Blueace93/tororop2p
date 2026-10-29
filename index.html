@@ -144,8 +144,8 @@ const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b>
 <div class="card"><div class="row"><b>Mi billetera</b><a href="#" id="tw">Depositar / retirar</a></div>
 <div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}</div></div>
 <div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
-<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
-const bindTop=()=>{$('tMore').onclick=()=>go('more');$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
+<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
+const bindTop=()=>{$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -673,7 +673,9 @@ async function viewOrder(){
 /* ---------- Billetera ---------- */
 async function viewWallet(){
   const my=NAV;await loadMe();if(my!==NAV)return;const st=S.settings;
-  main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}
+  const fl=await sb.from('site_flags').select('key,blocked'),BF={};(fl.data||[]).forEach(x=>BF[x.key]=x.blocked);
+  const blkMsg=(BF.deposits||BF.withdrawals)?`<div class="warnbox bad">⛔ ${[BF.deposits&&'Depósitos y recargas',BF.withdrawals&&'Retiros'].filter(Boolean).join(' y ')} bloqueados temporalmente por el administrador.</div>`:'';
+  main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}${blkMsg}
   <div class="card"><div class="grid2">
     <div><div class="mut">Disponible</div><div class="big">${n(S.wallet.available,2)}</div><div class="mut">USDT</div></div>
     <div><div class="mut">Bloqueado en ofertas</div><div class="big">${n(S.wallet.locked,2)}</div><div class="mut">USDT</div></div></div></div>
@@ -815,14 +817,14 @@ async function viewProfile(){
 
 /* ---------- Mejoras: más herramientas, reputación, historial, referidos, alertas, calculadora, métodos, seguridad, ayuda ---------- */
 const hd=t=>`<p><a href="#" id="back">← Volver</a></p><h2>${t}</h2>`;
-const bk=(to='more')=>{const b=$('back');if(b)b.onclick=e=>{e.preventDefault();go(to)}};
+const bk=(to='more')=>{const b=$('back');if(b){const t=(S.bkTo&&to==='more')?S.bkTo:to;b.onclick=e=>{e.preventDefault();S.bkTo=null;go(t)}}};
 const SQLF='mejoras_tororo.sql';
 const warnSql=()=>`<div class="warnbox bad">Esta función todavía no está activada. Ejecuta <code>${SQLF}</code> en Supabase (SQL Editor).</div>`;
 const PST={pending:['Pendiente','warn'],approved:['Acreditado','ok'],done:['Enviado','ok'],rejected:['Rechazado','bad']};
 const TST={pending:['Esperando envío','warn'],review:['En revisión del admin','warn'],released:['Completada','ok'],refunded:['Devuelta','bad']};
 const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
-function viewMore(){
+function viewMore(){S.bkTo=null;
   const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['alerts','🔔','Alertas de precio','Te avisamos cuando llegue a tu precio'],['calc','🧮','Calculadora','USDT · CUP · USD'],['saved','💳','Métodos guardados','Tarjetas, teléfonos y direcciones'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
@@ -1157,6 +1159,20 @@ async function adminRefs(rr){
     await viewAdmin();$('s-ref')?.scrollIntoView({behavior:'smooth',block:'start'})},'Guardado')}
 
 /* ---------- Admin ---------- */
+/* ---------- Admin: bloquear / desbloquear depósitos y retiros ---------- */
+async function adminBlocks(){
+  const t=main().querySelector('.tiles');if(!t)return;
+  const{data,error}=await sb.from('site_flags').select('key,blocked');
+  if(!main().contains(t))return;
+  const F={};(data||[]).forEach(x=>F[x.key]=x.blocked);
+  const row=(k,lb)=>`<div class="row" style="padding:6px 0"><span><b>${lb}</b><br><span class="tag ${F[k]?'bad':'ok'}">${F[k]?'Bloqueados':'Activos'}</span></span><button class="b ${F[k]?'ok':'bad'} sm" data-bk="${k}" data-v="${F[k]?'0':'1'}">${F[k]?'Desbloquear':'Bloquear'}</button></div>`;
+  t.insertAdjacentHTML('afterend',`<div class="card"><h3 style="margin:0 0 4px">🔒 Bloqueo de depósitos y retiros</h3>${error?'<div class="warnbox bad">Falta ejecutar <code>bloqueos.sql</code> en Supabase.</div>':`<p class="mut" style="margin:0 0 6px">Al bloquear, los usuarios no pueden enviar solicitudes nuevas. Lo que ya está pendiente lo sigues revisando.</p>${row('deposits','Depósitos y recargas')}${row('withdrawals','Retiros')}`}</div>`);
+  main().querySelectorAll('[data-bk]').forEach(b=>b.onclick=async()=>{
+    const on=b.dataset.v==='1',nm=b.dataset.bk==='deposits'?'depósitos y recargas':'retiros';
+    const m=await ask(on?'Bloquear '+nm:'Desbloquear '+nm,`<p>${on?'Nadie podrá hacer solicitudes nuevas de':'Se permitirán de nuevo las solicitudes de'} ${nm}.</p>`,on?'Bloquear':'Desbloquear',on?'bad':'ok');
+    if(!m)return;m.remove();
+    act(b,async()=>{await rpc('admin_set_block',{p_key:b.dataset.bk,p_blocked:on});viewAdmin()},on?'Bloqueado':'Desbloqueado')})}
+
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
@@ -1198,6 +1214,7 @@ async function viewAdmin(){
     <div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),4)} USDT</b> (comisión ${n(x.amount-netOf(x),4)}). Luego pulsa “Marcar enviado”.</div>
     <div class="grid2" style="margin-top:8px"><button class="b ok sm" data-wd="${x.id}">Marcar enviado</button><button class="b bad sm" data-wr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>');
   main().insertAdjacentHTML('beforeend',`<h3 id="s-kyc">Verificaciones KYC pendientes</h3>`+((ks.data||[]).length?ks.data.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3 id="s-top">Recargas de saldo pendientes</h3>`+((ct.data||[]).length?ct.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ca="${x.id}">Acreditar</button><button class="b bad sm" data-cr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3>Retiros de saldo pendientes</h3>`+((cw.data||[]).length?cw.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="row"><code>${esc(x.card)}</code>${cpBtn(x.card)}</div><div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),x.currency==='USD'?2:0)} ${esc(x.currency)}</b> (comisión ${n(x.amount-netOf(x),x.currency==='USD'?2:0)})</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-cd="${x.id}">Marcar enviado</button><button class="b bad sm" data-cx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>'));
+  adminBlocks();
   main().querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>$(b.dataset.go)?.scrollIntoView({behavior:'smooth',block:'start'}));
   main().querySelectorAll('[data-tp]').forEach(b=>b.onclick=async()=>{const[id,w]=b.dataset.tp.split('|'),t=TM.find(x=>x.id===id),p=w==='s'?t.sender_proof:t.receiver_proof;
     if(!p)return toast('Aún no hay captura','err');const{data}=await sb.storage.from('proofs').createSignedUrl(p,600);data?zoom(data.signedUrl):toast('No se pudo cargar la captura','err')});
