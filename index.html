@@ -120,11 +120,20 @@ const ASSETS={USDT:{label:'USDT',chip:'USDT'},USD:{label:'USD (Clásica)',chip:'
 const balOf=c=>c==='USDT'?(S.wallet?.available||0):(S.bal?.[c]||0);
 const qd=c=>c==='USDT'?4:2;
 const rnd=(v,d)=>Math.round(v*10**d)/10**d;
+/* Precio total -> precio por unidad (lo que guarda el backend) */
+const unitOf=(t,q)=>q>0&&t>0?+(t/q).toPrecision(12):0;
+const PAUSE='Pausa momentánea por actualización. Vuelve a intentarlo en unos minutos.';
+async function loadFlags(){const{data}=await sb.from('app_flags').select('key,paused');S.flags={};(data||[]).forEach(r=>S.flags[r.key]=!!r.paused)}
+async function chk(k){await loadFlags();if(S.flags[k])throw new Error(PAUSE)}
+const pauseBox=k=>`<div class="warnbox">⏸️ ${k==='topups'?'Recargas':'Retiros'}: ${PAUSE}</div>`;
 const updBell=()=>$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${S.fees.withdraw}%: ${n(a*S.fees.withdraw/100,d)} ${u} · Recibirás: ${n(a-a*S.fees.withdraw/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-S.fees.withdraw/100);
+document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest('.md'),el=m&&m.querySelector('#aunit');if(!el)return;
+  const q=+m.querySelector('#aq').value,t=+m.querySelector('#ap').value,c=m.querySelector('#aq2').value,a=m.querySelector('#aa').value;
+  el.textContent=q>0&&t>0?`Cada unidad de ${ASSETS[a].chip} sale a ${n(t/q,t/q<1?4:2)} ${c}`:''});
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
@@ -170,7 +179,7 @@ function friendly(e){
   if(/Password should/i.test(m))return'La contraseña debe tener al menos 6 caracteres';
   if(/order_messages/i.test(m))return'Falta crear la tabla del chat (ejecuta el archivo SQL)';
   if(/Failed to fetch|NetworkError/i.test(m))return'Sin conexión. Revisa tu internet';
-  if(/announcements|site_info|bucket/i.test(m)&&/relation|schema cache|not found|does not exist/i.test(m))return'Falta crear las tablas de información/anuncios (ejecuta el archivo SQL)';
+  if(/announcements|site_info|app_flags|bucket/i.test(m)&&/relation|schema cache|not found|does not exist/i.test(m))return'Falta crear las tablas de información/anuncios (ejecuta el archivo SQL)';
   return m}
 async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
 async function act(btn,fn,okMsg){
@@ -202,10 +211,11 @@ async function boot(){
   if(!S.user)return renderAuth();
   await loadMe();render()}
 async function loadMe(){
-  const[p,w,st,cw,fr,fo]=await Promise.all([
+  const[p,w,st,cw,fr,fo,fg]=await Promise.all([
     sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single(),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
-    sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),sb.from('fee_rates').select('kind,pct'),sb.from('fx_offers').select('id',{count:'exact',head:true}).eq('seller_id',S.user.id).eq('status','open')]);
+    sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),sb.from('fee_rates').select('kind,pct'),sb.from('fx_offers').select('id',{count:'exact',head:true}).eq('seller_id',S.user.id).eq('status','open'),sb.from('app_flags').select('key,paused')]);
+  S.flags={};(fg?.data||[]).forEach(r=>S.flags[r.key]=!!r.paused);
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
   S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};S.settings=st.data||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.fxOpen=fo?.count||0;S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
@@ -278,7 +288,7 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
     <div id="sell" class="hide" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
       <label>Cantidad de USDT <button class="b gh sm" id="omax" type="button">Máx</button></label><input id="oa" type="number" min="1" step="any" inputmode="decimal">
       <label>Moneda que quieres recibir</label><select id="oc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
-      <label id="opl">Precio por 1 USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
+      <label id="opl">Precio total por tus USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
       <div class="mut" id="otot"></div>
       <label>Métodos de pago que aceptas</label>${chipsHtml([],'om')}
       <label>Datos donde recibirás el pago (solo los verá quien te compre)</label>
@@ -293,11 +303,11 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
   $('srt').value=F.sort;bindTop();
   $('tg').onclick=()=>{if(gate())return;const s=$('sell');s.style.display=s.style.display==='none'?'block':'none'};
   $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)*100)/100;calc()};
-  const calc=()=>{const c=$('oc').value;$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;$('otot').textContent=t>0?`Recibirás en total: ${mny(t,c)} ${c}`:''};
+  const calc=()=>{const c=$('oc').value,q=+$('oa').value,t=+$('op').value;$('opl').textContent=`Precio total por tus USDT (en ${c})`;$('otot').textContent=t>0&&q>0?`Recibirás en total: ${mny(t,c)} ${c} · Cada USDT sale a ${n(t/q,t/q<1?4:2)} ${c}`:''};
   ['oa','op','oc'].forEach(i=>$(i).oninput=calc);
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
-    const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),d=$('od').value.trim();
+    const a=+$('oa').value,p=unitOf(+$('op').value,a),c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),d=$('od').value.trim();
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
     if(a>(S.wallet?.available||0))throw new Error('Saldo insuficiente');
     if(!ms.length)throw new Error('Elige al menos un método de pago');
@@ -319,8 +329,8 @@ function drawOffers(){
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=+S.settings.fee_percent||0;
   box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id,{m,c}=parseM(o.methods);
-    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
-    <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
+    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio total</small><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></span></div>
+    <div class="mut">Cada USDT: ${n(o.price_cup,o.price_cup<1?4:2)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span></div>
     ${mine?`<button class="b gh sm" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-buy="${o.id}">Comprar</button>`}</div>`}).join('')+
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}% sobre los USDT que recibe el comprador.</p>`:'');
@@ -338,7 +348,7 @@ async function viewFx(){
   <div class="card"><div class="row"><div><b>Vender USD Clásica por CUP</b><div class="mut">Disponible: ${n(S.bal.USD,2)} USD</div></div><button class="b sm" id="xt">+ Publicar</button></div>
   <div id="xf" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
    <label>Cantidad de USD <button class="b gh sm" id="xmax" type="button">Máx</button></label><input id="xa" type="number" min="0.01" step="any" inputmode="decimal">
-   <label>Precio por 1 USD (en CUP)</label><input id="xp" type="number" min="1" step="any" inputmode="decimal">
+   <label>Precio total por tus USD (en CUP)</label><input id="xp" type="number" min="1" step="any" inputmode="decimal">
    <div class="mut" id="xtot"></div>
    <p class="mut">Tus USD quedan retenidos en la oferta. Cuando alguien la compra, recibes los CUP en tu saldo al instante. Si la cancelas, recuperas tus USD.</p>
    <button class="b w" id="xk">Publicar oferta</button></div></div>
@@ -346,11 +356,11 @@ async function viewFx(){
    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="xmine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div></div>
   <h3>Ofertas de USD Clásica</h3><div id="xl">${skel(2)}</div>`;
   bindTop();$('xsort').value=F.sort;
-  const calc=()=>{const t=+$('xa').value*+$('xp').value;$('xtot').textContent=t>0?`Recibirás en total: ${n(t,0)} CUP`:''};
+  const calc=()=>{const a=+$('xa').value,t=+$('xp').value;$('xtot').textContent=t>0&&a>0?`Recibirás en total: ${n(t,0)} CUP · Cada USD sale a ${n(t/a,2)} CUP`:''};
   $('xt').onclick=()=>{if(gate())return;const e=$('xf');e.style.display=e.style.display==='none'?'block':'none'};
   $('xmax').onclick=()=>{$('xa').value=Math.floor((S.bal.USD||0)*100)/100;calc()};
   $('xa').oninput=calc;$('xp').oninput=calc;
-  $('xk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('xa').value,p=+$('xp').value;
+  $('xk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('xa').value,p=unitOf(+$('xp').value,a);
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
     if(a>S.bal.USD)throw new Error('Saldo Clásica insuficiente');
     await rpc('create_fx_offer',{p_amount:a,p_price:p});await loadMe();viewFx()},'Oferta publicada');
@@ -364,8 +374,8 @@ function drawFx(){
   const l=(S.fxo||[]).filter(o=>!F.mine||o.seller_id===S.user.id).sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount_usd-a.amount_usd);
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas todavía. Publica la tuya.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id;
-    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount_usd,2)} USD</b><span class="px"><small>Precio por USD</small><b>${n(o.price_cup,2)} CUP</b></span></div>
-    <div class="mut" style="margin:6px 0">Total: ${n(o.amount_usd*o.price_cup,0)} CUP · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
+    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount_usd,2)} USD</b><span class="px"><small>Precio total</small><b>${n(o.amount_usd*o.price_cup,0)} CUP</b></span></div>
+    <div class="mut" style="margin:6px 0">Cada USD: ${n(o.price_cup,2)} CUP · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
     ${mine?`<button class="b gh sm" data-xc="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-xb="${o.id}">Comprar</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${S.fees.trade}% sobre los USD que recibe el comprador.</p>`;
   box.querySelectorAll('[data-xb]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.fxo.find(x=>x.id===b.dataset.xb),tot=Math.round(o.amount_usd*o.price_cup*100)/100;
@@ -396,11 +406,11 @@ async function viewAds(){
       <label>Saldo</label><select id="aa">${Object.entries(ASSETS).map(([k,v])=>`<option value="${k}" ${A.asset===k?'selected':''}>${v.chip}</option>`).join('')}</select>
       <label>Moneda de pago</label><select id="aq2">${qs}</select>
       <label>Cantidad</label><input id="aq" type="number" step="any" min="0.01" inputmode="decimal">
-      <label>Precio por cada unidad, en la moneda de pago</label><input id="ap" type="number" step="any" min="0.000001" inputmode="decimal">
+      <label>Precio total, en la moneda de pago</label><input id="ap" type="number" step="any" min="0.000001" inputmode="decimal"><div class="mut" id="aunit" style="margin:-4px 0 8px"></div>
       <label>Tu número de teléfono (solo si compras saldo móvil)</label><input id="ad" inputmode="tel">
       <p class="mut">Al vender, tu saldo queda retenido en el anuncio. Al comprar, queda retenido el total en la moneda de pago. Comisión de ${S.fees.trade}% por operación. El saldo móvil siempre exige foto del envío y aprobación del administrador.</p>`,'Publicar');
     if(!m)return;
-    const side=m.querySelector('#as').value,asset=m.querySelector('#aa').value,quote=m.querySelector('#aq2').value,q=+m.querySelector('#aq').value,p=+m.querySelector('#ap').value,ph=m.querySelector('#ad').value.trim();m.remove();
+    const side=m.querySelector('#as').value,asset=m.querySelector('#aa').value,quote=m.querySelector('#aq2').value,q=+m.querySelector('#aq').value,p=unitOf(+m.querySelector('#ap').value,q),ph=m.querySelector('#ad').value.trim();m.remove();
     act(ev.target,async()=>{kycChk();
       if(!(q>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
       if(asset===quote)throw new Error('El saldo y la moneda de pago no pueden ser el mismo');
@@ -418,8 +428,8 @@ function drawAds(){
   if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios aquí todavía. Publica el tuyo.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
     return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}</span></div>
-    <div class="row" style="margin-top:8px"><b style="font-size:18px">${n(o.amount,2)} ${L}</b><span class="px"><small>Precio por unidad</small><b>${n(o.price,o.price<1?4:2)} ${o.quote}</b></span></div>
-    <div class="mut" style="margin:6px 0">Total: ${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
+    <div class="row" style="margin-top:8px"><b style="font-size:18px">${n(o.amount,2)} ${L}</b><span class="px"><small>Precio total</small><b>${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}</b></span></div>
+    <div class="mut" style="margin:6px 0">Cada unidad: ${n(o.price,o.price<1?4:2)} ${o.quote}${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
     ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}% en cada operación dentro de la plataforma.</p>`;
   box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadMe();viewAds()},'Anuncio cancelado'));
   box.querySelectorAll('[data-ab]').forEach(b=>b.onclick=async()=>{
@@ -657,7 +667,7 @@ async function viewOrder(){
 /* ---------- Billetera ---------- */
 async function viewWallet(){
   const my=NAV;await loadMe();if(my!==NAV)return;const st=S.settings;
-  main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}
+  main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}${S.flags?.topups?pauseBox('topups'):''}${S.flags?.withdrawals?pauseBox('withdrawals'):''}
   <div class="card"><div class="grid2">
     <div><div class="mut">Disponible</div><div class="big">${n(S.wallet.available,2)}</div><div class="mut">USDT</div></div>
     <div><div class="mut">Bloqueado en ofertas</div><div class="big">${n(S.wallet.locked,2)}</div><div class="mut">USDT</div></div></div></div>
@@ -677,11 +687,11 @@ async function viewWallet(){
   <div id="hist">${skel(2)}</div>`;
   bindCopy(main());
   const upd=()=>{$('wfee').textContent=wfeeTxt(+$('wa').value,'USDT',2)};$('wa').oninput=upd;$('wmax').onclick=()=>{$('wa').value=S.wallet.available;upd()};
-  $('dep').onclick=ev=>act(ev.target,async()=>{
+  $('dep').onclick=ev=>act(ev.target,async()=>{await chk('topups');
     if(!(+$('da').value>0))throw new Error('Indica el monto enviado');
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dt').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('request_deposit',{p_amount:+$('da').value,p_txid:$('dt').value.trim()});viewWallet()},'Aviso enviado');
-  $('wit').onclick=ev=>act(ev.target,async()=>{kycChk();
+  $('wit').onclick=ev=>act(ev.target,async()=>{await chk('withdrawals');kycChk();
     const a=+$('wa').value,ad=$('wd').value.trim();
     if(!(a>0))throw new Error('Indica un monto válido');
     if(a>S.wallet.available)throw new Error('Saldo insuficiente');
@@ -712,6 +722,7 @@ async function renderCup(){
   box.innerHTML=C.map(c=>`<div class="card hl"><div class="mut">${c.name}</div><div class="big">${n(S.bal[c.k],c.d)} <span class="mut">${c.k}</span></div>
     <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div>${hist(t.data,'Recarga',c)}${hist(w.data,'Retiro',c)}</div>`).join('');
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
+    await loadFlags();if(S.flags.topups)return toast(PAUSE,'err');
     const c=C.find(x=>x.k===b.dataset.in);
     if(!c.card)return toast('La tarjeta de recarga aún no está configurada. Contacta al soporte','err');
     const m=await ask('Recargar '+c.name,`<div class="warnbox">Transfiere ${c.k} a esta tarjeta y sube la captura. El administrador acredita tu saldo al verificarla.</div>
@@ -721,7 +732,7 @@ async function renderCup(){
     if(!m)return;const a=+m.querySelector('#ta').value,fl=m.querySelector('#tf').files[0];m.remove();
     act(b,async()=>{if(!(a>0))throw new Error('Indica el monto');
       const p=await uploadProof('topup/'+S.user.id,'recarga',fl);await rpc('request_fiat_topup',{p_cur:c.k,p_amount:a,p_path:p});await renderCup()},'Recarga enviada: el administrador la revisará')});
-  box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;
+  box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;await loadFlags();if(S.flags.withdrawals)return toast(PAUSE,'err');
     const c=C.find(x=>x.k===b.dataset.out);
     const m=await ask('Retirar '+c.name,`<p class="mut">Disponible: ${n(S.bal[c.k],c.d)} ${c.k}</p><label>Monto (${c.k})</label><input id="ra" data-k="${c.k}" type="number" step="any" inputmode="decimal"><div class="mut" id="rfee" style="margin:-4px 0 8px"></div><div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</div>
       <label>Tarjeta donde recibirás (16 dígitos)</label><input id="rc" inputmode="numeric">`,'Solicitar retiro');
@@ -740,7 +751,7 @@ async function renderDepositCard(){
       <label>¿Cuánto quieres depositar? (entero, mínimo 5)</label><input id="dbase" type="number" min="5" step="1" inputmode="numeric">
       <button class="b w" id="dnew">Generar instrucciones de depósito</button>
       <p class="mut">Te daremos un monto exacto con decimales para identificar tu pago automáticamente.</p>`;
-    $('dnew').onclick=ev=>act(ev.target,async()=>{
+    $('dnew').onclick=ev=>act(ev.target,async()=>{await chk('topups');
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
     return}
@@ -754,7 +765,7 @@ async function renderDepositCard(){
     <button class="b ok w" id="dver">Verificar y acreditar</button>
     <button class="b gh sm" id="dcan" style="margin-top:8px">Cancelar solicitud</button>`;
   bindCopy(box);
-  $('dver').onclick=ev=>act(ev.target,async()=>{
+  $('dver').onclick=ev=>act(ev.target,async()=>{await chk('topups');
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dtx').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadMe();viewWallet()},'¡Depósito acreditado!');
   $('dcan').onclick=ev=>act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}
@@ -879,6 +890,25 @@ async function adminCms(my){
         if(p)await sb.storage.from('info').remove([p.path]);await draw()},'Foto eliminada')})};
   draw()}
 
+/* Admin: abrir/cerrar recargas y retiros */
+async function adminFlags(my){
+  const box=$('flg');if(!box)return;
+  const FL=[['topups','Recargas de usuarios','Depósitos de USDT y recargas de saldo CUP / Clásica','Recargas'],['withdrawals','Retiros','Retiros de USDT y de saldo CUP / Clásica','Retiros']];
+  const draw=async()=>{
+    const{data,error}=await sb.from('app_flags').select('key,paused');
+    if(my!==NAV||!$('flg'))return;
+    if(error){box.innerHTML=`<div class="warnbox bad">${esc(friendly(error))}</div>`;return}
+    const f={};(data||[]).forEach(r=>f[r.key]=!!r.paused);
+    box.innerHTML=`<h3>Control de pausas</h3>`+FL.map(([k,t,d,w])=>{const p=f[k];
+      return`<div class="card ${p?'dg':'hl'}"><div class="row"><div><b>${t}</b><div class="mut">${d}</div></div><span class="tag ${p?'bad':'ok'}">${p?'Cerradas':'Abiertas'}</span></div>
+      <button class="b ${p?'ok':'bad'} w" style="margin-top:10px" data-fl="${k}|${p?0:1}">${p?'Abrir':'Cerrar'} ${w.toLowerCase()}</button></div>`}).join('');
+    box.querySelectorAll('[data-fl]').forEach(b=>b.onclick=async()=>{
+      const[k,v]=b.dataset.fl.split('|'),pause=v==='1',nm=FL.find(x=>x[0]===k)[3].toLowerCase();
+      const m=await ask(pause?'Cerrar '+nm:'Abrir '+nm,pause?`<p>Los usuarios no podrán hacer ${nm} y verán el mensaje: <b>${esc(PAUSE)}</b></p>`:`<p>Los usuarios podrán volver a hacer ${nm}.</p>`,pause?'Cerrar':'Abrir',pause?'bad':'ok');
+      if(!m)return;m.remove();
+      act(b,async()=>{const{error:e}=await sb.from('app_flags').upsert({key:k,paused:pause,updated_at:new Date().toISOString()});if(e)throw new Error(friendly(e));await draw()},pause?'Cerrado: los usuarios verán la pausa':'Abierto')})};
+  draw()}
+
 /* ---------- Admin ---------- */
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
@@ -906,6 +936,7 @@ async function viewAdmin(){
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
   const tiles=`<div class="tiles"><button class="tile" data-go="s-ann"><span class="tc">📣</span><span>Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc">ℹ️</span><span>Mi info</span></button>${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
+  <div id="flg"></div>
   ${tiles}
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
   <div class="card" style="margin:0"><div class="mut">Depósitos / retiros</div><div class="big">${(d.data||[]).length} / ${(w.data||[]).length}</div></div></div>
@@ -946,7 +977,7 @@ async function viewAdmin(){
   bind('data-cr','admin_reject_fiat_topup','Recarga rechazada');
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
-  adminCms(my)}
+  adminCms(my);adminFlags(my)}
 
 boot();
 </script>
