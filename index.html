@@ -88,118 +88,10 @@ h2{font-size:22px}.lg svg{flex:none}.auth .logo{font-size:30px}
 .sk{height:76px;border-radius:var(--r);background:linear-gradient(90deg,var(--card),var(--card2),var(--card));background-size:200% 100%;animation:sk 1.2s infinite;margin-bottom:12px}
 @keyframes sk{to{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.sk{animation:none}}
-.ph{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}.ph .it{position:relative;min-width:0}.ph .it button{position:absolute;top:6px;right:6px}.ph img{display:block;width:100%;height:150px;object-fit:contain;background:var(--bg);border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
-
-/* ===== TEMA 2 · Tororo ===== */
-:root{--bg:#070b16;--card:#0e1526;--card2:#162039;--line:#1f2d4b;--tx:#eef2ff;--mut:#8f9bb9;--ok:#2ee6a6;--warn:#ffb547;--bad:#ff6b5e;--acc:#6f6bff;--acc2:#2bb6ff;--gold:#ffc861;--r:20px;--ease:cubic-bezier(.2,.8,.2,1)}
-body{background:radial-gradient(90% 40% at 12% -6%,rgba(111,107,255,.26),transparent 70%) no-repeat,radial-gradient(70% 34% at 100% 4%,rgba(43,182,255,.16),transparent 70%) no-repeat,var(--bg);background-attachment:fixed;font-variant-numeric:tabular-nums;padding-bottom:108px;-webkit-tap-highlight-color:transparent}
-header{background:rgba(7,11,22,.74);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border-bottom:1px solid rgba(255,255,255,.06);padding:10px 16px}
-.pill{background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,var(--acc),var(--acc2)) border-box;border:1px solid transparent;transition:transform .15s}
-.pill:active,.ib:active,.tile:active,.chip:active{transform:scale(.96)}
-.pill .plus{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
-.ib{border-radius:14px;transition:transform .15s,border-color .2s}.ib:hover{border-color:var(--acc)}
-main{padding:14px 16px}
-h2{font-size:24px;font-weight:800;letter-spacing:-.025em;margin:6px 0 14px}
-main>h3{font-size:16px;font-weight:700;letter-spacing:-.01em;text-transform:none;color:var(--tx);margin:26px 0 10px}
-.card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0) 60%),var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 14px 30px -24px rgba(0,0,0,.9)}
-.card.hl{border-color:rgba(46,230,166,.4);box-shadow:0 14px 34px -24px rgba(46,230,166,.55)}
-.card.dg{border-color:rgba(255,107,94,.5)}
-.card[data-o]{border-left:3px solid var(--acc)}
-.hero{position:relative;overflow:hidden;border-radius:26px;padding:18px;margin-bottom:14px;color:#fff;background:radial-gradient(120% 120% at 100% 0%,rgba(43,182,255,.4),transparent 55%),linear-gradient(135deg,#1c2468,#2a2e92 55%,#1d5bb4);border:1px solid rgba(255,255,255,.14);box-shadow:0 24px 44px -26px rgba(79,141,255,.8)}
-.hero:after{content:"";position:absolute;right:-46px;bottom:-70px;width:190px;height:190px;border-radius:50%;border:28px solid rgba(255,255,255,.06);pointer-events:none}
-.hero .mut{color:rgba(255,255,255,.72)}.hero a{color:#fff;font-weight:700;font-size:13px;text-decoration:none;background:rgba(255,255,255,.16);padding:7px 13px;border-radius:99px}
-.hero-n{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.1;margin:10px 0 14px}.hero-n small{font-size:14px;font-weight:700;opacity:.8;margin-left:6px;letter-spacing:0}
-.hero-sub{display:flex;gap:10px;position:relative;z-index:1}.hero-sub div{flex:1;min-width:0;background:rgba(7,11,22,.3);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 12px;font-size:12px;color:rgba(255,255,255,.72)}.hero-sub b{display:block;font-size:18px;color:#fff;letter-spacing:-.02em;overflow-wrap:anywhere}
-button.b{min-height:46px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));font-weight:700;letter-spacing:.005em;box-shadow:0 10px 22px -12px rgba(79,120,255,.9);transition:transform .15s,filter .15s,box-shadow .15s}
-button.b:active{transform:translateY(1px) scale(.98);box-shadow:none}
-button.b.sm{min-height:36px}
-button.b.ok{background:linear-gradient(135deg,#2ee6a6,#19b98a);color:#03281d;box-shadow:0 10px 22px -12px rgba(46,230,166,.8)}
-button.b.bad{background:linear-gradient(135deg,#ff7a6b,#e8493c);color:#2a0a06;box-shadow:0 10px 22px -12px rgba(255,107,94,.8)}
-button.b.gh{background:rgba(255,255,255,.03);box-shadow:none;border:1px solid var(--line)}button.b.gh:hover{border-color:var(--acc)}
-input,textarea,select{background:#0a1120;border:1px solid var(--line);border-radius:14px;transition:border-color .2s,box-shadow .2s}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc2);box-shadow:0 0 0 3px rgba(43,182,255,.18)}
-button:focus-visible,a:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
-label{font-weight:500}
-.tag{padding:3px 10px;font-weight:600}
-.big{letter-spacing:-.03em}
-.px{background:rgba(255,200,97,.08);border:1px solid rgba(255,200,97,.28);color:var(--gold);border-radius:14px}.px b{font-size:16px}
-.chip{padding:8px 14px;transition:transform .15s,background .2s,border-color .2s}
-.chip.on{background:linear-gradient(135deg,rgba(111,107,255,.32),rgba(43,182,255,.2));border-color:rgba(111,107,255,.75);color:#fff;font-weight:600}
-.seg{background:#0a1120;border:1px solid var(--line);border-radius:16px}.seg button{border-radius:12px;transition:background .25s,color .25s}.seg button.on{background:linear-gradient(135deg,var(--acc),var(--acc2))}
-.tile{background:var(--card);border-radius:18px;padding:12px 6px;font-weight:600;transition:transform .15s,border-color .2s}.tile:hover{border-color:var(--acc)}
-.nt{border-left:3px solid var(--line)}.nt.un{border-left-color:var(--acc2)}
-.warnbox{border-radius:14px}
-nav{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:rgba(14,21,38,.82);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 18px 40px -16px rgba(0,0,0,.9)}
-nav button{isolation:isolate;padding:8px 2px;font-size:11px;font-weight:600;transition:color .2s}
-nav button.on{color:#fff}
-nav button.on:before{content:"";position:absolute;z-index:-1;inset:0;left:4px;right:4px;top:0;height:auto;border-radius:18px;background:linear-gradient(135deg,rgba(111,107,255,.42),rgba(43,182,255,.24));border:1px solid rgba(255,255,255,.1)}
-nav .bd{left:auto;right:calc(50% - 22px);top:2px}
-.wa{bottom:104px;right:12px;box-shadow:0 12px 26px -12px rgba(37,211,102,.8)}
-#toast{bottom:108px;background:rgba(7,11,22,.94);backdrop-filter:blur(10px);box-shadow:0 14px 30px -12px #000}
-.ov{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(3,6,14,.66)}
-.md{border-radius:26px;animation:pop .22s var(--ease)}
-@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}}
-.sk{border-radius:var(--r)}
-/* --- Pantalla de entrada --- */
-body:has(.au){padding-bottom:0}
-.au{position:relative;min-height:100vh;min-height:100dvh;max-width:440px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center;gap:22px}
-.au-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.au-bg i{position:absolute;border-radius:50%;filter:blur(70px)}
-.au-bg .o1{width:300px;height:300px;left:-90px;top:-70px;background:#6f6bff;opacity:.5;animation:drift 14s ease-in-out infinite alternate}
-.au-bg .o2{width:280px;height:280px;right:-110px;top:32%;background:#2bb6ff;opacity:.3;animation:drift 18s ease-in-out infinite alternate-reverse}
-.au-bg .o3{width:220px;height:220px;left:-60px;bottom:-60px;background:#ffb547;opacity:.16}
-@keyframes drift{to{transform:translate(40px,30px) scale(1.12)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes rise{from{opacity:0;transform:translateY(16px)}}
-.au-hero{text-align:center;animation:rise .7s var(--ease) both}
-.au-orb{position:relative;width:170px;height:170px;margin:0 auto 12px}
-.au-orb .ring{position:absolute;border-radius:50%;border:1px dashed rgba(255,255,255,.24);animation:spin 24s linear infinite}
-.au-orb .r1{inset:0}.au-orb .r2{inset:28px;border-color:rgba(255,255,255,.16);animation-direction:reverse;animation-duration:17s}
-.coin{position:absolute;display:grid;place-items:center;width:36px;height:36px;margin-left:-18px;left:50%;top:-18px;border-radius:50%;font-weight:800;font-size:15px;animation:spin 24s linear infinite reverse}
-.c1{background:linear-gradient(135deg,#2ee6a6,#13a67a);color:#03281d;box-shadow:0 8px 22px -6px rgba(46,230,166,.75)}
-.c2{font-size:10px;background:linear-gradient(135deg,#ffd37a,#ff9f3d);color:#3a2100;box-shadow:0 8px 22px -6px rgba(255,159,61,.7);animation-direction:normal;animation-duration:17s}
-.au-orb .core{position:absolute;inset:46px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(111,107,255,.5),transparent 70%)}
-.au-name{font-size:15px}
-.au-hero h1{font-size:27px;line-height:1.15;letter-spacing:-.03em;font-weight:800;margin:8px auto 8px;max-width:15em;text-wrap:balance}
-.au-hero p{margin:0 auto;color:var(--mut);max-width:24em}
-.au-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
-.au-chips span{font-size:12px;padding:6px 11px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#cfd6ee}
-.au-card{background:rgba(14,21,38,.72);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:16px;box-shadow:0 30px 60px -30px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.08);animation:rise .7s .12s var(--ease) both}
-.au-card h3{font-size:19px;margin:2px 0 4px}
-.au-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:rgba(7,11,22,.7);border:1px solid var(--line);border-radius:18px;padding:4px;margin-bottom:14px}
-.au-pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 8px 20px -10px rgba(79,120,255,.9);transition:transform .38s cubic-bezier(.3,1.4,.5,1)}
-.reg .au-pill{transform:translateX(100%)}
-.au-tabs button{position:relative;z-index:1;border:0;background:none;color:var(--mut);padding:11px 6px;font:inherit;font-weight:700;cursor:pointer;transition:color .25s}
-.au-tabs button[aria-selected=true]{color:#fff}
-.fl{position:relative;margin-bottom:12px}
-.fl input{margin:0;height:54px;padding:20px 46px 6px 44px;border-radius:16px;background:rgba(7,11,22,.7)}
-.fl label{position:absolute;left:44px;top:16px;margin:0;font-size:15px;color:var(--mut);pointer-events:none;transition:top .18s var(--ease),font-size .18s var(--ease),color .18s}
-.fl input:focus+label,.fl input:not(:placeholder-shown)+label{top:7px;font-size:11px;color:#8fd4ff}
-.fl .fi{position:absolute;left:15px;top:17px;width:20px;height:20px;color:var(--mut);transition:color .2s;pointer-events:none}
-.fl:focus-within>.fi{color:#8fd4ff}
-.fl .eye{position:absolute;right:6px;top:6px;width:42px;height:42px;border:0;background:none;color:var(--mut);cursor:pointer;border-radius:12px;padding:0;display:grid;place-items:center}
-.fl .eye .fi{position:static}.fl .eye:hover{color:#fff}
-.au-collapse{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .35s var(--ease),opacity .25s}
-.au-collapse>div{overflow:hidden;min-height:0}
-.reg .au-collapse{grid-template-rows:1fr;opacity:1}
-.pw-m{height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
-.pw-m i{display:block;height:100%;width:0;border-radius:4px;transition:width .3s var(--ease),background .3s}
-.pw-t{font-size:12px;color:var(--mut);margin:6px 2px 12px}
-.au-go{position:relative;width:100%;height:54px;font-size:16px;border-radius:16px;margin-top:4px;overflow:hidden}
-.au-go:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-120%);transition:transform .6s}
-.au-go:hover:before{transform:translateX(120%)}
-.au-go.ld span{opacity:0}
-.au-go.ld:after{content:"";position:absolute;inset:0;margin:auto;width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
-.au-links{text-align:center;margin:14px 0 0;min-height:20px}
-.au-help{display:block;text-align:center;font-size:12.5px;margin-top:10px;color:var(--mut);text-decoration:none}.au-help:hover{color:#fff}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.au-go.ld:after{animation:spin 1.2s linear infinite!important}}
-@media(max-height:700px){.au-orb{width:120px;height:120px}.au-orb .r2{inset:20px}.au-orb .core{inset:32px}.au-orb .core svg{width:40px;height:40px}.au-hero h1{font-size:22px}.au-chips{display:none}}
-
-header .lg{gap:7px;flex:none}header .logo{font-size:17px;white-space:nowrap}header .hr{gap:8px}
-.pill{padding:4px 5px 4px 12px;gap:6px}.pill small{display:none}
-#tAnn,#tInfo{flex-direction:row;justify-content:center;gap:8px;padding:12px 8px;font-size:14px}#tAnn .tc,#tInfo .tc{font-size:18px!important}
-.au.reg .au-chips{display:none}
-.wa{font-size:12px;padding:8px 12px;opacity:.94;bottom:100px;right:10px}
+.tile.dot{position:relative}.tile.dot:after{content:"";position:absolute;top:8px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--bad)}
+.pre{white-space:pre-wrap;word-break:break-word}
+.ph{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0}.ph img{width:100%;border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
+.ph .it{position:relative}.ph .it button{position:absolute;top:6px;right:6px}
 </style>
 </head>
 <body>
@@ -231,41 +123,40 @@ const ASSETS={USDT:{label:'USDT',chip:'USDT'},USD:{label:'USD (Clásica)',chip:'
 const balOf=c=>c==='USDT'?(S.wallet?.available||0):(S.bal?.[c]||0);
 const qd=c=>c==='USDT'?4:2;
 const rnd=(v,d)=>Math.round(v*10**d)/10**d;
-/* Precio total -> precio por unidad (lo que guarda el backend) */
-const unitOf=(t,q)=>q>0&&t>0?+(t/q).toPrecision(12):0;
-const PAUSE='Pausa momentánea por actualización. Vuelve a intentarlo en unos minutos.';
-async function loadFlags(){const{data}=await sb.from('app_flags').select('key,paused');S.flags={};(data||[]).forEach(r=>S.flags[r.key]=!!r.paused)}
-async function chk(k){await loadFlags();if(S.flags[k])throw new Error(PAUSE)}
-const pauseBox=k=>`<div class="warnbox">⏸️ ${k==='topups'?'Recargas':'Retiros'}: ${PAUSE}</div>`;
+/* Comisión: la paga el vendedor desde su saldo (monto + %) */
+const feeOf=(a,k)=>rnd(a*S.fees.trade/100,qd(k));
+const maxNet=(b,k)=>Math.floor(b/(1+S.fees.trade/100)*10**qd(k))/10**qd(k);
+const FPO=()=>+S.settings.fee_percent||0;
+document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest('.md'),el=m&&m.querySelector('#afee');if(!el)return;
+  const side=m.querySelector('#as').value,as=m.querySelector('#aa').value,q=+m.querySelector('#aq').value;
+  el.textContent=side==='sell'&&as!=='MOVIL'&&q>0?`Se retendrán ${n(q+feeOf(q,as),qd(as))} ${ASSETS[as].chip} (${n(q,qd(as))} + comisión ${S.fees.trade}%: ${n(feeOf(q,as),qd(as))})`:side==='sell'&&as==='MOVIL'&&q>0?`La comisión del ${S.fees.trade}% se descuenta de lo que cobres`:''});
 const updBell=()=>$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);
+const updAnn=()=>$('tAnn')?.classList.toggle('dot',!!S.annNew);
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${S.fees.withdraw}%: ${n(a*S.fees.withdraw/100,d)} ${u} · Recibirás: ${n(a-a*S.fees.withdraw/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-S.fees.withdraw/100);
-document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest('.md'),el=m&&m.querySelector('#aunit');if(!el)return;
-  const q=+m.querySelector('#aq').value,t=+m.querySelector('#ap').value,c=m.querySelector('#aq2').value,a=m.querySelector('#aa').value;
-  el.textContent=q>0&&t>0?`Cada unidad de ${ASSETS[a].chip} sale a ${n(t/q,t/q<1?4:2)} ${c}`:''});
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
-<div class="hero"><div class="row"><span class="mut">Mi billetera</span><a href="#" id="tw">Depositar / retirar</a></div>
-<div class="hero-n">${n(S.wallet?.available,2)}<small>USDT</small></div>
-<div class="hero-sub"><div>Saldo CUP<b>${n(S.bal?.CUP,0)}</b></div><div>Saldo Clásica<b>${n(S.bal?.USD,2)} USD</b></div></div></div>
+<div class="card"><div class="row"><b>Mi billetera</b><a href="#" id="tw">Depositar / retirar</a></div>
+<div class="wts">${wtile('USDT',S.wallet?.available,'Tether',2)}${wtile('Saldo CUP',S.bal?.CUP,'CUP',0)}${wtile('Saldo Clásica',S.bal?.USD,'USD',2)}</div></div>
 <div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
-<div class="grid2" style="margin-bottom:12px"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button></div>`;
-const bindTop=()=>{$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
+<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
+const bindTop=()=>{$('tMore').onclick=()=>go('more');$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
 const balCur=(c,m)=>c==='CUP'?(m.includes('Saldo CUP')?'CUP':null):c==='Saldo Clásica'?(m.includes('Saldo Clásica')?'USD':null):null;
 const logoSvg=(s=30)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lgG)"/><circle cx="20" cy="20" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30.5" cy="9.5" r="3" fill="#ef6a5b"/></svg>`;
 const brand=(s=30)=>`<span class="lg">${logoSvg(s)}<span class="logo">Tororo<i> P2P</i></span></span>`;
-if(typeof supabase==='undefined'){document.getElementById('app').innerHTML='<div class="auth"><div class="warnbox bad">No se pudo cargar Supabase. Revisa tu conexión y recarga.</div></div>';throw new Error('supabase no cargó')}
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $app=document.getElementById('app'),$=id=>document.getElementById(id),main=()=>$('main');
-const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},fees:{trade:1,withdraw:3},bal:{},offers:[],f:{q:'',m:'',sort:'asc',mine:false},of:'all',active:0};
+const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',sort:'asc',mine:false},of:'all',active:0};
 let NAV=0,POLL=null,NP=null;
-S.seen=new Set();S.np0=true;
+S.seen=new Set();S.np0=true;S.st={};
 
 const STATUS={
   awaiting_payment:['Esperando pago del comprador','warn'],
@@ -291,16 +182,13 @@ function friendly(e){
   if(/Password should/i.test(m))return'La contraseña debe tener al menos 6 caracteres';
   if(/order_messages/i.test(m))return'Falta crear la tabla del chat (ejecuta el archivo SQL)';
   if(/Failed to fetch|NetworkError/i.test(m))return'Sin conexión. Revisa tu internet';
-  if(/announcements|site_info|app_flags|bucket/i.test(m)&&/relation|schema cache|not found|does not exist/i.test(m))return'Falta crear las tablas de información/anuncios (ejecuta el archivo SQL)';
   return m}
 async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
 async function act(btn,fn,okMsg){
   if(btn)btn.disabled=true;
   try{await fn();if(okMsg)toast(okMsg,'good')}catch(e){toast(friendly(e),'err')}
   if(btn&&btn.isConnected)btn.disabled=false}
-const copy=t=>{const ok=()=>toast('Copiado','good'),ko=()=>toast('No se pudo copiar','err');
-  if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t).then(ok,ko);
-  try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();const r=document.execCommand('copy');a.remove();r?ok():ko()}catch(e){ko()}};
+const copy=t=>navigator.clipboard.writeText(t).then(()=>toast('Copiado','good'),()=>toast('No se pudo copiar','err'));
 const cpBtn=t=>`<button class="b gh sm" data-cp="${esc(t)}">Copiar</button>`;
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(b)copy(b.dataset.cp)});function bindCopy(){}
 const skel=k=>'<div class="sk"></div>'.repeat(k);
@@ -314,20 +202,20 @@ function ask(title,body,ok='Confirmar',cls=''){
     m.onclick=e=>{if(e.target===m){m.remove();res(null)}};
     m.querySelector('#mn').onclick=()=>{m.remove();res(null)};
     m.querySelector('#my').onclick=()=>res(m)})}
-function zoom(src){modal(`<img src="${esc(src)}" alt="Captura"><button class="b gh w" style="margin-top:10px" onclick="this.closest('.ov').remove()">Cerrar</button>`)}
+function zoom(src){modal(`<img src="${src}" alt="Captura"><button class="b gh w" style="margin-top:10px" onclick="this.closest('.ov').remove()">Cerrar</button>`)}
 
 /* ---------- Sesión ---------- */
 async function boot(){
   const{data:{session}}=await sb.auth.getSession();
   S.user=session?.user||null;
-  if(!S.user)return renderAuth();
-  await loadMe();render()}
+  if(!S.user)return renderAuth(lsGet('pending_ref')?'register':'login');
+  if(await mfaGate())return;
+  await loadMe();await afterLogin();render();maybeTuto()}
 async function loadMe(){
-  const[p,w,st,cw,fr,fo,fg]=await Promise.all([
+  const[p,w,st,cw,fr,fo]=await Promise.all([
     sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single(),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
-    sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),sb.from('fee_rates').select('kind,pct'),sb.from('fx_offers').select('id',{count:'exact',head:true}).eq('seller_id',S.user.id).eq('status','open'),sb.from('app_flags').select('key,paused')]);
-  S.flags={};(fg?.data||[]).forEach(r=>S.flags[r.key]=!!r.paused);
+    sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),sb.from('fee_rates').select('kind,pct'),sb.from('fx_offers').select('id',{count:'exact',head:true}).eq('seller_id',S.user.id).eq('status','open')]);
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
   S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};S.settings=st.data||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.fxOpen=fo?.count||0;S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
@@ -335,58 +223,38 @@ sb.auth.onAuthStateChange(ev=>{
   if(ev==='PASSWORD_RECOVERY')renderReset()});
 
 function renderAuth(mode='login'){
-  let reg=mode==='register';
-  const ic=p=>`<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-  const eye='<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',eyeOff='<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/>';
-  $app.innerHTML=`<div class="au" id="au">
-   <div class="au-bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>
-   <div class="au-hero">
-     <div class="au-orb" aria-hidden="true"><span class="ring r1"><b class="coin c1">₮</b></span><span class="ring r2"><b class="coin c2">CUP</b></span><span class="core">${logoSvg(56)}</span></div>
-     <div class="logo au-name">Tororo<i> P2P</i></div>
-     <h1>Compra y vende USDT, CUP y saldo móvil</h1>
-     <p>Cada operación la respalda un administrador.</p>
-     <div class="au-chips"><span>🔒 Pago retenido hasta confirmar</span><span>🛡️ Mediación del admin</span><span>💱 CUP · USD · saldo móvil</span></div>
-   </div>
-   <div class="au-card">
-     <div class="au-tabs" role="tablist"><i class="au-pill"></i><button type="button" role="tab" data-m="login">Entrar</button><button type="button" role="tab" data-m="register">Crear cuenta</button></div>
-     <div class="au-collapse" id="uw"><div><div class="fl">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')}<input id="u" placeholder=" " autocomplete="username" autocapitalize="none" spellcheck="false"><label for="u">Nombre de usuario</label></div></div></div>
-     <div class="fl">${ic('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/>')}<input id="em" type="email" placeholder=" " autocomplete="email" autocapitalize="none" spellcheck="false" inputmode="email"><label for="em">Correo</label></div>
-     <div class="fl">${ic('<rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>')}<input id="pw" type="password" placeholder=" "><label for="pw">Contraseña</label><button type="button" class="eye" id="eye" aria-label="Mostrar contraseña">${ic(eye)}</button></div>
-     <div class="au-collapse" id="pm"><div><div class="pw-m"><i id="pwb"></i></div><div class="pw-t" id="pwt">Usa al menos 6 caracteres</div></div></div>
-     <button class="b au-go" id="go" type="button"><span id="gol"></span></button>
-     <p class="au-links"><a href="#" id="fg">Olvidé mi contraseña</a></p>
-     ${CFG.whatsapp?`<a class="au-help" href="https://wa.me/${esc(CFG.whatsapp)}" target="_blank" rel="noopener">¿Necesitas ayuda? Escríbenos por WhatsApp</a>`:''}
-   </div></div>`;
-  const setMode=m=>{reg=m==='register';$('au').classList.toggle('reg',reg);$('uw').inert=!reg;$('pm').inert=!reg;
-    $('gol').textContent=reg?'Crear mi cuenta':'Entrar';$('pw').autocomplete=reg?'new-password':'current-password';$('fg').style.display=reg?'none':'';
-    document.querySelectorAll('.au-tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.m===m))};
-  setMode(mode);
-  document.querySelectorAll('.au-tabs button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
-  $('eye').onclick=()=>{const t=$('pw').type==='password';$('pw').type=t?'text':'password';$('eye').innerHTML=ic(t?eyeOff:eye);$('eye').setAttribute('aria-label',t?'Ocultar contraseña':'Mostrar contraseña')};
-  $('pw').oninput=()=>{const v=$('pw').value;let sc=0;if(v.length>=6)sc++;if(v.length>=9)sc++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))sc++;if(/\d/.test(v)&&/[^A-Za-z0-9]/.test(v))sc++;
-    const L=['Usa al menos 6 caracteres','Débil','Aceptable','Buena','Muy fuerte'],C=['transparent','#ff6b5e','#ffb547','#2bb6ff','#2ee6a6'];
-    if(v.length&&v.length<6)sc=0;$('pwb').style.width=(v?Math.max(sc,1)*25:0)+'%';$('pwb').style.background=C[v?Math.max(sc,1):0];
-    $('pwt').textContent=v.length&&v.length<6?'Muy corta: mínimo 6 caracteres':L[v?Math.max(sc,1):0]};
-  $('fg').onclick=e=>{e.preventDefault();const em=$('em').value.trim();if(!em)return toast('Escribe tu correo primero','err');
+  const reg=mode==='register';
+  $app.innerHTML=`<div class="auth">
+    <div style="display:flex;justify-content:center;margin-bottom:6px">${brand(46)}</div>
+    <p class="mut" style="text-align:center;margin:0 0 16px">Cambia USDT por CUP o saldo móvil, con un administrador que respalda cada operación.</p>
+    <div class="card"><h3>${reg?'Crear cuenta':'Iniciar sesión'}</h3>
+      ${reg&&lsGet('pending_ref')?`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">🎁 Te invitó un amigo (código ${esc(lsGet('pending_ref'))})</div>`:''}
+      ${reg?'<label>Nombre de usuario</label><input id="u" autocomplete="username">':''}
+      <label>Correo</label><input id="em" type="email" autocomplete="email">
+      <label>Contraseña</label><input id="pw" type="password" autocomplete="${reg?'new-password':'current-password'}">
+      <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sh" style="width:auto;margin:0"> Mostrar contraseña</label>
+      <button class="b w" id="go" style="margin-top:10px">${reg?'Registrarme':'Entrar'}</button>
+      <p class="mut" style="text-align:center;margin:12px 0 0"><a href="#" id="sw">${reg?'¿Ya tienes cuenta? Entra':'¿No tienes cuenta? Regístrate'}</a>
+      ${reg?'':' · <a href="#" id="fg">Olvidé mi contraseña</a>'}</p></div></div>`;
+  $('sh').onchange=e=>$('pw').type=e.target.checked?'text':'password';
+  $('sw').onclick=e=>{e.preventDefault();renderAuth(reg?'login':'register')};
+  if($('fg'))$('fg').onclick=e=>{e.preventDefault();const em=$('em').value.trim();if(!em)return toast('Escribe tu correo primero','err');
     sb.auth.resetPasswordForEmail(em,{redirectTo:location.href.split('#')[0]}).then(({error})=>error?toast(friendly(error),'err'):toast('Te enviamos un enlace al correo','good'))};
-  $('go').onclick=()=>{const btn=$('go');btn.classList.add('ld');
-    act(btn,async()=>{
-      const email=$('em').value.trim(),password=$('pw').value;
-      if(!email||!password)throw new Error('Completa correo y contraseña');
-      if(reg){
-        const username=($('u').value||'').trim();if(username.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');
-        const{data,error}=await sb.auth.signUp({email,password,options:{data:{username}}});
-        if(error)throw error;
-        if(!data.session){toast('Cuenta creada. Revisa tu correo para confirmarla.','good');return}
-      }else{const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}
-      await boot()}).finally(()=>btn.classList.remove('ld'))};
-  $('au').onkeydown=e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')$('go').click()}}
+  const submit=ev=>act(ev.target,async()=>{
+    const email=$('em').value.trim(),password=$('pw').value;
+    if(!email||!password)throw new Error('Completa correo y contraseña');
+    if(reg){
+      const username=($('u').value||'').trim();if(username.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');
+      const{data,error}=await sb.auth.signUp({email,password,options:{data:{username,ref:lsGet('pending_ref')||undefined}}});
+      if(error)throw error;
+      if(!data.session){toast('Cuenta creada. Revisa tu correo para confirmarla.','good');return}
+    }else{const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}
+    await boot()});
+  $('go').onclick=submit;$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()}}
 function renderReset(){
-  $app.innerHTML=`<div class="au"><div class="au-bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>
-  <div class="au-card"><h3>Crea tu nueva contraseña</h3><p class="mut" style="margin:0 0 14px">Elige una que no uses en otros sitios.</p>
-  <div class="fl"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="np" type="password" minlength="6" placeholder=" " autocomplete="new-password"><label for="np">Nueva contraseña</label></div>
-  <button class="b au-go" id="sv"><span>Guardar contraseña</span></button></div></div>`;
-  $('sv').onclick=ev=>act(ev.currentTarget,async()=>{const{error}=await sb.auth.updateUser({password:$('np').value});if(error)throw error;await boot()},'Contraseña actualizada')}
+  $app.innerHTML=`<div class="auth"><div class="card"><h3>Nueva contraseña</h3><input id="np" type="password" minlength="6" autocomplete="new-password">
+  <button class="b w" id="sv">Guardar contraseña</button></div></div>`;
+  $('sv').onclick=ev=>act(ev.target,async()=>{const{error}=await sb.auth.updateUser({password:$('np').value});if(error)throw error;await boot()},'Contraseña actualizada')}
 
 function render(){
   const admin=S.profile?.is_admin;
@@ -400,15 +268,15 @@ function render(){
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('notifs');
   $('av').onclick=e=>{e.preventDefault();go('profile')};
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
-  go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs();checkAnn()}
+  go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs()}
 async function refreshBadge(){
   const{count}=await sb.from('orders').select('id',{count:'exact',head:true})
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
   S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='ann'||v==='info'?'market':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,admin:viewAdmin,ann:viewAnn,info:viewInfo}[v]||viewMarket)();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,alerts:viewAlerts,calc:viewCalc,saved:viewSaved,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
   window.scrollTo(0,0)}
 
 /* ---------- Mercado ---------- */
@@ -421,12 +289,12 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
     <div id="sell" class="hide" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
       <label>Cantidad de USDT <button class="b gh sm" id="omax" type="button">Máx</button></label><input id="oa" type="number" min="1" step="any" inputmode="decimal">
       <label>Moneda que quieres recibir</label><select id="oc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
-      <label id="opl">Precio total por tus USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
+      <label id="opl">Precio por 1 USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
       <div class="mut" id="otot"></div>
       <label>Métodos de pago que aceptas</label>${chipsHtml([],'om')}
       <label>Datos donde recibirás el pago (solo los verá quien te compre)</label>
-      <textarea id="od" rows="2" placeholder="Ej: tarjeta 9205 …, a nombre de … / número de teléfono para saldo"></textarea>
-      <p class="mut">Al publicar, ese monto queda bloqueado hasta que la operación termine o la canceles.</p>
+      ${savedSel('osv')}<textarea id="od" rows="2" placeholder="Ej: tarjeta 9205 …, a nombre de … / número de teléfono para saldo"></textarea>
+      <p class="mut">Al publicar, queda bloqueado el monto <b>más la comisión</b> de la plataforma (la paga el vendedor desde su saldo). Si no te alcanza para el %, publica un poco menos: por ejemplo, 99 en vez de 100.</p>
       <button class="b w" id="mk">Publicar oferta</button></div></div>
   <div class="card"><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
     <div class="row"><select id="srt" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
@@ -435,14 +303,14 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
   <h3>Ofertas disponibles</h3><div id="offers">${skel(3)}</div>`;
   $('srt').value=F.sort;bindTop();
   $('tg').onclick=()=>{if(gate())return;const s=$('sell');s.style.display=s.style.display==='none'?'block':'none'};
-  $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)*100)/100;calc()};
-  const calc=()=>{const c=$('oc').value,q=+$('oa').value,t=+$('op').value;$('opl').textContent=`Precio total por tus USDT (en ${c})`;$('otot').textContent=t>0&&q>0?`Recibirás en total: ${mny(t,c)} ${c} · Cada USDT sale a ${n(t/q,t/q<1?4:2)} ${c}`:''};
+  $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)/(1+FPO()/100)*100)/100;calc()};
+  const calc=()=>{const c=$('oc').value;$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;const a=+$('oa').value,f=FPO()?rnd(a*FPO()/100,4):0;$('otot').textContent=(t>0?`Recibirás en total: ${mny(t,c)} ${c}`:'')+(a>0&&f?` · Se retendrán ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%: ${n(f,4)})`:'')};
   ['oa','op','oc'].forEach(i=>$(i).oninput=calc);
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
-    const a=+$('oa').value,p=unitOf(+$('op').value,a),c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),d=$('od').value.trim();
+    const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),d=$('od').value.trim();
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
-    if(a>(S.wallet?.available||0))throw new Error('Saldo insuficiente');
+    {const f=rnd(a*FPO()/100,4),av=S.wallet?.available||0;if(a+f>av)throw new Error(`Necesitas ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%). Puedes publicar hasta ${n(Math.floor(av/(1+FPO()/100)*100)/100,2)} USDT`)}
     if(!ms.length)throw new Error('Elige al menos un método de pago');
     if(!d)throw new Error('Indica los datos donde recibirás el pago');
     await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c,p_details:d});
@@ -454,7 +322,7 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
   const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username)').eq('status','open');
   if(my!==NAV)return;
   if(error){$('offers').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
-  S.offers=data||[];drawOffers()}
+  S.offers=data||[];await loadStats(S.offers.map(o=>o.seller_id));if(my!==NAV)return;drawOffers()}
 function drawOffers(){
   const box=$('offers');if(!box)return;const F=S.f,q=F.q.toLowerCase();
   let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
@@ -462,14 +330,14 @@ function drawOffers(){
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=+S.settings.fee_percent||0;
   box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id,{m,c}=parseM(o.methods);
-    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio total</small><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></span></div>
-    <div class="mut">Cada USDT: ${n(o.price_cup,o.price_cup<1?4:2)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
+    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
+    <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span></div>
     ${mine?`<button class="b gh sm" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-buy="${o.id}">Comprar</button>`}</div>`}).join('')+
-    (fee?`<p class="mut">Comisión de la plataforma: ${fee}% sobre los USDT que recibe el comprador.</p>`:'');
+    (fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'');
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
-    const o=S.offers.find(x=>x.id===b.dataset.buy),{c}=parseM(o.methods),net=o.amount*(1-fee/100);
-    const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b>${fee?` (comisión ${fee}%)`:''}.</p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>`,'Iniciar compra');
+    const o=S.offers.find(x=>x.id===b.dataset.buy),{c}=parseM(o.methods),net=o.amount;
+    const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
   box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadMe();viewMarket()},'Oferta cancelada'))}
@@ -481,39 +349,39 @@ async function viewFx(){
   <div class="card"><div class="row"><div><b>Vender USD Clásica por CUP</b><div class="mut">Disponible: ${n(S.bal.USD,2)} USD</div></div><button class="b sm" id="xt">+ Publicar</button></div>
   <div id="xf" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
    <label>Cantidad de USD <button class="b gh sm" id="xmax" type="button">Máx</button></label><input id="xa" type="number" min="0.01" step="any" inputmode="decimal">
-   <label>Precio total por tus USD (en CUP)</label><input id="xp" type="number" min="1" step="any" inputmode="decimal">
+   <label>Precio por 1 USD (en CUP)</label><input id="xp" type="number" min="1" step="any" inputmode="decimal">
    <div class="mut" id="xtot"></div>
-   <p class="mut">Tus USD quedan retenidos en la oferta. Cuando alguien la compra, recibes los CUP en tu saldo al instante. Si la cancelas, recuperas tus USD.</p>
+   <p class="mut">Quedan retenidos tus USD más la comisión de ${S.fees.trade}% (la pagas tú desde tu saldo). Cuando alguien la compra, recibes los CUP en tu saldo al instante. Si la cancelas, recuperas tus USD.</p>
    <button class="b w" id="xk">Publicar oferta</button></div></div>
   <div class="card"><div class="row"><select id="xsort" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="xmine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div></div>
   <h3>Ofertas de USD Clásica</h3><div id="xl">${skel(2)}</div>`;
   bindTop();$('xsort').value=F.sort;
-  const calc=()=>{const a=+$('xa').value,t=+$('xp').value;$('xtot').textContent=t>0&&a>0?`Recibirás en total: ${n(t,0)} CUP · Cada USD sale a ${n(t/a,2)} CUP`:''};
+  const calc=()=>{const t=+$('xa').value*+$('xp').value;$('xtot').textContent=t>0?`Recibirás en total: ${n(t,0)} CUP`:''};
   $('xt').onclick=()=>{if(gate())return;const e=$('xf');e.style.display=e.style.display==='none'?'block':'none'};
-  $('xmax').onclick=()=>{$('xa').value=Math.floor((S.bal.USD||0)*100)/100;calc()};
+  $('xmax').onclick=()=>{$('xa').value=maxNet(S.bal.USD||0,'USD');calc()};
   $('xa').oninput=calc;$('xp').oninput=calc;
-  $('xk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('xa').value,p=unitOf(+$('xp').value,a);
+  $('xk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('xa').value,p=+$('xp').value;
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
-    if(a>S.bal.USD)throw new Error('Saldo Clásica insuficiente');
+    if(a+feeOf(a,'USD')>S.bal.USD)throw new Error(`Necesitas ${n(a+feeOf(a,'USD'),2)} USD (${n(a,2)} + comisión ${S.fees.trade}%). Puedes publicar hasta ${n(maxNet(S.bal.USD||0,'USD'),2)}`);
     await rpc('create_fx_offer',{p_amount:a,p_price:p});await loadMe();viewFx()},'Oferta publicada');
   $('xsort').onchange=e=>{F.sort=e.target.value;drawFx()};$('xmine').onchange=e=>{F.mine=e.target.checked;drawFx()};
   const{data,error}=await sb.from('fx_offers').select('id,seller_id,amount_usd,price_cup,profiles(username)').eq('status','open');
   if(my!==NAV)return;
   if(error){$('xl').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
-  S.fxo=data||[];drawFx()}
+  S.fxo=data||[];await loadStats(S.fxo.map(o=>o.seller_id));if(my!==NAV)return;drawFx()}
 function drawFx(){
   const box=$('xl');if(!box)return;const F=S.fx;
   const l=(S.fxo||[]).filter(o=>!F.mine||o.seller_id===S.user.id).sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount_usd-a.amount_usd);
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas todavía. Publica la tuya.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id;
-    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount_usd,2)} USD</b><span class="px"><small>Precio total</small><b>${n(o.amount_usd*o.price_cup,0)} CUP</b></span></div>
-    <div class="mut" style="margin:6px 0">Cada USD: ${n(o.price_cup,2)} CUP · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}</div>
-    ${mine?`<button class="b gh sm" data-xc="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-xb="${o.id}">Comprar</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${S.fees.trade}% sobre los USD que recibe el comprador.</p>`;
+    return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount_usd,2)} USD</b><span class="px"><small>Precio por USD</small><b>${n(o.price_cup,2)} CUP</b></span></div>
+    <div class="mut" style="margin:6px 0">Total: ${n(o.amount_usd*o.price_cup,0)} CUP · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
+    ${mine?`<button class="b gh sm" data-xc="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-xb="${o.id}">Comprar</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${S.fees.trade}%: la paga el vendedor desde su saldo.</p>`;
   box.querySelectorAll('[data-xb]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.fxo.find(x=>x.id===b.dataset.xb),tot=Math.round(o.amount_usd*o.price_cup*100)/100;
     if((S.bal.CUP||0)<tot)return toast(`Necesitas ${n(tot,0)} CUP en tu saldo. Recarga en la billetera`,'err');
-    const m=await ask('Confirmar compra',`<p>Pagarás <b>${n(tot,0)} CUP</b> de tu saldo y recibirás <b>${n(o.amount_usd*(1-S.fees.trade/100),2)} USD</b> en tu Saldo Clásica, al instante (comisión de la plataforma: ${S.fees.trade}%).</p>`,'Comprar','ok');
+    const m=await ask('Confirmar compra',`<p>Pagarás <b>${n(tot,0)} CUP</b> de tu saldo y recibirás <b>${n(o.amount_usd,2)} USD</b> en tu Saldo Clásica, al instante (la comisión la paga el vendedor).</p>`,'Comprar','ok');
     if(!m)return;m.remove();act(b,async()=>{await rpc('take_fx_offer',{p_id:o.id});await loadMe();viewFx()},'¡Compra realizada!')});
   box.querySelectorAll('[data-xc]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_fx_offer',{p_id:b.dataset.xc});await loadMe();viewFx()},'Oferta cancelada'))}
 
@@ -538,32 +406,32 @@ async function viewAds(){
     const m=await ask('Publicar anuncio',`<label>¿Qué quieres hacer?</label><select id="as"><option value="sell">Vender</option><option value="buy">Comprar</option></select>
       <label>Saldo</label><select id="aa">${Object.entries(ASSETS).map(([k,v])=>`<option value="${k}" ${A.asset===k?'selected':''}>${v.chip}</option>`).join('')}</select>
       <label>Moneda de pago</label><select id="aq2">${qs}</select>
-      <label>Cantidad</label><input id="aq" type="number" step="any" min="0.01" inputmode="decimal">
-      <label>Precio total, en la moneda de pago</label><input id="ap" type="number" step="any" min="0.000001" inputmode="decimal"><div class="mut" id="aunit" style="margin:-4px 0 8px"></div>
-      <label>Tu número de teléfono (solo si compras saldo móvil)</label><input id="ad" inputmode="tel">
-      <p class="mut">Al vender, tu saldo queda retenido en el anuncio. Al comprar, queda retenido el total en la moneda de pago. Comisión de ${S.fees.trade}% por operación. El saldo móvil siempre exige foto del envío y aprobación del administrador.</p>`,'Publicar');
+      <label>Cantidad</label><input id="aq" type="number" step="any" min="0.01" inputmode="decimal"><div class="mut" id="afee" style="margin:-4px 0 8px"></div>
+      <label>Precio por cada unidad, en la moneda de pago</label><input id="ap" type="number" step="any" min="0.000001" inputmode="decimal">
+      <label>Tu número de teléfono (solo si compras saldo móvil)</label>${savedSel('asv','telefono')}<input id="ad" inputmode="tel">
+      <p class="mut">Al vender, queda retenido lo que vendes <b>más la comisión de ${S.fees.trade}%</b> (la paga el vendedor desde su saldo; si no te alcanza, publica menos: p. ej. 99 en vez de 100). Al comprar, queda retenido el total en la moneda de pago. En saldo móvil la comisión se descuenta de lo que cobras, y siempre exige foto del envío y aprobación del administrador.</p>`,'Publicar');
     if(!m)return;
-    const side=m.querySelector('#as').value,asset=m.querySelector('#aa').value,quote=m.querySelector('#aq2').value,q=+m.querySelector('#aq').value,p=unitOf(+m.querySelector('#ap').value,q),ph=m.querySelector('#ad').value.trim();m.remove();
+    const side=m.querySelector('#as').value,asset=m.querySelector('#aa').value,quote=m.querySelector('#aq2').value,q=+m.querySelector('#aq').value,p=+m.querySelector('#ap').value,ph=m.querySelector('#ad').value.trim();m.remove();
     act(ev.target,async()=>{kycChk();
       if(!(q>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
       if(asset===quote)throw new Error('El saldo y la moneda de pago no pueden ser el mismo');
-      if(side==='sell'&&asset!=='MOVIL'&&q>balOf(asset))throw new Error('Saldo '+ASSETS[asset].chip+' insuficiente');
+      if(side==='sell'&&asset!=='MOVIL'){const need=rnd(q+feeOf(q,asset),qd(asset));if(need>balOf(asset))throw new Error(`Necesitas ${n(need,qd(asset))} ${ASSETS[asset].chip} (${n(q,qd(asset))} + comisión ${S.fees.trade}%). Puedes publicar hasta ${n(maxNet(balOf(asset),asset),qd(asset))}`)}
       if(side==='buy'&&rnd(q*p,qd(quote))>balOf(quote))throw new Error('Saldo insuficiente: necesitas '+n(q*p,qd(quote))+' '+quote);
       if(side==='buy'&&asset==='MOVIL'&&ph.replace(/\D/g,'').length<8)throw new Error('Escribe tu número de teléfono para recibir el saldo');
       await rpc('create_ad',{p_side:side,p_asset:asset,p_quote:quote,p_amount:q,p_price:p,p_details:ph});await loadMe();viewAds()},'Anuncio publicado')};
   const{data,error}=await sb.from('ads').select('id,user_id,side,asset,quote,amount,price,details,profiles(username)').eq('status','open').eq('asset',A.asset);
   if(my!==NAV)return;
   if(error){$('adl').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
-  S.ads=data||[];drawAds()}
+  S.ads=data||[];await loadStats(S.ads.map(o=>o.user_id));if(my!==NAV)return;drawAds()}
 function drawAds(){
   const box=$('adl');if(!box)return;const A=S.ad,pc=S.fees.trade;
   const l=(S.ads||[]).filter(o=>A.mine?o.user_id===S.user.id:o.side===(A.tab==='buy'?'sell':'buy')).sort((a,b)=>A.tab==='buy'?a.price-b.price:b.price-a.price);
   if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios aquí todavía. Publica el tuyo.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
-    return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}</span></div>
-    <div class="row" style="margin-top:8px"><b style="font-size:18px">${n(o.amount,2)} ${L}</b><span class="px"><small>Precio total</small><b>${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}</b></span></div>
-    <div class="mut" style="margin:6px 0">Cada unidad: ${n(o.price,o.price<1?4:2)} ${o.quote}${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
-    ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}% en cada operación dentro de la plataforma.</p>`;
+    return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.user_id)?' · '+repTxt(o.user_id):''}</span></div>
+    <div class="row" style="margin-top:8px"><b style="font-size:18px">${n(o.amount,2)} ${L}</b><span class="px"><small>Precio por unidad</small><b>${n(o.price,o.price<1?4:2)} ${o.quote}</b></span></div>
+    <div class="mut" style="margin:6px 0">Total: ${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
+    ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}%: la paga el vendedor desde su saldo.</p>`;
   box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadMe();viewAds()},'Anuncio cancelado'));
   box.querySelectorAll('[data-ab]').forEach(b=>b.onclick=async()=>{
     if(gate())return;
@@ -572,11 +440,11 @@ function drawAds(){
     if(sell){
       if(balOf(Q)<tot)return toast(`Necesitas ${n(tot,qd(Q))} ${Q} en tu saldo. Recarga en la billetera`,'err');
       body=mv?`<p>Pagarás <b>${n(tot,qd(Q))} ${Q}</b> de tu saldo; quedan <b>retenidos</b> hasta que el administrador apruebe la operación.</p><div class="warnbox">📱 El vendedor te enviará ${n(o.amount,2)} de saldo móvil. Debes subir la captura de la recepción y esperar la aprobación del administrador.</div><label>Tu número de teléfono (donde recibirás el saldo)</label><input id="ph" inputmode="tel">`
-        :`<p>Pagarás <b>${n(tot,qd(Q))} ${Q}</b> de tu saldo y recibirás <b>${n(o.amount-fee,qd(o.asset))} ${L}</b> al instante (comisión de la plataforma: ${pc}%).</p>`;
+        :`<p>Pagarás <b>${n(tot,qd(Q))} ${Q}</b> de tu saldo y recibirás <b>${n(o.amount,qd(o.asset))} ${L}</b> al instante (la comisión la paga el vendedor).</p>`;
     }else{
-      if(!mv&&balOf(o.asset)<o.amount)return toast('Saldo '+ASSETS[o.asset].chip+' insuficiente','err');
+      if(!mv&&balOf(o.asset)<rnd(o.amount+fee,qd(o.asset)))return toast(`Necesitas ${n(o.amount+fee,qd(o.asset))} ${ASSETS[o.asset].chip} (${n(o.amount,qd(o.asset))} + comisión ${pc}%)`,'err');
       body=mv?`<div class="warnbox">📱 Deberás enviar <b>${n(o.amount,2)} de saldo móvil</b> al número <b>${esc(o.details)}</b> y <b>subir la foto del envío</b>. El administrador la revisará y aprobará antes de que recibas ${n(tot-rnd(tot*pc/100,qd(Q)),qd(Q))} ${Q} (comisión ${pc}%).</div>`
-        :`<p>Entregarás <b>${n(o.amount,2)} ${L}</b> y recibirás <b>${n(tot,qd(Q))} ${Q}</b> en tu saldo al instante. La comisión (${pc}%) la paga el comprador.</p>`;
+        :`<p>Entregarás <b>${n(o.amount,2)} ${L}</b> más <b>${n(fee,qd(o.asset))} ${L}</b> de comisión (${pc}%, la pagas tú como vendedor) y recibirás <b>${n(tot,qd(Q))} ${Q}</b> en tu saldo al instante.</p>`;
     }
     const m=await ask(sell?'Confirmar compra':'Confirmar venta',body,'Confirmar','ok');
     if(!m)return;const phone=m.querySelector('#ph')?.value.trim()||'';m.remove();
@@ -612,9 +480,10 @@ async function viewTrade(){
   ${mv?`<div class="steps">${stp.map(([l,d],i)=>`<div class="st ${d?'d':i===cur&&t.status!=='refunded'?'c':''}"><b>${d?'✓':i+1}</b>${l}</div>`).join('')}</div>
    <div class="warnbox">📱 Saldo móvil es una transferencia externa: <b>exige foto del envío y aprobación del administrador</b>. Los ${n(t.total,qd(t.quote))} ${esc(t.quote)} están retenidos y se liberan al vendedor solo cuando el administrador revise las capturas.</div>
    <div class="grid2"><div class="card"><h3>Foto del envío</h3>${sp}</div><div class="card"><h3>Foto de recepción</h3>${bp}</div></div>`:''}
-  ${mv&&live&&(isB||isS)?`<div class="card"><p class="mut" style="margin-top:0">${isS?'Envía el saldo móvil al número indicado y sube la foto del envío (obligatoria).':'Cuando recibas el saldo, sube la captura de la recepción.'}</p><button class="b w" id="med">🛡️ Mediación de admin · subir foto</button></div>`:''}`;
+  ${mv&&live&&(isB||isS)?`<div class="card"><p class="mut" style="margin-top:0">${isS?'Envía el saldo móvil al número indicado y sube la foto del envío (obligatoria).':'Cuando recibas el saldo, sube la captura de la recepción.'}</p><button class="b w" id="med">🛡️ Mediación de admin · subir foto</button></div>`:''}<div id="ratebox"></div>`;
   main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   $('back').onclick=e=>{e.preventDefault();go('orders')};
+  if(t.status==='released'&&(isB||isS))drawRate('trade',t.id,isB?t.seller_id:t.buyer_id);
   if($('med'))$('med').onclick=async ev=>{
     const m=await ask('Mediación de admin',`<p class="mut">El administrador revisará la foto y aprobará la operación.</p><label>${isS?'Foto del envío del saldo':'Captura de la recepción del saldo'}</label><input type="file" id="mf" accept="image/*">`,'Enviar foto','ok');
     if(!m)return;const fl=m.querySelector('#mf').files[0];m.remove();
@@ -642,6 +511,9 @@ async function pollNotifs(){
       if(!S.np0&&tot>(S.lastPend||0))sysNotify('Tienes '+tot+' solicitudes pendientes','Revisa el panel de administrador');
       S.lastPend=tot;S.adminPend=tot;
       const bd=$('adbd');if(bd){bd.textContent=tot;bd.style.display=tot?'block':'none'}}
+    try{const{data:la}=await sb.from('announcements').select('id,title,created_at').order('created_at',{ascending:false}).limit(1);const l=la&&la[0];
+      if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn()}}catch(e){}
+    if(S.hasAlerts){try{const{data:ar}=await sb.rpc('check_price_alerts');if(ar){S.hasAlerts=(ar.left||0)>0;(ar.t||[]).forEach(x=>{if(!x.notified)sysNotify('🔔 Alerta de precio',`${ASSETS[x.asset]?.chip||x.asset} llegó a ${n(x.price,4)} ${x.quote}`)})}}catch(e){}}
     S.np0=false;updBell()}catch(e){}}
 function startNotifs(){
   clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();NP=setInterval(pollNotifs,25000);
@@ -750,7 +622,7 @@ async function viewOrder(){
   ${dis?'<div class="warnbox bad">Esta operación está en disputa. Habla con el administrador en el chat de abajo y aporta pruebas.</div>':''}
   <div class="grid2"><div class="card"><h3>Pago del comprador</h3>${bp}</div><div class="card"><h3>Recibo del vendedor</h3>${sp}</div></div>
   <div class="card">${act_||'<span class="mut">No hay acciones pendientes.</span>'}</div>
-  <div id="chatbox"></div>`;
+  <div id="chatbox"></div><div id="ratebox"></div>`;
   bindCopy(main());
   main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   $('back').onclick=e=>{e.preventDefault();go(admin&&!isBuyer&&!isSeller?'admin':'orders')};
@@ -789,6 +661,7 @@ async function viewOrder(){
     if(open){const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat()});
       $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter')go_()}}};
   drawChat();
+  if(o.status==='released'&&(isBuyer||isSeller))drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);
   /* actualización automática */
   let last=o.status+o.updated_at;
   POLL=setInterval(async()=>{
@@ -800,7 +673,7 @@ async function viewOrder(){
 /* ---------- Billetera ---------- */
 async function viewWallet(){
   const my=NAV;await loadMe();if(my!==NAV)return;const st=S.settings;
-  main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}${S.flags?.topups?pauseBox('topups'):''}${S.flags?.withdrawals?pauseBox('withdrawals'):''}
+  main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}
   <div class="card"><div class="grid2">
     <div><div class="mut">Disponible</div><div class="big">${n(S.wallet.available,2)}</div><div class="mut">USDT</div></div>
     <div><div class="mut">Bloqueado en ofertas</div><div class="big">${n(S.wallet.locked,2)}</div><div class="mut">USDT</div></div></div></div>
@@ -815,23 +688,23 @@ async function viewWallet(){
   <div class="card"><h3>Retirar USDT</h3>
     <label>Monto (USDT) <button class="b gh sm" id="wmax" type="button">Máx</button></label><input id="wa" type="number" step="any" inputmode="decimal"><div class="mut" id="wfee" style="margin:-4px 0 8px"></div>
     <label>Red</label><select id="wn"><option value="BEP20">BNB Smart Chain (BEP20)</option><option value="ARBITRUM">Arbitrum One</option></select>
-    <label>Dirección de destino (0x…, de la red elegida)</label><input id="wd" placeholder="0x...">
+    <label>Dirección de destino (0x…, de la red elegida)</label>${savedSel('wsv','wallet')}<input id="wd" placeholder="0x...">
     <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${S.fees.withdraw}%.</div><button class="b w" id="wit">Solicitar retiro</button></div>
   <div id="hist">${skel(2)}</div>`;
   bindCopy(main());
   const upd=()=>{$('wfee').textContent=wfeeTxt(+$('wa').value,'USDT',2)};$('wa').oninput=upd;$('wmax').onclick=()=>{$('wa').value=S.wallet.available;upd()};
-  $('dep').onclick=ev=>act(ev.target,async()=>{await chk('topups');
+  $('dep').onclick=ev=>act(ev.target,async()=>{
     if(!(+$('da').value>0))throw new Error('Indica el monto enviado');
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dt').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('request_deposit',{p_amount:+$('da').value,p_txid:$('dt').value.trim()});viewWallet()},'Aviso enviado');
-  $('wit').onclick=ev=>act(ev.target,async()=>{await chk('withdrawals');kycChk();
+  $('wit').onclick=ev=>act(ev.target,async()=>{kycChk();
     const a=+$('wa').value,ad=$('wd').value.trim();
     if(!(a>0))throw new Error('Indica un monto válido');
     if(a>S.wallet.available)throw new Error('Saldo insuficiente');
     if(!/^0x[a-fA-F0-9]{40}$/.test(ad))throw new Error('Dirección inválida: debe empezar por 0x y tener 42 caracteres');
     const m=await ask('Confirmar retiro',`<p>Se descontarán <b>${n(a,2)} USDT</b> de tu saldo (comisión ${S.fees.withdraw}%) y recibirás <b>${n(a*(1-S.fees.withdraw/100),2)} USDT</b> por <b>${esc($('wn').value)}</b> a:</p><p><code>${esc(ad)}</code></p><p class="mut">Verifica la dirección: los envíos a una red equivocada no se recuperan.</p>`,'Solicitar retiro');
     if(!m)return;m.remove();
-    await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:$('wn').value});await loadMe();viewWallet()},'Retiro solicitado');
+    await pinGate();await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:$('wn').value});await loadMe();viewWallet()},'Retiro solicitado');
   renderCup();renderDepositCard();
   const[d,w]=await Promise.all([
     sb.from('deposits').select('amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(10),
@@ -839,7 +712,7 @@ async function viewWallet(){
   if(my!==NAV)return;
   const ST={pending:['Pendiente','warn'],approved:['Acreditado','ok'],done:['Enviado','ok'],rejected:['Rechazado','bad']};
   const list=(t,a)=>`<div class="card"><h3>${t}</h3>`+((a||[]).length?a.map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-bottom:6px"><span class="mut">${n(x.amount,2)} USDT · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join(''):'<span class="mut">Sin movimientos.</span>')+'</div>';
-  $('hist').innerHTML=list('Mis depósitos',d.data)+list('Mis retiros',w.data)}
+  $('hist').innerHTML=list('Mis depósitos',d.data)+list('Mis retiros',w.data)+'<button class="b gh w" id="hfull" style="margin-bottom:12px">🧾 Ver historial completo</button>';$('hfull').onclick=()=>go('hist')}
 
 async function renderCup(){
   const box=$('cupcard');if(!box)return;
@@ -855,7 +728,6 @@ async function renderCup(){
   box.innerHTML=C.map(c=>`<div class="card hl"><div class="mut">${c.name}</div><div class="big">${n(S.bal[c.k],c.d)} <span class="mut">${c.k}</span></div>
     <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div>${hist(t.data,'Recarga',c)}${hist(w.data,'Retiro',c)}</div>`).join('');
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
-    await loadFlags();if(S.flags.topups)return toast(PAUSE,'err');
     const c=C.find(x=>x.k===b.dataset.in);
     if(!c.card)return toast('La tarjeta de recarga aún no está configurada. Contacta al soporte','err');
     const m=await ask('Recargar '+c.name,`<div class="warnbox">Transfiere ${c.k} a esta tarjeta y sube la captura. El administrador acredita tu saldo al verificarla.</div>
@@ -865,14 +737,14 @@ async function renderCup(){
     if(!m)return;const a=+m.querySelector('#ta').value,fl=m.querySelector('#tf').files[0];m.remove();
     act(b,async()=>{if(!(a>0))throw new Error('Indica el monto');
       const p=await uploadProof('topup/'+S.user.id,'recarga',fl);await rpc('request_fiat_topup',{p_cur:c.k,p_amount:a,p_path:p});await renderCup()},'Recarga enviada: el administrador la revisará')});
-  box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;await loadFlags();if(S.flags.withdrawals)return toast(PAUSE,'err');
+  box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const c=C.find(x=>x.k===b.dataset.out);
     const m=await ask('Retirar '+c.name,`<p class="mut">Disponible: ${n(S.bal[c.k],c.d)} ${c.k}</p><label>Monto (${c.k})</label><input id="ra" data-k="${c.k}" type="number" step="any" inputmode="decimal"><div class="mut" id="rfee" style="margin:-4px 0 8px"></div><div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</div>
-      <label>Tarjeta donde recibirás (16 dígitos)</label><input id="rc" inputmode="numeric">`,'Solicitar retiro');
+      <label>Tarjeta donde recibirás (16 dígitos)</label>${savedSel('csv','tarjeta')}<input id="rc" inputmode="numeric">`,'Solicitar retiro');
     if(!m)return;const a=+m.querySelector('#ra').value,cd=m.querySelector('#rc').value.replace(/\s/g,'');m.remove();
     act(b,async()=>{if(!(a>0)||a>S.bal[c.k])throw new Error('Monto inválido o saldo insuficiente');
       if(!/^\d{16}$/.test(cd))throw new Error('La tarjeta debe tener 16 dígitos');
-      await rpc('request_fiat_withdrawal',{p_cur:c.k,p_amount:a,p_card:cd});await loadMe();viewWallet()},'Retiro solicitado')})}
+      await pinGate();await rpc('request_fiat_withdrawal',{p_cur:c.k,p_amount:a,p_card:cd});await loadMe();viewWallet()},'Retiro solicitado')})}
 
 async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
@@ -884,7 +756,7 @@ async function renderDepositCard(){
       <label>¿Cuánto quieres depositar? (entero, mínimo 5)</label><input id="dbase" type="number" min="5" step="1" inputmode="numeric">
       <button class="b w" id="dnew">Generar instrucciones de depósito</button>
       <p class="mut">Te daremos un monto exacto con decimales para identificar tu pago automáticamente.</p>`;
-    $('dnew').onclick=ev=>act(ev.target,async()=>{await chk('topups');
+    $('dnew').onclick=ev=>act(ev.target,async()=>{
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
     return}
@@ -898,7 +770,7 @@ async function renderDepositCard(){
     <button class="b ok w" id="dver">Verificar y acreditar</button>
     <button class="b gh sm" id="dcan" style="margin-top:8px">Cancelar solicitud</button>`;
   bindCopy(box);
-  $('dver').onclick=ev=>act(ev.target,async()=>{await chk('topups');
+  $('dver').onclick=ev=>act(ev.target,async()=>{
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dtx').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadMe();viewWallet()},'¡Depósito acreditado!');
   $('dcan').onclick=ev=>act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}
@@ -921,9 +793,12 @@ async function viewProfile(){
   <div class="card"><div class="row" style="justify-content:flex-start;gap:14px">${avatar(64)}<div><b style="font-size:18px">@${esc(P.username)}</b><br><span class="tag ${TG[1]}">${S.kycOff?'KYC no activado':P.is_admin?'Administrador':TG[0]}</span></div></div>
     <label style="margin-top:12px">Foto de perfil</label><input type="file" id="avf" accept="image/*"><button class="b gh sm" id="avb" disabled>Guardar foto</button></div>
   ${kyc}
+  <div class="card" id="myrep"><h3>Mi reputación</h3><span class="mut">Cargando…</span></div>
+  <button class="b gh w" id="mrb" style="margin-bottom:12px">⋯ Más herramientas (referidos, historial, ayuda…)</button>
   <div class="card"><h3>Cambiar contraseña</h3><input id="np" type="password" autocomplete="new-password" placeholder="Nueva contraseña"><button class="b gh w" id="npb">Actualizar contraseña</button></div>
   <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>`;
-  $('lo').onclick=()=>sb.auth.signOut();
+  $('lo').onclick=()=>sb.auth.signOut();$('mrb').onclick=()=>go('more');
+  delete S.st[S.user.id];loadStats([S.user.id]).then(()=>{const r=S.st[S.user.id],b=$('myrep');if(b)b.innerHTML='<h3>Mi reputación</h3>'+(r?`<div class="big" style="font-size:22px">${r.ratings>0?'⭐ '+Number(r.avg_stars).toFixed(1):'Sin calificar'}</div><div class="mut">${r.ratings} calificaciones · ${r.ops} operaciones completadas</div>`:'<span class="mut">Aún sin datos.</span>')});
   $('avf').onchange=()=>$('avb').disabled=!$('avf').files[0];
   $('avb').onclick=ev=>act(ev.target,async()=>{const p=await upImg('avatars','avatar',$('avf').files[0],3);await rpc('set_avatar',{p_path:p});await loadMe();render()},'Foto actualizada');
   $('npb').onclick=ev=>act(ev.target,async()=>{const v=$('np').value;if(v.length<6)throw new Error('La contraseña debe tener al menos 6 caracteres');
@@ -938,139 +813,379 @@ async function viewProfile(){
     await rpc('submit_kyc',{p_name:nm,p_id:id,p_front:pa,p_back:pb,p_selfie:pc});await loadMe();viewProfile()},'Verificación enviada');
 }
 
-/* ---------- Información y Anuncios ---------- */
-const lsAnn='annSeen';
-const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-const updAnn=()=>$('tAnn')?.classList.toggle('dot',!!S.annNew);
-async function checkAnn(){
-  const{data}=await sb.from('announcements').select('created_at').order('created_at',{ascending:false}).limit(1);
-  const last=data?.[0]?.created_at;
-  S.annNew=!!last&&new Date(last)>new Date(lsGet(lsAnn)||0);updAnn()}
-const backBtn='<button class="b gh sm" id="bk" style="margin-bottom:10px">← Volver</button>';
-const bindBack=()=>{const b=$('bk');if(b)b.onclick=()=>go('market')};
+/* ---------- Mejoras: más herramientas, reputación, historial, referidos, alertas, calculadora, métodos, seguridad, ayuda ---------- */
+const hd=t=>`<p><a href="#" id="back">← Volver</a></p><h2>${t}</h2>`;
+const bk=(to='more')=>{const b=$('back');if(b)b.onclick=e=>{e.preventDefault();go(to)}};
+const SQLF='mejoras_tororo.sql';
+const warnSql=()=>`<div class="warnbox bad">Esta función todavía no está activada. Ejecuta <code>${SQLF}</code> en Supabase (SQL Editor).</div>`;
+const PST={pending:['Pendiente','warn'],approved:['Acreditado','ok'],done:['Enviado','ok'],rejected:['Rechazado','bad']};
+const TST={pending:['Esperando envío','warn'],review:['En revisión del admin','warn'],released:['Completada','ok'],refunded:['Devuelta','bad']};
+const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
-async function viewAnn(){
-  const my=NAV;main().innerHTML=backBtn+'<h2>Anuncios</h2>'+skel(2);bindBack();
-  const{data,error}=await sb.from('announcements').select('id,title,body,created_at').order('created_at',{ascending:false}).limit(50);
+function viewMore(){
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['alerts','🔔','Alertas de precio','Te avisamos cuando llegue a tu precio'],['calc','🧮','Calculadora','USDT · CUP · USD'],['saved','💳','Métodos guardados','Tarjetas, teléfonos y direcciones'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial']];
+  main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
+  bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
+
+/* ----- Reputación ----- */
+async function loadStats(ids){
+  ids=[...new Set((ids||[]).filter(Boolean))].filter(i=>!(i in S.st));if(!ids.length)return;
+  try{const{data}=await sb.from('user_stats').select('user_id,avg_stars,ratings,ops').in('user_id',ids);
+    (data||[]).forEach(r=>S.st[r.user_id]=r);ids.forEach(i=>{if(!(i in S.st))S.st[i]=null})}catch(e){}}
+const repTxt=uid=>{const r=S.st[uid];if(!r)return'';return r.ratings>0?`⭐ ${Number(r.avg_stars).toFixed(1)} · ${r.ops} operaciones`:`Sin calificar · ${r.ops} operaciones`};
+async function drawRate(kind,id,other){
+  const box=$('ratebox');if(!box)return;const my=NAV;
+  const{data:ex,error}=await sb.from('ratings').select('stars,comment').eq('kind',kind).eq('ref_id',String(id)).eq('rater_id',S.user.id).maybeSingle();
+  if(my!==NAV||!$('ratebox')||error)return;
+  const{data:pr}=await sb.from('profiles').select('username').eq('id',other).maybeSingle();
+  if(my!==NAV||!$('ratebox'))return;
+  const nm='@'+esc(pr?.username||'usuario');
+  if(ex){box.innerHTML=`<div class="card"><h3>Tu calificación a ${nm}</h3><div style="font-size:22px">${'⭐'.repeat(ex.stars)}</div>${ex.comment?`<div class="mut">${esc(ex.comment)}</div>`:''}</div>`;return}
+  let sel=0;
+  box.innerHTML=`<div class="card"><h3>Califica a ${nm}</h3><div id="stars" style="font-size:34px;letter-spacing:8px;cursor:pointer;margin-bottom:8px">${[1,2,3,4,5].map(i=>`<span data-s="${i}" style="color:var(--warn);opacity:.3">★</span>`).join('')}</div><input id="rtC" maxlength="200" placeholder="Comentario (opcional)"><button class="b w" id="rtB" disabled>Enviar calificación</button></div>`;
+  $('stars').onclick=e=>{const s=e.target.closest('[data-s]');if(!s)return;sel=+s.dataset.s;box.querySelectorAll('[data-s]').forEach(x=>x.style.opacity=+x.dataset.s<=sel?'1':'.3');$('rtB').disabled=false};
+  $('rtB').onclick=ev=>act(ev.target,async()=>{await rpc('rate_user',{p_kind:kind,p_ref:String(id),p_stars:sel,p_comment:$('rtC').value.trim()});S.st={};await drawRate(kind,id,other)},'¡Gracias por calificar!')}
+
+/* ----- Historial con comprobantes ----- */
+async function viewHist(){
+  const my=NAV,u=S.user.id;main().innerHTML=hd('Historial')+skel(4);bk();
+  const own=(t)=>sb.from(t).select('*').eq('user_id',u).order('created_at',{ascending:false}).limit(60);
+  const[o,tr,dp,wd,ft,fw]=await Promise.all([
+    sb.from('orders').select('id,buyer_id,seller_id,amount,price_cup,total_cup,status,methods,created_at,fee_usdt').or(`buyer_id.eq.${u},seller_id.eq.${u}`).order('created_at',{ascending:false}).limit(60),
+    sb.from('trades').select('*').or(`buyer_id.eq.${u},seller_id.eq.${u}`).order('created_at',{ascending:false}).limit(60),
+    own('deposits'),own('withdrawals'),own('fiat_topups'),own('fiat_withdrawals')]);
   if(my!==NAV)return;
-  if(error)return main().innerHTML=backBtn+'<h2>Anuncios</h2><div class="warnbox bad">'+esc(friendly(error))+'</div>',bindBack();
-  main().innerHTML=backBtn+'<h2>Anuncios</h2>'+((data||[]).length?data.map(a=>`<div class="card nt"><b>${esc(a.title)}</b><div class="pre" style="margin:6px 0">${esc(a.body)}</div><div class="mut">${when(a.created_at)}</div></div>`).join(''):'<div class="card mut">No hay anuncios por ahora.</div>');
-  bindBack();
-  if(data?.[0]){lsSet(lsAnn,data[0].created_at);S.annNew=false;updAnn()}}
+  const L=[],st=(m,s)=>m[s]||[s,''];
+  (o.data||[]).forEach(x=>{const cu=parseM(x.methods).c,[s,k]=st(STATUS,x.status),buy=x.buyer_id===u;
+    L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} USDT`,sub:`${mny(due(x,cu),cu)} ${cu}`,s,k,rows:[['Tipo',buy?'Compra de USDT':'Venta de USDT'],['Cantidad',`${n(x.amount,4)} USDT`],['Precio por USDT',`${mny(x.price_cup,cu)} ${cu}`],['Total',`${mny(due(x,cu),cu)} ${cu}`],...(x.fee_usdt>0?[['Comisión',`${n(x.fee_usdt,4)} USDT`]]:[])]})});
+  (tr.data||[]).forEach(x=>{const[s,k]=st(TST,x.status),buy=x.buyer_id===u,A=ASSETS[x.asset]?.label||x.asset;
+    L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} ${A}`,sub:`${n(x.total,qd(x.quote))} ${x.quote}`,s,k,rows:[['Tipo',`${buy?'Compra':'Venta'} · ${A}`],['Cantidad',`${n(x.amount,4)} ${A}`],['Precio por unidad',`${n(x.price,x.price<1?4:2)} ${x.quote}`],['Total',`${n(x.total,qd(x.quote))} ${x.quote}`],...(x.fee>0?[['Comisión',`${n(x.fee,qd(x.fee_cur))} ${x.fee_cur||''}`]]:[])]})});
+  (dp.data||[]).forEach(x=>{const[s,k]=st(PST,x.status);L.push({g:'dep',id:x.id,at:x.created_at,t:`Depósito de ${n(x.amount,2)} USDT`,sub:'USDT',s,k,rows:[['Tipo','Depósito USDT'],['Monto',`${n(x.amount,4)} USDT`],...(x.txid?[['TxID',x.txid]]:[])]})});
+  (wd.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),net=x.net_amount!=null?Number(x.net_amount):null;
+    L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,2)} USDT`,sub:x.network||'USDT',s,k,rows:[['Tipo','Retiro USDT'],['Monto solicitado',`${n(x.amount,4)} USDT`],...(net!=null?[['Recibes',`${n(net,4)} USDT`]]:[]),...(x.network?[['Red',x.network]]:[]),...(x.address?[['Dirección',x.address]]:[])]})});
+  (ft.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),d=dcur(x.currency);L.push({g:'top',id:x.id,at:x.created_at,t:`Recarga de ${n(x.amount,d)} ${x.currency}`,sub:'Saldo',s,k,rows:[['Tipo','Recarga de saldo'],['Monto',`${n(x.amount,d)} ${x.currency}`]]})});
+  (fw.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),d=dcur(x.currency);L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,d)} ${x.currency}`,sub:'Saldo',s,k,rows:[['Tipo','Retiro de saldo'],['Monto solicitado',`${n(x.amount,d)} ${x.currency}`]]})});
+  L.sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const F=S.hf||'all',tabs={all:'Todo',op:'Operaciones',dep:'Depósitos',wd:'Retiros',top:'Recargas'},vis=L.filter(x=>F==='all'||x.g===F);
+  main().innerHTML=hd('Historial')+`<div class="chips">${Object.entries(tabs).map(([k,v])=>`<button class="chip ${F===k?'on':''}" data-f="${k}">${v}</button>`).join('')}</div>`+
+    (vis.length?vis.map((x,i)=>`<div class="card" style="cursor:pointer" data-r="${i}"><div class="row"><b>${esc(x.t)}</b><span class="tag ${x.k}">${esc(x.s)}</span></div><div class="mut">${esc(x.sub)} · ${when(x.at)}</div></div>`).join(''):'<div class="card mut">No hay movimientos en esta lista.</div>');
+  bk();main().querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{S.hf=b.dataset.f;viewHist()});
+  main().querySelectorAll('[data-r]').forEach(c=>c.onclick=()=>receipt(vis[+c.dataset.r]))}
+const rcRows=x=>[...x.rows,['Estado',x.s],['Fecha',when(x.at)],['Referencia',String(x.id).slice(0,8).toUpperCase()]];
+const rcText=x=>`🧾 Comprobante · ${APP_NAME} P2P\n${x.t}\n\n`+rcRows(x).map(([a,b])=>`${a}: ${b}`).join('\n');
+function rcBlob(x){return new Promise(res=>{
+  const R=rcRows(x),W=720,H=190+R.length*54,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  g.fillStyle='#090a10';g.fillRect(0,0,W,H);g.fillStyle='#12131c';g.fillRect(24,24,W-48,H-48);
+  g.fillStyle='#b6adff';g.font='bold 30px system-ui,sans-serif';g.fillText(APP_NAME+' P2P · Comprobante',48,76);
+  g.fillStyle='#eceefb';g.font='bold 28px system-ui,sans-serif';g.fillText(x.t,48,126);
+  R.forEach(([a,b],i)=>{const y=186+i*54;g.fillStyle='#8c90a8';g.font='24px system-ui,sans-serif';g.textAlign='left';g.fillText(a,48,y);g.fillStyle='#eceefb';g.textAlign='right';let s=String(b);while(g.measureText(s).width>W-300&&s.length>6)s=s.slice(0,-2);if(s!==String(b))s+='…';g.fillText(s,W-48,y)});
+  c.toBlob(res,'image/png')})}
+function receipt(x){
+  const m=modal(`<h3>🧾 Comprobante</h3><b>${esc(x.t)}</b>${rcRows(x).map(([a,b])=>`<div class="row" style="margin-top:6px;flex-wrap:nowrap"><span class="mut">${esc(a)}</span><span style="word-break:break-all;text-align:right">${esc(b)}</span></div>`).join('')}
+   <div class="grid2" style="margin-top:12px"><button class="b" id="rs1">Compartir</button><button class="b gh" id="rs2">Guardar imagen</button></div><button class="b gh w" style="margin-top:8px" id="rs3">Cerrar</button>`);
+  m.querySelector('#rs3').onclick=()=>m.remove();
+  m.querySelector('#rs1').onclick=async()=>{try{const b=await rcBlob(x),f=new File([b],'comprobante.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:rcText(x)});else if(navigator.share)await navigator.share({text:rcText(x)});else copy(rcText(x))}catch(e){if(!e||e.name!=='AbortError')copy(rcText(x))}};
+  m.querySelector('#rs2').onclick=async()=>{const b=await rcBlob(x),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='comprobante-'+String(x.id).slice(0,8)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}}
 
+/* ----- Referidos ----- */
+async function viewRefs(){
+  const my=NAV;main().innerHTML=hd('Referidos')+skel(3);bk();
+  let d;try{d=await rpc('my_referral_stats')}catch(e){if(my===NAV){main().innerHTML=hd('Referidos')+warnSql()+`<p class="mut">${esc(e.message)}</p>`;bk()}return}
+  if(my!==NAV)return;
+  const link=location.origin+location.pathname+'?ref='+d.code,items=d.items||[],done=items.filter(x=>x.rewarded),tot={};
+  done.forEach(x=>{if(x.reward>0)tot[x.currency]=(tot[x.currency]||0)+Number(x.reward)});
+  const rule=d.mode==='commission'?`el ${n(d.pct,2)}% de la comisión que paga tu referido`:`el ${n(d.pct,2)}% del monto de la primera operación de tu referido (sin pasar de la comisión cobrada)`;
+  main().innerHTML=hd('Referidos')+`
+  <div class="card hl"><h3>🎁 Tu enlace de invitación</h3><p class="mut" style="margin-top:0">Ganas ${rule}. <b>Solo cuenta la primera operación</b> de cada amigo nuevo; se paga de la comisión de la plataforma y llega directo a tu saldo.${d.enabled===false?' <b>(El programa está pausado por ahora.)</b>':''}</p>
+   <code style="display:block;margin:8px 0">${esc(link)}</code>
+   <div class="grid2"><button class="b" id="rl1">Compartir enlace</button><button class="b gh" id="rl2">Copiar enlace</button></div>
+   <p class="mut" style="margin:10px 0 0">Tu código: <b>${esc(d.code)}</b></p></div>
+  <div class="wts"><div class="wt"><div class="mut">Referidos</div><div class="big">${items.length}</div><div class="mut">registrados</div></div><div class="wt"><div class="mut">Ya operaron</div><div class="big">${done.length}</div><div class="mut">te pagaron</div></div><div class="wt"><div class="mut">Pendientes</div><div class="big">${items.length-done.length}</div><div class="mut">sin operar</div></div></div>
+  <div class="card" style="margin-top:12px"><h3>Total recibido por referidos</h3>${Object.keys(tot).length?`<div class="wts">${Object.entries(tot).map(([c,v])=>wtile('Recibido',v,c,dcur(c))).join('')}</div>`:'<span class="mut">Todavía no has recibido nada.</span>'}</div>
+  <h3>Mis referidos</h3>`+(items.length?items.map(x=>`<div class="card"><div class="row"><b>@${esc(x.username)}</b><span class="tag ${x.rewarded?'ok':'warn'}">${x.rewarded?'Primera operación hecha':'Aún no opera'}</span></div><div class="mut">Se unió: ${when(x.joined)}</div>${x.rewarded?`<div style="margin-top:6px">Te llegó: <b>${x.reward>0?'+':''}${n(x.reward,dcur(x.currency))} ${esc(x.currency||'')}</b> <span class="mut">· ${when(x.rewarded_at)}</span></div>`:''}</div>`).join(''):'<div class="card mut">Aún no tienes referidos. Comparte tu enlace para empezar.</div>');
+  bk();
+  $('rl1').onclick=async()=>{const t=`Únete a ${APP_NAME} P2P y cambia USDT, CUP y saldo con respaldo de un administrador: ${link}`;try{if(navigator.share)await navigator.share({text:t});else copy(t)}catch(e){}};
+  $('rl2').onclick=()=>copy(link)}
+async function loadPin(){try{const{data,error}=await sb.rpc('has_pin');S.hasPin=error?false:!!data}catch(e){S.hasPin=false}}
+async function loadSaved(){try{const{data,error}=await sb.from('saved_methods').select('id,label,kind,value').order('created_at');S.savedErr=!!error;S.saved=data||[]}catch(e){S.saved=[]}}
+async function loadAlertsFlag(){try{const r=await sb.from('price_alerts').select('id',{count:'exact',head:true}).eq('active',true);S.hasAlerts=(r.count||0)>0}catch(e){S.hasAlerts=false}}
+const devName=()=>{const u=navigator.userAgent,b=/Edg\//.test(u)?'Edge':/OPR\//.test(u)?'Opera':/Firefox/.test(u)?'Firefox':/Chrome/.test(u)?'Chrome':/Safari/.test(u)?'Safari':'Navegador',o=/Android/.test(u)?'Android':/iPhone|iPad/.test(u)?'iOS':/Windows/.test(u)?'Windows':/Mac/.test(u)?'Mac':/Linux/.test(u)?'Linux':'';return b+(o?' en '+o:'')};
+async function afterLogin(){
+  const uid=S.user.id;
+  try{const pr=lsGet('pending_ref'),young=Date.now()-new Date(S.user.created_at)<7*864e5&&!lsGet('refchk_'+uid);
+    if(pr||young){await sb.rpc('claim_referral',{p_code:pr||null});lsSet('refchk_'+uid,'1');try{localStorage.removeItem('pending_ref')}catch(e){}}}catch(e){}
+  await Promise.all([loadPin(),loadSaved(),loadAlertsFlag()]);
+  try{if(!sessionStorage.getItem('lg_'+uid)){sessionStorage.setItem('lg_'+uid,'1');
+    let did=lsGet('dev_id');if(!did){did=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Math.random()).slice(2)+Date.now();lsSet('dev_id',did)}
+    const r=await rpc('log_login',{p_device_id:did,p_device:devName()});
+    if(r&&r.new)setTimeout(()=>toast('🔐 Nuevo dispositivo en tu cuenta. Si no fuiste tú, cambia tu contraseña','err'),700)}}catch(e){}}
+
+/* ----- Alertas de precio ----- */
+async function viewAlerts(){
+  const my=NAV;main().innerHTML=hd('Alertas de precio')+skel(2);bk();
+  const{data,error}=await sb.from('price_alerts').select('*').order('created_at',{ascending:false}).limit(40);
+  if(my!==NAV)return;
+  if(error){main().innerHTML=hd('Alertas de precio')+warnSql();bk();return}
+  S.hasAlerts=(data||[]).some(a=>a.active);
+  const tx=a=>`${ASSETS[a.asset]?.chip||a.asset} ${a.direction==='below'?'≤':'≥'} ${n(a.target,4)} ${a.quote==='USD'?'USD':a.quote}`;
+  const act_=(data||[]).filter(a=>a.active),done=(data||[]).filter(a=>!a.active);
+  main().innerHTML=hd('Alertas de precio')+`<div class="card"><p class="mut" style="margin-top:0">Te avisamos cuando el precio del mercado llegue al que pones. Se revisan mientras la app está abierta.</p>
+   <label>Quiero seguir</label><select id="ala">${['USDT','USD','MOVIL'].map(k=>`<option value="${k}">${ASSETS[k].label}</option>`).join('')}</select>
+   <label>Precio en</label><select id="alq">${['CUP','USD','USDT'].map(k=>`<option value="${k}">${k==='USD'?'USD (Clásica)':k}</option>`).join('')}</select>
+   <label>Avísame cuando esté</label><select id="ald"><option value="below">A este precio o menos (para comprar barato)</option><option value="above">A este precio o más (para vender caro)</option></select>
+   <label>Precio objetivo por unidad</label><input id="alt" type="number" step="any" min="0" inputmode="decimal">
+   <button class="b w" id="alg">Crear alerta</button></div>
+  <h3>Activas</h3>`+(act_.length?act_.map(a=>`<div class="card"><div class="row"><b>${esc(tx(a))}</b><button class="b gh sm" data-alx="${a.id}">Quitar</button></div><div class="mut">Creada ${when(a.created_at)}</div></div>`).join(''):'<div class="card mut">No tienes alertas activas.</div>')+
+  (done.length?`<h3>Ya avisadas</h3>`+done.slice(0,10).map(a=>`<div class="card"><div class="row"><b>${esc(tx(a))}</b><span class="tag ok">Avisada</span></div><div class="mut">Llegó a ${n(a.triggered_price,4)} ${esc(a.quote)} · ${a.triggered_at?when(a.triggered_at):''}</div></div>`).join(''):'');
+  bk();
+  $('alg').onclick=ev=>act(ev.target,async()=>{const asset=$('ala').value,quote=$('alq').value,direction=$('ald').value,target=+$('alt').value;
+    if(asset===quote)throw new Error('Elige monedas distintas');if(!(target>0))throw new Error('Escribe un precio objetivo válido');
+    const{error:e}=await sb.from('price_alerts').insert({asset,quote,direction,target});if(e)throw e;S.hasAlerts=true;await viewAlerts()},'Alerta creada');
+  main().querySelectorAll('[data-alx]').forEach(b=>b.onclick=()=>act(b,async()=>{const{error:e}=await sb.from('price_alerts').delete().eq('id',b.dataset.alx);if(e)throw e;await viewAlerts()},'Alerta eliminada'))}
+
+/* ----- Calculadora ----- */
+async function viewCalc(){
+  const my=NAV;main().innerHTML=hd('Calculadora')+skel(2);bk();
+  const[a,o,f]=await Promise.all([sb.from('ads').select('side,asset,quote,price').eq('status','open'),sb.from('offers').select('price_cup,methods').eq('status','open'),sb.from('fx_offers').select('price_cup').eq('status','open')]);
+  if(my!==NAV)return;
+  const R=[];(a.data||[]).forEach(x=>R.push({asset:x.asset,quote:x.quote,side:x.side,price:+x.price}));
+  const qm={'CUP':'CUP','Saldo CUP':'CUP','Saldo Clásica':'USD'};
+  (o.data||[]).forEach(x=>{const c=qm[parseM(x.methods).c];if(c)R.push({asset:'USDT',quote:c,side:'sell',price:+x.price_cup})});
+  (f.data||[]).forEach(x=>R.push({asset:'USD',quote:'CUP',side:'sell',price:+x.price_cup}));
+  const best=(F,T)=>{let r=null,r2=null;
+    R.filter(x=>x.side==='buy'&&x.asset===F&&x.quote===T&&x.price>0).forEach(x=>{if(r===null||x.price>r)r=x.price});
+    R.filter(x=>x.side==='sell'&&x.asset===T&&x.quote===F&&x.price>0).forEach(x=>{const v=1/x.price;if(r2===null||v>r2)r2=v});
+    return r===null?r2:r2===null?r:Math.max(r,r2)};
+  const CS=['USDT','CUP','USD'],lb={USDT:'USDT',CUP:'CUP',USD:'USD (Clásica)'};
+  const pairs=[];CS.forEach(F=>CS.forEach(T=>{if(F!==T){const r=best(F,T);if(r!=null)pairs.push([F,T,r])}}));
+  main().innerHTML=hd('Calculadora')+`<div class="card"><label>Tengo</label><input id="cx" type="number" step="any" min="0" inputmode="decimal" placeholder="0">
+   <div class="grid2"><select id="cf">${CS.map(k=>`<option value="${k}">${lb[k]}</option>`).join('')}</select><select id="ct">${CS.map((k,i)=>`<option value="${k}" ${i===1?'selected':''}>${lb[k]}</option>`).join('')}</select></div>
+   <div id="cr" style="margin-top:6px"></div><p class="mut" style="margin-bottom:0">Referencia con las mejores ofertas abiertas ahora mismo. El precio final depende de la oferta que elijas.</p></div>
+  <h3>Mejores precios ahora</h3>`+(pairs.length?`<div class="card">${pairs.map(([F,T,r])=>`<div class="row" style="margin-bottom:6px"><span class="mut">1 ${lb[F]}</span><b>${n(r,r<1?6:2)} ${T==='USD'?'USD':T}</b></div>`).join('')}</div>`:'<div class="card mut">Todavía no hay ofertas abiertas para calcular.</div>');
+  bk();
+  const upd=()=>{const x=+$('cx').value,F=$('cf').value,T=$('ct').value,r=F===T?1:best(F,T);
+    $('cr').innerHTML=!(x>0)?'':r==null?'<span class="mut">No hay ofertas abiertas para este cambio ahora mismo.</span>':`<div class="big">${n(x*r,dcur(T))} ${T}</div><div class="mut">Mejor precio: 1 ${F} = ${n(r,r<1?6:2)} ${T}</div>`};
+  ['cx','cf','ct'].forEach(i=>$(i).oninput=upd)}
+
+/* ----- Métodos de pago guardados ----- */
+const KS={tarjeta:'💳 Tarjeta',telefono:'📱 Teléfono',wallet:'🪙 Dirección USDT'};
+const savedSel=(id,kind)=>{const l=(S.saved||[]).filter(x=>kind?x.kind===kind:x.kind!=='wallet');return l.length?`<select id="${id}" data-sv="1"><option value="">⚡ Usar un dato guardado…</option>${l.map(x=>`<option value="${esc(x.value)}">${esc(x.label)} · ${esc(x.value.length>22?x.value.slice(0,20)+'…':x.value)}</option>`).join('')}</select>`:''};
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.sv||!t.value)return;
+  const map={osv:'od',asv:'ad',wsv:'wd',csv:'rc'},sc=t.closest('.md')||document,el=sc.querySelector('#'+map[t.id]);
+  if(el){el.value=t.value;el.dispatchEvent(new Event('input',{bubbles:true}))}t.value=''});
+async function viewSaved(){
+  const my=NAV;main().innerHTML=hd('Métodos guardados')+skel(2);bk();await loadSaved();if(my!==NAV)return;
+  if(S.savedErr){main().innerHTML=hd('Métodos guardados')+warnSql();bk();return}
+  main().innerHTML=hd('Métodos guardados')+`<div class="card"><p class="mut" style="margin-top:0">Guarda tus datos una vez y úsalos al publicar ofertas o retirar, sin escribirlos de nuevo.</p>
+   <label>Nombre (para reconocerlo)</label><input id="svl" maxlength="40" placeholder="Ej: Mi tarjeta del Banco">
+   <label>Tipo</label><select id="svk">${Object.entries(KS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+   <label>Dato</label><input id="svv" placeholder="Número de tarjeta, teléfono o dirección 0x…">
+   <button class="b w" id="svg">Guardar</button></div>`+
+   ((S.saved||[]).length?S.saved.map(x=>`<div class="card"><div class="row"><b>${esc(x.label)}</b><span class="tag">${KS[x.kind]||x.kind}</span></div><div class="row" style="margin-top:6px"><code>${esc(x.value)}</code><span>${cpBtn(x.value)} <button class="b bad sm" data-svx="${x.id}">Borrar</button></span></div></div>`).join(''):'<div class="card mut">Todavía no has guardado nada.</div>');
+  bk();
+  $('svg').onclick=ev=>act(ev.target,async()=>{const label=$('svl').value.trim(),kind=$('svk').value;let value=$('svv').value.trim();
+    if(!label)throw new Error('Ponle un nombre');
+    if(kind==='tarjeta'){value=value.replace(/\s/g,'');if(!/^\d{16}$/.test(value))throw new Error('La tarjeta debe tener 16 dígitos')}
+    if(kind==='telefono'){if(value.replace(/\D/g,'').length<8)throw new Error('Escribe un teléfono válido')}
+    if(kind==='wallet'&&!/^0x[a-fA-F0-9]{40}$/.test(value))throw new Error('La dirección debe empezar por 0x y tener 42 caracteres');
+    const{error}=await sb.from('saved_methods').insert({label,kind,value});if(error)throw error;await viewSaved()},'Guardado');
+  main().querySelectorAll('[data-svx]').forEach(b=>b.onclick=async()=>{const m=await ask('Borrar dato','<p>¿Seguro que quieres borrarlo?</p>','Borrar','bad');if(!m)return;m.remove();
+    act(b,async()=>{const{error}=await sb.from('saved_methods').delete().eq('id',b.dataset.svx);if(error)throw error;await viewSaved()},'Borrado')})}
+
+/* ----- Seguridad: PIN, dos pasos, accesos ----- */
+async function pinGate(){
+  if(!S.hasPin)return;
+  const m=await ask('Confirma tu PIN','<p class="mut">Escribe tu PIN de seguridad para continuar.</p><input id="pnc" type="password" inputmode="numeric" maxlength="6" autocomplete="off">','Confirmar');
+  if(!m)throw new Error('Operación cancelada');
+  const p=m.querySelector('#pnc').value;m.remove();
+  const ok=await rpc('verify_pin',{p_pin:p});if(!ok)throw new Error('PIN incorrecto')}
+async function viewSec(){
+  const my=NAV;main().innerHTML=hd('Seguridad')+skel(3);bk();
+  await loadPin();
+  const[fa,lg]=await Promise.all([sb.auth.mfa.listFactors(),sb.from('login_events').select('device,created_at').order('created_at',{ascending:false}).limit(8)]);
+  if(my!==NAV)return;
+  const tf=((fa.data&&fa.data.totp)||[])[0];
+  main().innerHTML=hd('Seguridad')+`
+  <div class="card"><div class="row"><h3 style="margin:0">PIN para retiros</h3><span class="tag ${S.hasPin?'ok':'warn'}">${S.hasPin?'Activado':'Sin PIN'}</span></div>
+   <p class="mut">Te pedimos este PIN (4 a 6 números) cada vez que solicites un retiro.</p>
+   ${S.hasPin?'<label>PIN actual</label><input id="po" type="password" inputmode="numeric" maxlength="6" autocomplete="off">':''}
+   <label>${S.hasPin?'Nuevo PIN':'Crea tu PIN'}</label><input id="pn1" type="password" inputmode="numeric" maxlength="6" autocomplete="off">
+   <button class="b w" id="ps">${S.hasPin?'Cambiar PIN':'Activar PIN'}</button>${S.hasPin?'<button class="b gh w" id="pr" style="margin-top:8px">Quitar PIN</button>':''}</div>
+  <div class="card"><div class="row"><h3 style="margin:0">Verificación en dos pasos</h3><span class="tag ${tf?'ok':'warn'}">${tf?'Activada':'Desactivada'}</span></div>
+   <p class="mut">Usa una app autenticadora (Google Authenticator, Authy…). Al iniciar sesión te pediremos el código de 6 dígitos.</p>
+   ${tf?'<button class="b gh w" id="m0">Desactivar</button>':'<button class="b w" id="m1">Activar verificación en dos pasos</button>'}<div id="mbox"></div></div>
+  <div class="card"><h3>Accesos recientes</h3>${(lg.data||[]).length?lg.data.map(x=>`<div class="row" style="margin-bottom:6px"><span>${esc(x.device||'Dispositivo')}</span><span class="mut">${when(x.created_at)}</span></div>`).join('')+'<p class="mut" style="margin-bottom:0">Si ves un acceso que no reconoces, cambia tu contraseña en Perfil.</p>':'<span class="mut">Sin registros todavía.</span>'}</div>`;
+  bk();
+  $('ps').onclick=ev=>act(ev.target,async()=>{const p=$('pn1').value;if(!/^\d{4,6}$/.test(p))throw new Error('El PIN debe tener de 4 a 6 números');
+    await rpc('set_pin',{p_pin:p,p_old:$('po')?$('po').value:null});await viewSec()},S.hasPin?'PIN cambiado':'PIN activado');
+  if($('pr'))$('pr').onclick=async ev=>{const m=await ask('Quitar PIN','<label>PIN actual</label><input id="prp" type="password" inputmode="numeric" maxlength="6" autocomplete="off">','Quitar','bad');if(!m)return;const p=m.querySelector('#prp').value;m.remove();
+    act(ev.target,async()=>{await rpc('remove_pin',{p_pin:p});await viewSec()},'PIN quitado')};
+  if($('m1'))$('m1').onclick=ev=>act(ev.target,async()=>{
+    const{data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Tororo '+Date.now()});if(error)throw error;
+    $('mbox').innerHTML=`<div style="text-align:center;margin-top:10px"><img src="${esc(data.totp.qr_code)}" alt="Código QR" style="width:200px;background:#fff;border-radius:10px;padding:8px"><p class="mut">Escanéalo, o escribe esta clave: <code>${esc(data.totp.secret)}</code></p></div><label>Código de 6 dígitos</label><input id="mc2" inputmode="numeric" maxlength="6"><button class="b ok w" id="mv">Confirmar y activar</button>`;
+    $('mv').onclick=e2=>act(e2.target,async()=>{const{data:c,error:e1}=await sb.auth.mfa.challenge({factorId:data.id});if(e1)throw e1;
+      const{error:e3}=await sb.auth.mfa.verify({factorId:data.id,challengeId:c.id,code:$('mc2').value.trim()});if(e3)throw new Error('Código incorrecto');await viewSec()},'Verificación en dos pasos activada')});
+  if($('m0'))$('m0').onclick=async ev=>{const m=await ask('Desactivar dos pasos','<p>Tu cuenta quedará menos protegida.</p>','Desactivar','bad');if(!m)return;m.remove();
+    act(ev.target,async()=>{const{error}=await sb.auth.mfa.unenroll({factorId:tf.id});if(error)throw error;await viewSec()},'Verificación desactivada')}}
+async function mfaGate(){
+  try{const{data}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(data&&data.nextLevel==='aal2'&&data.currentLevel!=='aal2'){renderMfa();return true}}catch(e){}
+  return false}
+function renderMfa(){
+  $app.innerHTML=`<div class="auth"><div class="card"><h3>Verificación en dos pasos</h3><p class="mut">Escribe el código de 6 dígitos de tu app autenticadora.</p><input id="mc" inputmode="numeric" maxlength="6" autocomplete="one-time-code"><button class="b w" id="mg">Verificar</button><button class="b gh w" id="mo" style="margin-top:8px">Cerrar sesión</button></div></div>`;
+  $('mo').onclick=()=>sb.auth.signOut();
+  $('mg').onclick=ev=>act(ev.target,async()=>{const{data:f,error:e1}=await sb.auth.mfa.listFactors();if(e1)throw e1;const fa=((f&&f.totp)||[])[0];if(!fa)throw new Error('No hay un factor configurado');
+    const{data:c,error:e2}=await sb.auth.mfa.challenge({factorId:fa.id});if(e2)throw e2;
+    const{error:e3}=await sb.auth.mfa.verify({factorId:fa.id,challengeId:c.id,code:$('mc').value.trim()});if(e3)throw new Error('Código incorrecto');await boot()});
+  $('mc').onkeydown=e=>{if(e.key==='Enter')$('mg').click()}}
+
+/* ----- Ayuda y tutorial ----- */
+const FAQ=()=>[
+ ['¿Cómo compro USDT, CUP o saldo?','En Mercado toca “Comprar”, elige el saldo que quieres y toca el anuncio que más te convenga. Revisa el resumen y confirma. Si pagas con tu saldo interno, se completa al instante. En saldo móvil debes subir la foto del envío y esperar la aprobación del administrador.'],
+ ['¿Cómo vendo?','En Mercado toca “+ Publicar anuncio”. Lo que vendes queda retenido junto con la comisión de la plataforma ('+S.fees.trade+'%), que paga el vendedor desde su saldo. Si no te alcanza para la comisión, publica un poco menos (por ejemplo 99 en vez de 100).'],
+ ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
+ ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
+ ['¿Cómo recargo saldo CUP o Clásica?','En Billetera toca “Recargar” en el saldo que quieras, transfiere a la tarjeta indicada y sube la captura. El administrador acredita tu saldo al verificarla.'],
+ ['¿Cómo deposito USDT?','En Billetera, sección “Depositar USDT”, sigue las indicaciones. Si el depósito automático falla, usa el depósito manual y avisa con el TxID.'],
+ ['¿Cómo funciona el saldo móvil?','Es una transferencia externa, por eso exige foto del envío y de la recepción. El pago queda retenido y se libera cuando el administrador aprueba la operación.'],
+ ['Tengo un problema con una operación','Abre la operación y pulsa “Pedir revisión del administrador / Abrir disputa”. Podrás hablar con el administrador en el chat y aportar pruebas. También puedes escribir a soporte por WhatsApp.'],
+ ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% (la paga el vendedor) y cada retiro '+S.fees.withdraw+'%.'],
+ ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
+ ['¿Cómo protejo mi cuenta?','En Más → Seguridad puedes crear un PIN para los retiros y activar la verificación en dos pasos. También verás tus accesos recientes.'],
+ ['¿Para qué sirven las estrellas?','Al terminar una operación puedes calificar a la otra persona. Las estrellas y el número de operaciones se ven en cada oferta para que elijas con confianza.']];
+function viewHelp(){
+  const wa=S.settings.whatsapp||CFG.whatsapp;
+  main().innerHTML=hd('Ayuda')+`<button class="b w" id="tuv" style="margin-bottom:12px">▶ Ver el tutorial</button>`+
+   FAQ().map(([q,a])=>`<details class="card"><summary style="cursor:pointer;font-weight:600">${esc(q)}</summary><p class="mut" style="margin:8px 0 0">${esc(a)}</p></details>`).join('')+
+   (wa?`<a style="display:block;text-align:center;text-decoration:none;margin-top:4px;padding:12px;border:1px solid var(--line);border-radius:14px;color:var(--tx)" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">💬 Hablar con soporte</a>`:'');
+  bk();$('tuv').onclick=()=>showTuto(0)}
+const TUTO=[['👋','Bienvenido a '+APP_NAME,'Cambia USDT, CUP y saldo móvil entre usuarios, con un administrador que respalda cada operación.'],['🪪','Verifica tu identidad','Para comprar, vender y retirar necesitas verificar tu identidad una sola vez. Hazlo desde Perfil.'],['💼','Carga tu billetera','En Billetera puedes depositar USDT o recargar saldo CUP y Clásica.'],['🛒','Compra o vende','En Mercado elige Comprar o Vender, filtra por saldo y publica un anuncio o toma uno existente.'],['⭐','Opera con confianza','Mira las estrellas de cada vendedor, califica al terminar y escribe a soporte si tienes dudas.']];
+function showTuto(i){
+  const t=TUTO[i],last=i===TUTO.length-1,key='tuto_'+S.user.id;
+  const m=modal(`<div style="text-align:center"><div style="font-size:48px">${t[0]}</div><h3>${esc(t[1])}</h3><p class="mut">${esc(t[2])}</p><div class="mut" style="font-size:12px">${i+1} / ${TUTO.length}</div></div><div class="grid2" style="margin-top:12px"><button class="b gh" id="t0">${last?'Cerrar':'Saltar'}</button><button class="b" id="t1">${last?'¡Listo!':'Siguiente'}</button></div>`);
+  const fin=()=>{lsSet(key,'1');m.remove()};
+  m.onclick=e=>{if(e.target===m)fin()};m.querySelector('#t0').onclick=fin;
+  m.querySelector('#t1').onclick=()=>{if(last)fin();else{m.remove();showTuto(i+1)}}}
+function maybeTuto(){if(S.user&&!S.profile?.is_admin&&!lsGet('tuto_'+S.user.id))setTimeout(()=>showTuto(0),900)}
+
+
+/* ---------- Información y Anuncios (usuarios) ---------- */
 async function viewInfo(){
-  const my=NAV;main().innerHTML=backBtn+'<h2>Información</h2>'+skel(2);bindBack();
-  const{data,error}=await sb.from('site_info').select('title,body,photos').eq('id',1).maybeSingle();
+  const my=NAV,hd='<p><a href="#" id="back">← Volver</a></p><h2>Información</h2>';
+  main().innerHTML=hd+skel(2);
+  const{data,error}=await sb.from('admin_info').select('full_name,about,photo_paths,updated_at').eq('id',1).maybeSingle();
   if(my!==NAV)return;
-  if(error)return main().innerHTML=backBtn+'<h2>Información</h2><div class="warnbox bad">'+esc(friendly(error))+'</div>',bindBack();
-  if(!data||(!data.title&&!data.body&&!(data.photos||[]).length))return main().innerHTML=backBtn+'<h2>Información</h2><div class="card mut">Aún no hay información publicada.</div>',bindBack();
-  const ph=await Promise.all((data.photos||[]).map(async p=>({l:p.label,u:(await sb.storage.from('info').createSignedUrl(p.path,3600)).data?.signedUrl})));
+  let ph='';
+  if(data?.photo_paths?.length){
+    const u=await Promise.all(data.photo_paths.map(async p=>(await sb.storage.from('info').createSignedUrl(p,3600)).data?.signedUrl));
+    if(my!==NAV)return;
+    ph=u.filter(Boolean).length?`<div class="ph">${u.filter(Boolean).map(x=>`<img src="${esc(x)}" alt="Foto" data-z="${esc(x)}">`).join('')}</div>`:''}
+  const has=data&&(data.full_name||data.about||ph);
+  main().innerHTML=hd+(error?'<div class="card mut">Esta sección todavía no está activada.</div>':!has?'<div class="card mut">El administrador todavía no ha publicado información.</div>':
+    `<div class="card">${data.full_name?`<h3>${esc(data.full_name)}</h3>`:''}${data.about?`<div class="pre">${esc(data.about)}</div>`:''}</div>${ph?`<div class="card"><h3>Fotos</h3>${ph}</div>`:''}<p class="mut">Actualizado: ${when(data.updated_at)}</p>`);
+  $('back').onclick=e=>{e.preventDefault();go('market')};
+  main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z))}
+const fdate=d=>new Date(d+'T00:00:00').toLocaleDateString('es',{dateStyle:'long'});
+async function viewAnn(){
+  const my=NAV,hd='<p><a href="#" id="back">← Volver</a></p><h2>Anuncios</h2>';
+  main().innerHTML=hd+skel(3);
+  const{data,error}=await sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(50);
   if(my!==NAV)return;
-  main().innerHTML=backBtn+`<h2>Información</h2><div class="card">${data.title?`<h3>${esc(data.title)}</h3>`:''}${data.body?`<div class="pre">${esc(data.body)}</div>`:''}</div>`+
-    (ph.length?`<div class="ph">${ph.map(p=>p.u?`<div class="it"><img src="${esc(p.u)}" alt="${esc(p.l||'Foto')}" data-z="${esc(p.u)}">${p.l?`<div class="mut">${esc(p.l)}</div>`:''}</div>`:'').join('')}</div>`:'');
-  bindBack();main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z))}
+  main().innerHTML=hd+(error?'<div class="card mut">Esta sección todavía no está activada.</div>':(data||[]).length?data.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b>${x.event_date?`<span class="tag warn">📅 ${esc(fdate(x.event_date))}</span>`:''}</div>${x.body?`<div class="pre" style="margin-top:6px">${esc(x.body)}</div>`:''}<div class="mut" style="font-size:12px;margin-top:6px">${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">No hay anuncios por ahora.</div>');
+  $('back').onclick=e=>{e.preventDefault();go('market')};
+  if((data||[]).length){lsSet('ann_seen_'+S.user.id,data[0].created_at);S.annNew=false;updAnn()}}
 
-/* Admin: editor de "Información" y "Anuncios" */
-async function adminCms(my){
-  const box=document.createElement('div');box.id='cms';main().appendChild(box);
-  const draw=async()=>{
-    const[a,i]=await Promise.all([
-      sb.from('announcements').select('id,title,body,created_at').order('created_at',{ascending:false}).limit(50),
-      sb.from('site_info').select('title,body,photos').eq('id',1).maybeSingle()]);
-    if(my!==NAV)return;
-    if(a.error||i.error){box.innerHTML=`<h3 id="s-ann">Información y anuncios</h3><div class="warnbox bad">${esc(friendly(a.error||i.error))}</div>`;return}
-    const info=i.data||{},photos=info.photos||[];
-    const urls=await Promise.all(photos.map(async p=>(await sb.storage.from('info').createSignedUrl(p.path,3600)).data?.signedUrl));
-    if(my!==NAV)return;
-    box.innerHTML=`<h3 id="s-ann">Anuncios para los usuarios</h3>
-    <div class="card"><label for="ca_t">Título</label><input id="ca_t" maxlength="120" placeholder="Ej: Actualización el viernes">
-    <label for="ca_b">Mensaje</label><textarea id="ca_b" rows="4" maxlength="2000" placeholder="Ej: A partir del 1 de noviembre cambia la comisión…"></textarea>
-    <button class="b w" id="ca_p">Publicar anuncio</button></div>
-    ${(a.data||[]).map(x=>`<div class="card nt"><div class="row"><b>${esc(x.title)}</b><button class="b bad sm" data-ad="${x.id}">Eliminar</button></div><div class="pre" style="margin:6px 0">${esc(x.body)}</div><div class="mut">${when(x.created_at)}</div></div>`).join('')}
-    <h3 id="s-info">Mi información (se muestra en “Información”)</h3>
-    <div class="card"><label for="ci_t">Título / nombre</label><input id="ci_t" maxlength="120" value="${esc(info.title||'')}">
-    <label for="ci_b">Texto</label><textarea id="ci_b" rows="6" maxlength="4000">${esc(info.body||'')}</textarea>
-    <button class="b w" id="ci_s">Guardar texto</button>
-    <div class="mut" style="margin-top:14px">Fotos (carnet u otras)</div>
-    ${photos.length?`<div class="ph">${photos.map((p,k)=>`<div class="it">${urls[k]?`<img src="${esc(urls[k])}" alt="Foto" data-z="${esc(urls[k])}">`:''}<button class="b bad sm" data-pd="${k}" aria-label="Quitar foto">✕</button>${p.label?`<div class="mut">${esc(p.label)}</div>`:''}</div>`).join('')}</div>`:''}
-    <label for="ci_l">Descripción de la foto (opcional)</label><input id="ci_l" maxlength="80" placeholder="Ej: Carnet, frente">
-    <input type="file" id="ci_f" accept="image/*">
-    <button class="b gh w" id="ci_u">Subir foto</button>
-    <div class="warnbox" style="margin-top:10px">Las fotos solo las ven los usuarios que han iniciado sesión.</div></div>`;
-    box.querySelectorAll('[data-z]').forEach(im=>im.onclick=()=>zoom(im.dataset.z));
-    $('ca_p').onclick=e=>act(e.target,async()=>{
-      const t=$('ca_t').value.trim(),b=$('ca_b').value.trim();
-      if(!t||!b)throw new Error('Escribe el título y el mensaje');
-      const{error}=await sb.from('announcements').insert({title:t,body:b});if(error)throw new Error(friendly(error));
-      await draw()},'Anuncio publicado');
-    box.querySelectorAll('[data-ad]').forEach(b=>b.onclick=async()=>{
-      const m=await ask('Eliminar anuncio','<p>Dejará de verse para los usuarios.</p>','Eliminar','bad');if(!m)return;m.remove();
-      act(b,async()=>{const{error}=await sb.from('announcements').delete().eq('id',b.dataset.ad);if(error)throw new Error(friendly(error));await draw()},'Anuncio eliminado')});
-    $('ci_s').onclick=e=>act(e.target,async()=>{
-      const{error}=await sb.from('site_info').upsert({id:1,title:$('ci_t').value.trim(),body:$('ci_b').value.trim(),updated_at:new Date().toISOString()});
-      if(error)throw new Error(friendly(error))},'Información guardada');
-    $('ci_u').onclick=e=>act(e.target,async()=>{
-      const path=await upImg('info','foto',$('ci_f').files[0],6);
-      const{data:cur}=await sb.from('site_info').select('photos').eq('id',1).maybeSingle();
-      const{error}=await sb.from('site_info').upsert({id:1,photos:[...(cur?.photos||[]),{path,label:$('ci_l').value.trim()}]});
-      if(error)throw new Error(friendly(error));await draw()},'Foto subida');
-    box.querySelectorAll('[data-pd]').forEach(b=>b.onclick=async()=>{
-      const m=await ask('Quitar foto','<p>Se borrará y dejará de verse para los usuarios.</p>','Quitar','bad');if(!m)return;m.remove();
-      act(b,async()=>{
-        const{data:cur}=await sb.from('site_info').select('photos').eq('id',1).maybeSingle();
-        const arr=[...(cur?.photos||[])],[p]=arr.splice(+b.dataset.pd,1);
-        const{error}=await sb.from('site_info').upsert({id:1,photos:arr});if(error)throw new Error(friendly(error));
-        if(p)await sb.storage.from('info').remove([p.path]);await draw()},'Foto eliminada')})};
-  draw()}
+/* ---------- Admin: anuncios y mis datos ---------- */
+async function adminExtras(an,ai,rr){
+  const my=NAV,I=ai?.data||{full_name:'',about:'',photo_paths:[]},A=an?.data||[],paths=I.photo_paths||[];
+  const urls=await Promise.all(paths.map(async p=>(await sb.storage.from('info').createSignedUrl(p,3600)).data?.signedUrl));
+  if(my!==NAV)return;
+  const miss=(an?.error||ai?.error)?'<div class="warnbox bad">Falta ejecutar <code>info_anuncios.sql</code> en Supabase para activar estas dos secciones.</div>':'';
+  main().insertAdjacentHTML('beforeend',`<h3 id="s-ann">Anuncios para los usuarios</h3>${miss}
+  <div class="card"><label>Título</label><input id="annT" maxlength="120" placeholder="Ej: Actualización el sábado">
+   <label>Mensaje</label><textarea id="annB" rows="3" placeholder="Ej: El sábado habrá actualizaciones y la app puede ir más lenta."></textarea>
+   <label>Fecha a la que se refiere (opcional)</label><input id="annD" type="date">
+   <button class="b w" id="annGo">Publicar anuncio</button></div>
+  ${A.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b><span class="mut">${when(x.created_at)}</span></div>${x.event_date?`<div class="mut">📅 ${esc(fdate(x.event_date))}</div>`:''}${x.body?`<div class="pre mut" style="margin:6px 0">${esc(x.body)}</div>`:''}<button class="b bad sm" data-annx="${x.id}">Eliminar</button></div>`).join('')||'<div class="card mut">Todavía no has publicado anuncios.</div>'}
+  <h3 id="s-info">Mis datos (se ven en “Información”)</h3>
+  <div class="card"><label>Nombre</label><input id="infN" value="${esc(I.full_name)}" placeholder="Tu nombre">
+   <label>Texto sobre ti / datos que quieres mostrar</label><textarea id="infA" rows="6" placeholder="Quién eres, cómo contactarte, horarios, etc.">${esc(I.about)}</textarea>
+   <label>Fotos (carnet u otras) · ${paths.length}/8</label>
+   ${paths.length?`<div class="ph">${paths.map((p,i)=>urls[i]?`<div class="it"><img src="${esc(urls[i])}" alt="Foto" data-z="${esc(urls[i])}"><button class="b bad sm" data-ipx="${i}">Quitar</button></div>`:'').join('')}</div>`:''}
+   <input type="file" id="infP" accept="image/*" multiple>
+   <p class="mut">Solo usuarios con sesión iniciada pueden ver estas fotos. Máx. 6 MB cada una.</p>
+   <button class="b w" id="infGo">Guardar</button></div>`);
+  const back=async sel=>{await viewAdmin();$(sel)?.scrollIntoView({behavior:'smooth',block:'start'})};
+  main().querySelectorAll('#s-info ~ .card [data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+  $('annGo').onclick=ev=>act(ev.target,async()=>{
+    const t=$('annT').value.trim(),b=$('annB').value.trim(),d=$('annD').value||null;
+    if(!t)throw new Error('Escribe un título para el anuncio');
+    const{error}=await sb.from('announcements').insert({title:t,body:b,event_date:d});if(error)throw error;
+    await back('s-ann')},'Anuncio publicado');
+  main().querySelectorAll('[data-annx]').forEach(b=>b.onclick=async()=>{
+    const m=await ask('Eliminar anuncio','<p>Los usuarios dejarán de verlo.</p>','Eliminar','bad');if(!m)return;m.remove();
+    act(b,async()=>{const{error}=await sb.from('announcements').delete().eq('id',b.dataset.annx);if(error)throw error;await back('s-ann')},'Anuncio eliminado')});
+  main().querySelectorAll('[data-ipx]').forEach(b=>b.onclick=async()=>{
+    const m=await ask('Quitar foto','<p>La foto se borrará de “Información”.</p>','Quitar','bad');if(!m)return;m.remove();
+    act(b,async()=>{const i=+b.dataset.ipx,rest=paths.filter((_,k)=>k!==i);
+      const{error}=await sb.from('admin_info').upsert({id:1,full_name:I.full_name||'',about:I.about||'',photo_paths:rest,updated_at:new Date().toISOString()});if(error)throw error;
+      await sb.storage.from('info').remove([paths[i]]);await back('s-info')},'Foto quitada')});
+  $('infGo').onclick=ev=>act(ev.target,async()=>{
+    const files=[...$('infP').files],np=[...paths];
+    if(np.length+files.length>8)throw new Error('Máximo 8 fotos');
+    for(let i=0;i<files.length;i++)np.push(await upImg('info','foto'+i,files[i],6));
+    const{error}=await sb.from('admin_info').upsert({id:1,full_name:$('infN').value.trim(),about:$('infA').value.trim(),photo_paths:np,updated_at:new Date().toISOString()});
+    if(error)throw error;await back('s-info')},'Información guardada');
+  await adminRefs(rr)}
 
-/* Admin: abrir/cerrar recargas y retiros */
-async function adminFlags(my){
-  const box=$('flg');if(!box)return;
-  const FL=[['topups','Recargas de usuarios','Depósitos de USDT y recargas de saldo CUP / Clásica','Recargas'],['withdrawals','Retiros','Retiros de USDT y de saldo CUP / Clásica','Retiros']];
-  const draw=async()=>{
-    const{data,error}=await sb.from('app_flags').select('key,paused');
-    if(my!==NAV||!$('flg'))return;
-    if(error){box.innerHTML=`<div class="warnbox bad">${esc(friendly(error))}</div>`;return}
-    const f={};(data||[]).forEach(r=>f[r.key]=!!r.paused);
-    box.innerHTML=`<h3>Control de pausas</h3>`+FL.map(([k,t,d,w])=>{const p=f[k];
-      return`<div class="card ${p?'dg':'hl'}"><div class="row"><div><b>${t}</b><div class="mut">${d}</div></div><span class="tag ${p?'bad':'ok'}">${p?'Cerradas':'Abiertas'}</span></div>
-      <button class="b ${p?'ok':'bad'} w" style="margin-top:10px" data-fl="${k}|${p?0:1}">${p?'Abrir':'Cerrar'} ${w.toLowerCase()}</button></div>`}).join('');
-    box.querySelectorAll('[data-fl]').forEach(b=>b.onclick=async()=>{
-      const[k,v]=b.dataset.fl.split('|'),pause=v==='1',nm=FL.find(x=>x[0]===k)[3].toLowerCase();
-      const m=await ask(pause?'Cerrar '+nm:'Abrir '+nm,pause?`<p>Los usuarios no podrán hacer ${nm} y verán el mensaje: <b>${esc(PAUSE)}</b></p>`:`<p>Los usuarios podrán volver a hacer ${nm}.</p>`,pause?'Cerrar':'Abrir',pause?'bad':'ok');
-      if(!m)return;m.remove();
-      act(b,async()=>{const{error:e}=await sb.from('app_flags').upsert({key:k,paused:pause,updated_at:new Date().toISOString()});if(e)throw new Error(friendly(e));await draw()},pause?'Cerrado: los usuarios verán la pausa':'Abierto')})};
-  draw()}
+
+async function adminRefs(rr){
+  const my=NAV,{data:rs,error}=await sb.from('referral_settings').select('pct,mode,enabled').eq('id',1).maybeSingle();
+  if(my!==NAV)return;
+  const tot={};(rr?.data||[]).forEach(x=>{if(x.currency&&x.reward>0)tot[x.currency]=(tot[x.currency]||0)+Number(x.reward)});
+  main().insertAdjacentHTML('beforeend',`<h3 id="s-ref">Programa de referidos</h3>${error?'<div class="warnbox bad">Falta ejecutar <code>mejoras_tororo.sql</code> en Supabase.</div>':''}
+  <div class="card"><label>Porcentaje para quien invita</label><input id="rfP" type="number" step="any" min="0" max="100" value="${rs?.pct??1}">
+   <label>Se calcula sobre</label><select id="rfM"><option value="operation">El monto de la primera operación (máximo, la comisión cobrada)</option><option value="commission">La comisión cobrada en esa primera operación</option></select>
+   <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rfE" style="width:auto;margin:0" ${rs?.enabled===false?'':'checked'}> Programa activo</label>
+   <p class="mut">Solo se paga una vez por referido (su primera operación) y sale de la comisión: el panel de comisiones ya muestra el neto.</p>
+   <div class="mut">Pagado hasta ahora: ${Object.keys(tot).length?Object.entries(tot).map(([c,v])=>`${n(v,dcur(c))} ${c}`).join(' · '):'nada todavía'} · ${(rr?.data||[]).length} referidos pagados</div>
+   <button class="b w" id="rfG" style="margin-top:10px">Guardar</button></div>`);
+  $('rfM').value=rs?.mode||'operation';
+  $('rfG').onclick=ev=>act(ev.target,async()=>{const pct=+$('rfP').value;if(!(pct>=0&&pct<=100))throw new Error('Porcentaje inválido');
+    const{error:e}=await sb.from('referral_settings').upsert({id:1,pct,mode:$('rfM').value,enabled:$('rfE').checked});if(e)throw e;
+    await viewAdmin();$('s-ref')?.scrollIntoView({behavior:'smooth',block:'start'})},'Guardado')}
 
 /* ---------- Admin ---------- */
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
-  const[o,d,w,ct,cw,ks,fl,tm]=await Promise.all([
+  const[o,d,w,ct,cw,ks,fl,tm,an,ai,rr]=await Promise.all([
     sb.from('orders').select('id,amount,price_cup,total_cup,status,methods,created_at').in('status',['payment_sent','seller_confirmed','disputed','awaiting_payment']).order('updated_at',{ascending:false}),
     sb.from('deposits').select('id,amount,txid,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fiat_topups').select('id,currency,amount,proof_path,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fiat_withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,created_at,profiles(username)').eq('status','pending').order('created_at'),
-    sb.from('fee_ledger').select('*').order('created_at',{ascending:false}).limit(1000),
-    sb.from('trades').select('*').eq('asset','MOVIL').in('status',['pending','review']).order('created_at')]);
+    sb.from('fee_ledger').select('*,profiles(username)').order('created_at',{ascending:false}).limit(1000),
+    sb.from('trades').select('*').eq('asset','MOVIL').in('status',['pending','review']).order('created_at'),
+    sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
+    sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle(),
+    sb.from('referrals').select('reward,currency').eq('rewarded',true)]);
   if(my!==NAV)return;
   const TM=tm.data||[],tn={};
   if(TM.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',[...new Set(TM.flatMap(t=>[t.buyer_id,t.seller_id]))]);(pp||[]).forEach(p=>tn[p.id]=p.username)}
   const movilHtml=`<h3 id="s-movil">Saldo móvil por revisar</h3>`+(TM.length?TM.map(t=>`<div class="card ${t.status==='review'?'hl':''}"><div class="row"><b>${n(t.amount,2)} saldo móvil · ${n(t.total,qd(t.quote))} ${esc(t.quote)}</b><span class="tag warn">${t.status==='review'?'Mediación pedida':'Esperando fotos'}</span></div><div class="mut">Envía: @${esc(tn[t.seller_id])} → Recibe: @${esc(tn[t.buyer_id])} · Número: <code>${esc(t.phone)}</code></div><div class="mut">Retenido: ${n(t.escrow,qd(t.quote))} ${esc(t.quote)} · Comisión: ${n(t.fee,qd(t.fee_cur))} ${esc(t.fee_cur)} (se descuenta al vendedor)</div><div class="grid2" style="margin-top:8px"><button class="b gh sm" data-tp="${t.id}|s">${t.sender_proof?'Ver foto del envío':'Sin foto del envío'}</button><button class="b gh sm" data-tp="${t.id}|b">${t.receiver_proof?'Ver foto de recepción':'Sin foto de recepción'}</button></div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-tl="${t.id}">Aprobar y liberar</button><button class="b bad sm" data-tf="${t.id}">Rechazar y devolver</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
   const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
-  const FL=fl.data||[],ftot={},fu={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});
-  {const ids=[...new Set(FL.slice(0,30).map(x=>x.user_id).filter(Boolean))];if(ids.length){const{data:pp2}=await sb.from('profiles').select('id,username').in('id',ids);(pp2||[]).forEach(p=>fu[p.id]=p.username)}}
+  const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)});
   const fd=c=>c==='CUP'?0:c==='USD'?2:4;
-  const feeHtml=`<h3>Comisiones cobradas</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Total',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(fu[x.user_id]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?'<p class="mut">No se pudieron leer las comisiones: '+esc(fl.error.message)+'. Ejecuta registro_comisiones.sql en Supabase.</p>':''}</div>`;
+  const feeHtml=`<h3>Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(x.profiles?.username||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?'<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p>':''}</div>`;
   const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles"><button class="tile" data-go="s-ann"><span class="tc">📣</span><span>Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc">ℹ️</span><span>Mi info</span></button>${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
+  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button></div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
-  <div id="flg"></div>
   ${tiles}
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
   <div class="card" style="margin:0"><div class="mut">Depósitos / retiros</div><div class="big">${(d.data||[]).length} / ${(w.data||[]).length}</div></div></div>
@@ -1111,7 +1226,7 @@ async function viewAdmin(){
   bind('data-cr','admin_reject_fiat_topup','Recarga rechazada');
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
-  adminCms(my);adminFlags(my)}
+  await adminExtras(an,ai,rr)}
 
 boot();
 </script>
