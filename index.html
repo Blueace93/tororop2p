@@ -216,6 +216,8 @@ button.b:hover:before{transform:translateX(130%)}button.b.gh:before{display:none
 .up{position:fixed;right:20px;bottom:96px;z-index:6;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(20,22,38,.9);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 12px 26px -10px #000;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .25s,transform .25s}
 .up.show{opacity:1;transform:none;pointer-events:auto}.fab.show~.up{bottom:166px}
 .wa{left:14px;right:auto;bottom:96px;border-radius:99px;padding:11px 15px;background:linear-gradient(135deg,#25d366,#128c7e);color:#042815;box-shadow:0 12px 28px -8px rgba(37,211,102,.7)}
+button,a,summary,.chip,.tile,.card[data-o],select,label{touch-action:manipulation}
+html{scroll-behavior:auto}
 </style>
 </head>
 <body>
@@ -268,7 +270,7 @@ const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b>
 ${walletCard()}
 <div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
 <div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
-const bindTop=()=>{$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;go('market')})};
+const bindTop=()=>{$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -435,7 +437,8 @@ function go(v,orderId){
   S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
   ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,alerts:viewAlerts,calc:viewCalc,saved:viewSaved,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
-  window.scrollTo(0,0)}
+  window.scrollTo({top:0,behavior:'instant'})}
+const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
 
 /* ---------- Mercado ---------- */
 const chipsHtml=(sel,id)=>`<div class="chips" id="${id}">${METHODS.map(m=>`<button type="button" class="chip ${m.startsWith('Saldo')?'sc':''} ${sel.includes(m)?'on':''}" data-m="${m}">${m}</button>`).join('')}</div>`;
@@ -554,8 +557,8 @@ async function viewAds(){
    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="amine" style="width:auto;margin:0" ${A.mine?'checked':''}> Solo mis anuncios</label></div>
   <h3>Anuncios</h3><div id="adl">${skel(3)}</div>`;
   bindTop();
-  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{A.tab=b.dataset.tab;go('market')});
-  document.querySelectorAll('[data-as]').forEach(b=>b.onclick=()=>{A.asset=b.dataset.as;go('market')});
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{A.tab=b.dataset.tab;goKeep('market')});
+  document.querySelectorAll('[data-as]').forEach(b=>b.onclick=()=>{A.asset=b.dataset.as;goKeep('market')});
   $('amine').onchange=e=>{A.mine=e.target.checked;drawAds()};
   if($('medb'))$('medb').onclick=openMediation;
   $('adn').onclick=async ev=>{
@@ -1356,7 +1359,7 @@ async function viewAdmin(){
   const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
   const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)});
   const fd=c=>c==='CUP'?0:c==='USD'?2:4;
-  const feeHtml=`<h3>Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(x.profiles?.username||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?'<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p>':''}</div>`;
+  const feeHtml=`<h3>Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(x.profiles?.username||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
   const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
