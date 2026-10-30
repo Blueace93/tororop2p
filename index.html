@@ -1410,7 +1410,7 @@ async function adminBlocks(){
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
-  const[o,d,w,ct,cw,ks,fl,tm,an,ai,rr,ac]=await Promise.all([
+  const[o,d,w,ct,cw,ks,fl,tm,an,ai,rr,ac,ft,fp]=await Promise.all([
     sb.from('orders').select('id,amount,price_cup,total_cup,status,methods,created_at').in('status',['payment_sent','seller_confirmed','disputed','awaiting_payment']).order('updated_at',{ascending:false}),
     sb.from('deposits').select('id,amount,txid,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
@@ -1422,7 +1422,9 @@ async function viewAdmin(){
     sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
     sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle(),
     sb.from('referrals').select('reward,currency').eq('rewarded',true),
-    sb.from('profiles').select('id',{count:'exact',head:true}).eq('kyc_status','approved')]);
+    sb.from('profiles').select('id',{count:'exact',head:true}).eq('kyc_status','approved'),
+    sb.rpc('admin_fee_totals'),
+    sb.from('fee_payouts').select('currency,amount,created_at').order('created_at',{ascending:false}).limit(5)]);
   if(my!==NAV)return;
   const TM=tm.data||[],tn={};
   if(TM.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',[...new Set(TM.flatMap(t=>[t.buyer_id,t.seller_id]))]);(pp||[]).forEach(p=>tn[p.id]=p.username)}
@@ -1432,8 +1434,12 @@ async function viewAdmin(){
   {const ids=[...new Set((fl.data||[]).slice(0,30).map(fuid).filter(Boolean))];
    if(ids.length){const{data:pu}=await sb.from('profiles').select('id,username').in('id',ids);(pu||[]).forEach(p=>un[p.id]=p.username)}}
   const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)});
+  const feeOk=!ft.error&&Array.isArray(ft.data);
+  if(feeOk){Object.keys(ftot).forEach(k=>delete ftot[k]);ft.data.forEach(x=>{if(Number(x.net)!==0)ftot[x.currency]=Number(x.net)})}
   const fd=c=>c==='CUP'?0:c==='USD'?2:4;
-  const feeHtml=`<h3>Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(un[fuid(x)]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
+  const hasFees=feeOk&&Object.values(ftot).some(v=>v>0);
+  const lastPay=(fp.data||[]).length?`<p class="mut" style="font-size:12px;margin:8px 0 0">Último retiro: ${(()=>{const t=fp.data[0].created_at;return fp.data.filter(x=>x.created_at===t).map(x=>n(x.amount,fd(x.currency))+' '+esc(x.currency)).join(' · ')})()} · ${when(fp.data[0].created_at)}</p>`:'';
+  const feeHtml=`<h3>Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${hasFees?'<button class="b ok sm" id="feeClr" style="margin-top:10px">✅ Ya retiré esto · poner comisiones en 0</button>':''}${lastPay}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(un[fuid(x)]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${!fl.error&&!feeOk?`<p class="mut">Para usar el botón de poner en 0, ejecuta retiro_comisiones.sql en Supabase.</p>`:''}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
   const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
@@ -1454,6 +1460,10 @@ async function viewAdmin(){
     <div class="grid2" style="margin-top:8px"><button class="b ok sm" data-wd="${x.id}">Marcar enviado</button><button class="b bad sm" data-wr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>');
   main().insertAdjacentHTML('beforeend',`<h3 id="s-kyc">Verificaciones KYC pendientes</h3>`+((ks.data||[]).length?ks.data.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3 id="s-top">Recargas de saldo pendientes</h3>`+((ct.data||[]).length?ct.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ca="${x.id}">Acreditar</button><button class="b bad sm" data-cr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3>Retiros de saldo pendientes</h3>`+((cw.data||[]).length?cw.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="row"><code>${esc(x.card)}</code>${cpBtn(x.card)}</div><div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),x.currency==='USD'?2:0)} ${esc(x.currency)}</b> (comisión ${n(x.amount-netOf(x),x.currency==='USD'?2:0)})</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-cd="${x.id}">Marcar enviado</button><button class="b bad sm" data-cx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>'));
   adminBlocks();
+  {const fb=$('feeClr');if(fb)fb.onclick=async()=>{
+    const m=await ask('Poner comisiones en 0',`<p>Confirma que ya tomaste este dinero:</p><p><b>${Object.entries(ftot).filter(([,v])=>v>0).map(([c,v])=>n(v,fd(c))+' '+esc(c)).join(' · ')}</b></p><p class="mut">El historial de comisiones no se borra: solo se registra el retiro y el contador queda en 0. Las comisiones nuevas vuelven a sumar desde cero.</p>`,'Sí, poner en 0','ok');
+    if(!m)return;m.remove();
+    act(fb,async()=>{await rpc('admin_clear_fees');viewAdmin()},'Comisiones en 0')}}
   main().querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>$(b.dataset.go)?.scrollIntoView({behavior:'smooth',block:'start'}));
   main().querySelectorAll('[data-tp]').forEach(b=>b.onclick=async()=>{const[id,w]=b.dataset.tp.split('|'),t=TM.find(x=>x.id===id),p=w==='s'?t.sender_proof:t.receiver_proof;
     if(!p)return toast('Aún no hay captura','err');const{data}=await sb.storage.from('proofs').createSignedUrl(p,600);data?zoom(data.signedUrl):toast('No se pudo cargar la captura','err')});
