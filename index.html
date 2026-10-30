@@ -1407,6 +1407,74 @@ async function adminBlocks(){
     if(!m)return;m.remove();
     act(b,async()=>{await rpc('admin_set_block',{p_key:b.dataset.bk,p_blocked:on});viewAdmin()},on?'Bloqueado':'Desbloqueado')})}
 
+/* ---------- Admin: expedientes KYC por usuario (ver y compartir) ---------- */
+const KST={approved:['Aprobado','ok'],pending:['Pendiente','warn'],rejected:['Rechazado','bad']};
+const KDOCS=[['doc_front','Frente','frente'],['doc_back','Reverso','reverso'],['selfie','Selfie con carnet','selfie']];
+const kycUrls=(x,secs)=>Promise.all(KDOCS.map(async([k])=>x[k]?((await sb.storage.from('kyc').createSignedUrl(x[k],secs)).data?.signedUrl||null):null));
+async function kycFiles(x){
+  const u=await kycUrls(x,300),nm=(x.full_name||x.profiles?.username||'usuario').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').toLowerCase(),out=[];
+  for(let i=0;i<KDOCS.length;i++){if(!u[i])continue;
+    const r=await fetch(u[i]);if(!r.ok)throw new Error('No se pudo preparar: '+KDOCS[i][1]);
+    const b=await r.blob(),ext=(String(x[KDOCS[i][0]]).split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+    out.push(new File([b],`kyc-${nm}-${KDOCS[i][2]}.${ext}`,{type:b.type||'image/jpeg'}))}
+  if(!out.length)throw new Error('Este expediente no tiene imágenes');return out}
+const kycText=(x,links)=>`🪪 KYC · ${APP_NAME} P2P\nNombre: ${x.full_name||'—'}\nDocumento: ${x.id_number||'—'}\nUsuario: @${x.profiles?.username||'—'}\nEstado: ${(KST[x.status]||[x.status])[0]}\nEnviado: ${when(x.created_at)}`+(links?'\n\n'+KDOCS.map(([,l],i)=>links[i]?`${l}: ${links[i]}`:'').filter(Boolean).join('\n'):'');
+
+function shareKyc(x){
+  const m=modal(`<h3>Compartir KYC</h3>
+   <div class="warnbox bad">⚠️ Son documentos de identidad. Compártelos solo con quien sea imprescindible (autoridad, banco o parte afectada) y por un canal que controles.</div>
+   <b>${esc(x.full_name||'—')}</b> <span class="mut">@${esc(x.profiles?.username||'—')} · ${esc(x.id_number||'')}</span>
+   <div class="grid2" style="margin-top:12px"><button class="b" id="ks1" disabled>Preparando…</button><button class="b gh" id="ks3" disabled>Descargar</button></div>
+   <label style="margin-top:14px">Enlaces temporales (se vencen solos)</label>
+   <select id="ksD"><option value="3600">Duran 1 hora</option><option value="86400" selected>Duran 24 horas</option><option value="604800">Duran 7 días</option></select>
+   <button class="b gh w" id="ks2">Generar y copiar enlaces</button>
+   <textarea id="ksT" rows="6" readonly style="display:none;margin-top:10px"></textarea>
+   <button class="b gh w" style="margin-top:8px" id="ks4">Cerrar</button>`);
+  const prep=kycFiles(x),B1=m.querySelector('#ks1'),B3=m.querySelector('#ks3');
+  prep.then(()=>{B1.disabled=false;B1.textContent='Compartir fotos';B3.disabled=false}).catch(e=>{B1.textContent='No disponible';toast(friendly(e),'err')});
+  m.querySelector('#ks4').onclick=()=>m.remove();
+  B1.onclick=async()=>{try{const files=await prep;
+    if(navigator.canShare&&navigator.canShare({files}))await navigator.share({files,text:kycText(x)});
+    else toast('Este navegador no comparte archivos: usa Descargar o los enlaces temporales','err')}catch(e){if(!e||e.name!=='AbortError')toast(friendly(e),'err')}};
+  B3.onclick=async()=>{try{const files=await prep;files.forEach((f,i)=>setTimeout(()=>{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},i*350))}catch(e){toast(friendly(e),'err')}};
+  m.querySelector('#ks2').onclick=ev=>act(ev.target,async()=>{
+    const u=await kycUrls(x,+m.querySelector('#ksD').value),t=kycText(x,u),ta=m.querySelector('#ksT');
+    ta.value=t;ta.style.display='block';ta.select();
+    try{await navigator.clipboard.writeText(t);toast('Enlaces copiados','good')}catch(e){toast('Copia el texto de abajo manualmente','')}})}
+
+async function adminKycUsers(){
+  const my=NAV,anchor=$('s-top');if(!anchor)return;
+  const{data,error}=await sb.from('kyc_submissions').select('*,profiles(username)').order('created_at',{ascending:false}).limit(300);
+  if(my!==NAV||!$('s-top'))return;
+  const L=data||[];let F='all',Q='';
+  anchor.insertAdjacentHTML('beforebegin',`<h3 id="s-kycu">Expedientes KYC por usuario</h3>
+   ${error?`<div class="warnbox bad">No se pudieron cargar los expedientes: ${esc(error.message)}</div>`:`
+   <input id="kuQ" type="search" placeholder="Buscar por usuario, nombre o documento">
+   <div class="chips" id="kuC"></div><div id="kuL"></div>`}`);
+  if(error)return;
+  const cnt=k=>k==='all'?L.length:L.filter(x=>x.status===k).length,tabs={all:'Todos',approved:'Aprobados',pending:'Pendientes',rejected:'Rechazados'};
+  const paint=()=>{
+    $('kuC').innerHTML=Object.entries(tabs).map(([k,v])=>`<button class="chip ${F===k?'on':''}" data-kf="${k}">${v} · ${cnt(k)}</button>`).join('');
+    const q=Q.trim().toLowerCase(),vis=L.filter(x=>(F==='all'||x.status===F)&&(!q||[x.full_name,x.id_number,x.profiles?.username].some(v=>String(v||'').toLowerCase().includes(q))));
+    $('kuL').innerHTML=(vis.length?vis.slice(0,40).map(x=>{const[t,c]=KST[x.status]||[x.status||'—',''];
+      return`<div class="card"><div class="row"><b>${esc(x.full_name||'—')}</b><span class="tag ${c}">${esc(t)}</span></div>
+       <div class="mut">@${esc(x.profiles?.username||'—')} · Documento: ${esc(x.id_number||'—')} · ${when(x.created_at)}</div>
+       ${x.status==='rejected'&&(x.note||x.review_note)?`<div class="mut">Motivo: ${esc(x.note||x.review_note)}</div>`:''}
+       <div class="grid2" style="margin-top:8px"><button class="b gh sm" data-kuv="${x.id}">Ver documentos</button><button class="b sm" data-kus="${x.id}">Compartir</button></div></div>`}).join('')
+      +(vis.length>40?`<p class="mut">Mostrando 40 de ${vis.length}. Usa el buscador para acotar.</p>`:''):'<div class="card mut">Sin resultados.</div>');
+    $('kuC').querySelectorAll('[data-kf]').forEach(b=>b.onclick=()=>{F=b.dataset.kf;paint()});
+    $('kuL').querySelectorAll('[data-kuv]').forEach(b=>b.onclick=()=>act(b,async()=>{
+      const x=L.find(k=>String(k.id)===b.dataset.kuv),u=await kycUrls(x,600);
+      const m=modal(`<h3>${esc(x.full_name||'—')} · ${esc(x.id_number||'')}</h3><p class="mut" style="margin:0">@${esc(x.profiles?.username||'—')} · ${(KST[x.status]||[x.status])[0]} · ${when(x.created_at)}</p>`
+        +KDOCS.map(([,l],i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}" style="cursor:zoom-in">`:'<p class="mut">No se pudo cargar</p>'}`).join('')
+        +`<div class="grid2" style="margin-top:10px"><button class="b" id="kvs">Compartir</button><button class="b gh" id="kvc">Cerrar</button></div>`);
+      m.querySelectorAll('img').forEach(i=>i.onclick=()=>zoom(i.src));
+      m.querySelector('#kvc').onclick=()=>m.remove();
+      m.querySelector('#kvs').onclick=()=>{m.remove();shareKyc(x)}}));
+    $('kuL').querySelectorAll('[data-kus]').forEach(b=>b.onclick=()=>shareKyc(L.find(k=>String(k.id)===b.dataset.kus)))};
+  $('kuQ').oninput=e=>{Q=e.target.value;paint()};
+  paint()}
+
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
@@ -1444,7 +1512,7 @@ async function viewAdmin(){
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button></div>`;
+  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-kycu"><span class="tc" style="color:var(--acc)">🗂️</span><span>Expedientes KYC</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button></div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   ${tiles}
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
@@ -1460,6 +1528,7 @@ async function viewAdmin(){
     <div class="grid2" style="margin-top:8px"><button class="b ok sm" data-wd="${x.id}">Marcar enviado</button><button class="b bad sm" data-wr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>');
   main().insertAdjacentHTML('beforeend',`<h3 id="s-kyc">Verificaciones KYC pendientes</h3>`+((ks.data||[]).length?ks.data.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3 id="s-top">Recargas de saldo pendientes</h3>`+((ct.data||[]).length?ct.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ca="${x.id}">Acreditar</button><button class="b bad sm" data-cr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3>Retiros de saldo pendientes</h3>`+((cw.data||[]).length?cw.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="row"><code>${esc(x.card)}</code>${cpBtn(x.card)}</div><div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),x.currency==='USD'?2:0)} ${esc(x.currency)}</b> (comisión ${n(x.amount-netOf(x),x.currency==='USD'?2:0)})</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-cd="${x.id}">Marcar enviado</button><button class="b bad sm" data-cx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>'));
   adminBlocks();
+  adminKycUsers();
   {const fb=$('feeClr');if(fb)fb.onclick=async()=>{
     const m=await ask('Poner comisiones en 0',`<p>Confirma que ya tomaste este dinero:</p><p><b>${Object.entries(ftot).filter(([,v])=>v>0).map(([c,v])=>n(v,fd(c))+' '+esc(c)).join(' · ')}</b></p><p class="mut">El historial de comisiones no se borra: solo se registra el retiro y el contador queda en 0. Las comisiones nuevas vuelven a sumar desde cero.</p>`,'Sí, poner en 0','ok');
     if(!m)return;m.remove();
