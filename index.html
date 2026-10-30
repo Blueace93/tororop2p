@@ -548,17 +548,20 @@ function drawFx(){
 
 /* ---------- Mercado: compro / vendo ---------- */
 async function viewAds(){
-  const my=NAV,A=S.ad||(S.ad={tab:'buy',asset:'USDT',mine:false});
+  const my=NAV,A=S.ad||(S.ad={tab:'all',asset:'all',quote:'all',sort:'best',mine:false});
   main().innerHTML=`${topHtml()}
   <div class="card"><div class="row"><b>Mercado</b><button class="b sm" id="adn">+ Publicar anuncio</button></div>
-   <div class="seg"><button class="${A.tab==='buy'?'on':''}" data-tab="buy">Comprar</button><button class="${A.tab==='sell'?'on':''}" data-tab="sell">Vender</button></div>
-   <div class="chips">${Object.entries(ASSETS).map(([k,v])=>`<button class="chip ${A.asset===k?'on':''}" data-as="${k}">${cIco(k,20)}<span>${v.chip}</span></button>`).join('')}</div>
+   <div class="seg" style="grid-template-columns:repeat(3,1fr)"><button class="${A.tab==='all'?'on':''}" data-tab="all">Todas</button><button class="${A.tab==='buy'?'on':''}" data-tab="buy">Comprar</button><button class="${A.tab==='sell'?'on':''}" data-tab="sell">Vender</button></div>
+   <div class="grid3" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 4px">
+    <div><label for="fAs" style="font-size:12px;margin:0">Saldo</label><select id="fAs" style="margin:4px 0 0;padding:9px 6px;font-size:13px"><option value="all">Todos</option>${Object.entries(ASSETS).map(([k,v])=>`<option value="${k}" ${A.asset===k?'selected':''}>${v.chip}</option>`).join('')}</select></div>
+    <div><label for="fQ" style="font-size:12px;margin:0">Pago en</label><select id="fQ" style="margin:4px 0 0;padding:9px 6px;font-size:13px"><option value="all">Todas</option>${Object.entries(ASSETS).filter(([k])=>k!=='MOVIL').map(([k,v])=>`<option value="${k}" ${A.quote===k?'selected':''}>${v.chip}</option>`).join('')}</select></div>
+    <div><label for="fS" style="font-size:12px;margin:0">Orden</label><select id="fS" style="margin:4px 0 0;padding:9px 6px;font-size:13px"><option value="best" ${A.sort==='best'?'selected':''}>Precio</option><option value="amount" ${A.sort==='amount'?'selected':''}>Cantidad</option></select></div></div>
    ${A.asset==='MOVIL'?`<div class="warnbox">📱 Saldo móvil es una transferencia externa. <b>Tanto si compras como si vendes</b>, debes subir la foto del envío del saldo y esperar la aprobación del administrador. El pago queda retenido hasta entonces.<br><button class="b sm" style="margin-top:8px" id="medb">🛡️ Mediación de admin</button></div>`:''}
    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="amine" style="width:auto;margin:0" ${A.mine?'checked':''}> Solo mis anuncios</label></div>
   <h3>Anuncios</h3><div id="adl">${skel(3)}</div>`;
   bindTop();
-  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{A.tab=b.dataset.tab;goKeep('market')});
-  document.querySelectorAll('[data-as]').forEach(b=>b.onclick=()=>{A.asset=b.dataset.as;goKeep('market')});
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{A.tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x===b));drawAds()});
+  $('fAs').onchange=e=>{const was=A.asset;A.asset=e.target.value;if(was==='MOVIL'||A.asset==='MOVIL')goKeep('market');else drawAds()};$('fQ').onchange=e=>{A.quote=e.target.value;drawAds()};$('fS').onchange=e=>{A.sort=e.target.value;drawAds()};
   $('amine').onchange=e=>{A.mine=e.target.checked;drawAds()};
   if($('medb'))$('medb').onclick=openMediation;
   $('adn').onclick=async ev=>{
@@ -580,14 +583,16 @@ async function viewAds(){
       if(side==='buy'&&rnd(q*p,qd(quote))>balOf(quote))throw new Error('Saldo insuficiente: necesitas '+n(q*p,qd(quote))+' '+quote);
       if(side==='buy'&&asset==='MOVIL'&&ph.replace(/\D/g,'').length<8)throw new Error('Escribe tu número de teléfono para recibir el saldo');
       await rpc('create_ad',{p_side:side,p_asset:asset,p_quote:quote,p_amount:q,p_price:p,p_details:ph});await loadMe();viewAds()},'Anuncio publicado')};
-  const{data,error}=await sb.from('ads').select('id,user_id,side,asset,quote,amount,price,details,profiles(username)').eq('status','open').eq('asset',A.asset);
+  const{data,error}=await sb.from('ads').select('id,user_id,side,asset,quote,amount,price,details,profiles(username)').eq('status','open');
   if(my!==NAV)return;
   if(error){$('adl').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
   S.ads=data||[];await loadStats(S.ads.map(o=>o.user_id));if(my!==NAV)return;drawAds()}
 function drawAds(){
   const box=$('adl');if(!box)return;const A=S.ad,pc=S.fees.trade;
-  const l=(S.ads||[]).filter(o=>A.mine?o.user_id===S.user.id:o.side===(A.tab==='buy'?'sell':'buy')).sort((a,b)=>A.tab==='buy'?a.price-b.price:b.price-a.price);
-  if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios aquí todavía. Publica el tuyo.</div>';return}
+  const AK=Object.keys(ASSETS);
+  const l=(S.ads||[]).filter(o=>(A.mine?o.user_id===S.user.id:(A.tab==='all'||o.side===(A.tab==='buy'?'sell':'buy')))&&(A.asset==='all'||o.asset===A.asset)&&(A.quote==='all'||o.quote===A.quote))
+    .sort((a,b)=>A.sort==='amount'?b.amount-a.amount:(AK.indexOf(a.asset)-AK.indexOf(b.asset))||(a.side===b.side?(a.side==='sell'?a.price-b.price:b.price-a.price):(a.side==='sell'?-1:1)));
+  if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios con ese filtro. Cambia el filtro o publica el tuyo.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
     return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="usr"><span class="av">${esc((o.profiles?.username||'?')[0].toUpperCase())}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.user_id)?' · '+repTxt(o.user_id):''}</span></span></div>
     <div class="row" style="margin-top:8px"><span class="usr">${cIco(o.asset,32)}<b style="font-size:18px">${n(o.amount,2)} ${L}</b></span><span class="px"><small>Precio por unidad</small><b>${n(o.price,o.price<1?4:2)} ${o.quote}</b></span></div>
