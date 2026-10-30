@@ -269,6 +269,9 @@ const FPO=()=>+S.settings.fee_percent||0;
 document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest('.md'),el=m&&m.querySelector('#afee');if(!el)return;
   const side=m.querySelector('#as').value,as=m.querySelector('#aa').value,q=+m.querySelector('#aq').value;
   el.textContent=side==='sell'&&as!=='MOVIL'&&q>0?`Se retendrán ${n(q+feeOf(q,as),qd(as))} ${ASSETS[as].chip} (${n(q,qd(as))} + comisión ${S.fees.trade}%: ${n(feeOf(q,as),qd(as))})`:side==='sell'&&as==='MOVIL'&&q>0?`La comisión del ${S.fees.trade}% se descuenta de lo que cobres`:''});
+document.addEventListener('input',e=>{if(e.target.id!=='aq'&&e.target.id!=='ap'&&e.target.id!=='aq2')return;const m=e.target.closest('.md'),el=m&&m.querySelector('#aunit');if(!el)return;
+  const q=+m.querySelector('#aq').value,t=+m.querySelector('#ap').value,c=m.querySelector('#aq2').value;
+  el.textContent=q>0&&t>0?`Equivale a ${n(t/q,t/q<1?4:2)} ${c} por unidad`:''});
 const updBell=()=>$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);
 const updAnn=()=>$('tAnn')?.classList.toggle('dot',!!S.annNew);
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -587,7 +590,7 @@ async function viewAds(){
   <h3>Anuncios</h3><div id="adl">${skel(3)}</div>`;
   bindTop();
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{A.tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x===b));drawAds()});
-  $('fAs').onchange=e=>{const was=A.asset;A.asset=e.target.value;if(was==='MOVIL'||A.asset==='MOVIL')goKeep('market');else drawAds()};$('fQ').onchange=e=>{A.quote=e.target.value;drawAds()};$('fS').onchange=e=>{A.sort=e.target.value;drawAds()};
+  $('fAs').onchange=e=>{const was=A.asset;A.asset=e.target.value;if(was==='MOVIL'||A.asset==='MOVIL')goKeep('market');else drawAds()};$('fQ').onchange=e=>{A.quote=e.target.value;goKeep('market')};$('fS').onchange=e=>{A.sort=e.target.value;goKeep('market')};
   $('amine').onchange=e=>{A.mine=e.target.checked;drawAds()};
   if($('medb'))$('medb').onclick=openMediation;
   $('adn').onclick=async ev=>{
@@ -597,23 +600,24 @@ async function viewAds(){
       <label>Saldo</label><select id="aa">${Object.entries(ASSETS).map(([k,v])=>`<option value="${k}" ${A.asset===k?'selected':''}>${v.chip}</option>`).join('')}</select>
       <label>Moneda de pago</label><select id="aq2">${qs}</select>
       <label>Cantidad</label><input id="aq" type="number" step="any" min="0.01" inputmode="decimal"><div class="mut" id="afee" style="margin:-4px 0 8px"></div>
-      <label>Precio por cada unidad, en la moneda de pago</label><input id="ap" type="number" step="any" min="0.000001" inputmode="decimal">
+      <label>Precio total por toda la cantidad, en la moneda de pago</label><input id="ap" type="number" step="any" min="0.000001" inputmode="decimal"><div class="mut" id="aunit" style="margin:-4px 0 8px"></div>
       <label>Tu número de teléfono (solo si compras saldo móvil)</label>${savedSel('asv','telefono')}<input id="ad" inputmode="tel">
       <p class="mut">Al vender, queda retenido lo que vendes <b>más la comisión de ${S.fees.trade}%</b> (la paga el vendedor desde su saldo; si no te alcanza, publica menos: p. ej. 99 en vez de 100). Al comprar, queda retenido el total en la moneda de pago. En saldo móvil la comisión se descuenta de lo que cobras, y siempre exige foto del envío y aprobación del administrador.</p>`,'Publicar');
     if(!m)return;
-    const side=m.querySelector('#as').value,asset=m.querySelector('#aa').value,quote=m.querySelector('#aq2').value,q=+m.querySelector('#aq').value,p=+m.querySelector('#ap').value,ph=m.querySelector('#ad').value.trim();m.remove();
+    const side=m.querySelector('#as').value,asset=m.querySelector('#aa').value,quote=m.querySelector('#aq2').value,q=+m.querySelector('#aq').value,tot=+m.querySelector('#ap').value,p=q>0?tot/q:0,ph=m.querySelector('#ad').value.trim();m.remove();
     act(ev.target,async()=>{kycChk();
-      if(!(q>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
+      if(!(q>0)||!(tot>0))throw new Error('Indica la cantidad y el precio total');
       if(asset===quote)throw new Error('El saldo y la moneda de pago no pueden ser el mismo');
       if(side==='sell'&&asset!=='MOVIL'){const need=rnd(q+feeOf(q,asset),qd(asset));if(need>balOf(asset))throw new Error(`Necesitas ${n(need,qd(asset))} ${ASSETS[asset].chip} (${n(q,qd(asset))} + comisión ${S.fees.trade}%). Puedes publicar hasta ${n(maxNet(balOf(asset),asset),qd(asset))}`)}
-      if(side==='buy'&&rnd(q*p,qd(quote))>balOf(quote))throw new Error('Saldo insuficiente: necesitas '+n(q*p,qd(quote))+' '+quote);
+      if(side==='buy'&&rnd(tot,qd(quote))>balOf(quote))throw new Error('Saldo insuficiente: necesitas '+n(tot,qd(quote))+' '+quote);
       if(side==='buy'&&asset==='MOVIL'&&ph.replace(/\D/g,'').length<8)throw new Error('Escribe tu número de teléfono para recibir el saldo');
       await rpc('create_ad',{p_side:side,p_asset:asset,p_quote:quote,p_amount:q,p_price:p,p_details:ph});await loadMe();viewAds()},'Anuncio publicado')};
   const{data,error}=await sb.from('ads').select('id,user_id,side,asset,quote,amount,price,details,profiles(username)').eq('status','open');
   if(my!==NAV)return;
   if(error){$('adl').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
   S.ads=data||[];drawAds();loadStats(S.ads.map(o=>o.user_id)).then(c=>{if(c&&my===NAV)drawAds()})}
-function drawAds(){
+function drawAds(){try{drawAds0()}catch(e){const b=$('adl');if(b)b.innerHTML='<div class="card mut">No se pudieron mostrar los anuncios. Toca otra vez el filtro o recarga.</div>';console.error(e)}}
+function drawAds0(){
   const box=$('adl');if(!box)return;const A=S.ad,pc=S.fees.trade;
   const AK=Object.keys(ASSETS);
   const l=(S.ads||[]).filter(o=>(A.mine?o.user_id===S.user.id:(A.tab==='all'||o.side===(A.tab==='buy'?'sell':'buy')))&&(A.asset==='all'||o.asset===A.asset)&&(A.quote==='all'||o.quote===A.quote))
@@ -621,8 +625,8 @@ function drawAds(){
   if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios con ese filtro. Cambia el filtro o publica el tuyo.</div>';return}
   box.innerHTML=l.map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
     return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="usr"><span class="av">${esc((o.profiles?.username||'?')[0].toUpperCase())}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.user_id)?' · '+repTxt(o.user_id):''}</span></span></div>
-    <div class="row" style="margin-top:8px"><span class="usr">${cIco(o.asset,32)}<b style="font-size:18px">${n(o.amount,2)} ${L}</b></span><span class="px"><small>Precio por unidad</small><b>${n(o.price,o.price<1?4:2)} ${o.quote}</b></span></div>
-    <div class="mut" style="margin:6px 0">Total: ${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
+    <div class="row" style="margin-top:8px"><span class="usr">${cIco(o.asset,32)}<b style="font-size:18px">${n(o.amount,2)} ${L}</b></span><span class="px"><small>Precio total</small><b>${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}</b></span></div>
+    <div class="mut" style="margin:6px 0">≈ ${n(o.price,o.price<1?4:2)} ${o.quote} por unidad${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
     ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}%: la paga el vendedor desde su saldo.</p>`;
   box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadMe();viewAds()},'Anuncio cancelado'));
   box.querySelectorAll('[data-ab]').forEach(b=>b.onclick=async()=>{
