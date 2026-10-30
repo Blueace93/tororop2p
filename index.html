@@ -889,12 +889,15 @@ async function renderCup(){
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
     const c=C.find(x=>x.k===b.dataset.in);
     if(!c.card)return toast('La tarjeta de recarga aún no está configurada. Contacta al soporte','err');
-    const m=await ask('Recargar '+c.name,`<div class="warnbox">Transfiere ${c.k} a esta tarjeta y sube la captura. El administrador acredita tu saldo al verificarla.</div>
+    let L=null;try{L=(await rpc('recharge_status'))?.[c.k]||null}catch(e){}
+    if(L&&L.blocked)return toast('Recargas de '+c.k+' en pausa momentánea por actualización. Vuelve a intentarlo más tarde.','err');
+    const m=await ask('Recargar '+c.name,`<div class="warnbox">Transfiere ${c.k} a esta tarjeta y sube la captura. El administrador acredita tu saldo al verificarla.${L?`<br>Máximo que puedes recargar ahora: <b>${n(L.headroom,c.d)} ${c.k}</b>.`:''}</div>
       <div class="row"><span><code>${esc(c.card)}</code><br><span class="mut">${esc(H)}</span></span>${cpBtn(c.card)}</div>
       <label>Monto transferido (${c.k})</label><input id="ta" type="number" min="0.01" step="any" inputmode="decimal">
       <label>Captura de la transferencia</label><input id="tf" type="file" accept="image/*">`,'Enviar recarga','ok');
     if(!m)return;const a=+m.querySelector('#ta').value,fl=m.querySelector('#tf').files[0];m.remove();
     act(b,async()=>{if(!(a>0))throw new Error('Indica el monto');
+      if(L&&a>L.headroom)throw new Error('Solo puedes recargar hasta '+n(L.headroom,c.d)+' '+c.k+' por ahora');
       const p=await uploadProof('topup/'+S.user.id,'recarga',fl);await rpc('request_fiat_topup',{p_cur:c.k,p_amount:a,p_path:p});await renderCup()},'Recarga enviada: el administrador la revisará')});
   box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const c=C.find(x=>x.k===b.dataset.out);
@@ -1333,7 +1336,7 @@ async function adminBlocks(){
 async function viewAdmin(){
   if(!S.profile.is_admin)return go('market');
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
-  const[o,d,w,ct,cw,ks,fl,tm,an,ai,rr]=await Promise.all([
+  const[o,d,w,ct,cw,ks,fl,tm,an,ai,rr,ac]=await Promise.all([
     sb.from('orders').select('id,amount,price_cup,total_cup,status,methods,created_at').in('status',['payment_sent','seller_confirmed','disputed','awaiting_payment']).order('updated_at',{ascending:false}),
     sb.from('deposits').select('id,amount,txid,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
@@ -1344,7 +1347,8 @@ async function viewAdmin(){
     sb.from('trades').select('*').eq('asset','MOVIL').in('status',['pending','review']).order('created_at'),
     sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
     sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle(),
-    sb.from('referrals').select('reward,currency').eq('rewarded',true)]);
+    sb.from('referrals').select('reward,currency').eq('rewarded',true),
+    sb.from('profiles').select('id',{count:'exact',head:true}).eq('kyc_status','approved')]);
   if(my!==NAV)return;
   const TM=tm.data||[],tn={};
   if(TM.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',[...new Set(TM.flatMap(t=>[t.buyer_id,t.seller_id]))]);(pp||[]).forEach(p=>tn[p.id]=p.username)}
@@ -1360,6 +1364,7 @@ async function viewAdmin(){
   const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button></div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   ${tiles}
+  <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
   <div class="card" style="margin:0"><div class="mut">Depósitos / retiros</div><div class="big">${(d.data||[]).length} / ${(w.data||[]).length}</div></div></div>
   ${movilHtml}${feeHtml}<h3 id="s-ord">Operaciones por revisar</h3>`+(orders.length?orders.map(x=>{const[t,c]=STATUS[x.status];
