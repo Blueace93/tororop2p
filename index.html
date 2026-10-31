@@ -327,7 +327,7 @@ document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest
   el.textContent=side==='sell'&&as!=='MOVIL'&&q>0?`Se retendrán ${n(q+feeOf(q,as),qd(as))} ${ASSETS[as].chip} (${n(q,qd(as))} + comisión ${S.fees.trade}%: ${n(feeOf(q,as),qd(as))})`:side==='sell'&&as==='MOVIL'&&q>0?`La comisión del ${S.fees.trade}% se descuenta de lo que cobres`:''});
 document.addEventListener('input',e=>{if(e.target.id!=='aq'&&e.target.id!=='ap'&&e.target.id!=='aq2')return;const m=e.target.closest('.md'),el=m&&m.querySelector('#aunit');if(!el)return;
   const q=+m.querySelector('#aq').value,t=+m.querySelector('#ap').value,c=m.querySelector('#aq2').value;
-  el.textContent=q>0&&t>0?`Equivale a ${n(t/q,t/q<1?4:2)} ${c} por unidad`:''});
+  el.textContent=q>0&&t>0?`Equivale a ${n(t/q,t/q<1?4:2)} ${c} per unidad`:''});
 const updBell=()=>$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);
 const updAnn=()=>$('tAnn')?.classList.toggle('dot',!!S.annNew);
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -432,16 +432,27 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){const o=[...documen
 function zoom(src){modal(`<img src="${src}" alt="Captura"><button class="b gh w" style="margin-top:10px" onclick="this.closest('.ov').remove()">Cerrar</button>`)}
 
 async function boot(){
-  S.offScreen=0;
-  if(!navigator.onLine)return renderOffline();
-  const mp=getMaint();
-  S.maint=(await Promise.race([mp,sleep(1500).then(()=>null)]))||S.maint;drawMaint();
-  mp.then(m=>{if(m){S.maint=m;drawMaint()}});
-  const{data:{session}}=await sb.auth.getSession();
-  S.user=session?.user||null;
-  if(!S.user)return renderAuth(lsGet('pending_ref')?'register':'login');
-  if(await mfaGate())return;
-  await loadMe();await afterLogin();render();maybeTuto()}
+  try{
+    S.offScreen=0;
+    if(!navigator.onLine)return renderOffline();
+    try{
+      const mp=getMaint();
+      S.maint=(await Promise.race([mp,sleep(1500).then(()=>null)]))||S.maint;drawMaint();
+      mp.then(m=>{if(m){S.maint=m;drawMaint()}});
+    }catch(e){console.warn('maint skip',e)}
+    const{data:{session}}=await sb.auth.getSession();
+    S.user=session?.user||null;
+    if(!S.user)return renderAuth(lsGet('pending_ref')?'register':'login');
+    try{if(await mfaGate())return}catch(e){}
+    try{await loadMe()}catch(e){console.error('loadMe error',e)}
+    try{await afterLogin()}catch(e){}
+    render();
+    try{maybeTuto()}catch(e){}
+  }catch(err){
+    console.error('Boot error:', err);
+    document.getElementById('app').innerHTML = `<div style="padding:40px 20px;color:#fff;text-align:center"><h2 style="color:#f0675c">Error al iniciar</h2><p class="mut">${esc(err.message)}</p><button class="b" onclick="location.reload()" style="max-width:200px;margin:20px auto 0">Reintentar</button></div>`;
+  }
+}
 async function loadMe(){
   const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
   const[p,w,st,cw,fr,fo,sf]=await Promise.all([
@@ -887,7 +898,7 @@ async function viewCalc(){
   const CS=['USDT','CUP','USD'],lb={USDT:'USDT',CUP:'CUP',USD:'USD (Clásica)'};
   const pairs=[];CS.forEach(F=>CS.forEach(T=>{if(F!==T){const r=best(F,T);if(r!=null)pairs.push([F,T,r])}}));
   main().innerHTML=hd('Calculadora')+`<div class="card"><label>Tengo</label><input id="cx" type="number" step="any" min="0" inputmode="decimal" placeholder="0">
-   <div class="grid2"><select id="cf">${CS.map(k=>`<option value="${k}">${lb[k]}</option>`).join('')}</select><select id="ct">${CS.map((k,i)=>`<option value="${k}" ${i===1?'selected':''}>${lb[k]}</option>`).join('')}</select></div>
+   <div class="grid2"><select id="cf">${CS.map(k=>`<option value="${k}">${lb[k]}</option>`).join('')}</select><select id="ct">${CS.map((k,i)=>`<option value="${k}" ${i===1?'selected':''}>${lb[k]}</option>`).join('')}</div>
    <div id="cr" style="margin-top:6px"></div><p class="mut" style="margin-bottom:0">Referencia con las mejores ofertas abiertas ahora mismo. El precio final depende de la oferta que elijas.</p></div>
   <h3>Mejores precios ahora</h3>`+(pairs.length?`<div class="card">${pairs.map(([F,T,r])=>`<div class="row" style="margin-bottom:6px"><span class="mut">1 ${lb[F]}</span><b>${n(r,r<1?6:2)} ${T==='USD'?'USD':T}</b></div>`).join('')}</div>`:'<div class="card mut">Todavía no hay ofertas abiertas para calcular.</div>');
   bk();
