@@ -264,6 +264,10 @@ main[data-atab="pend"]>[data-tab]:not([data-tab="pend"]):not([data-tab="all"]),m
 #adl>.card:has(.tag.ok){box-shadow:inset 3px 0 0 var(--ok),0 10px 24px -18px #000}
 #adl>.card:has(.tag.warn){box-shadow:inset 3px 0 0 var(--warn),0 10px 24px -18px #000}
 #adl .tag{font-weight:700}
+/* Respuesta táctil inmediata */
+button.b,.chip,.tile,.qb,nav button,.seg button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button.b:active,.chip:active,.tile:active,.qb:active,.seg button:active{transform:scale(.97);transition:transform .05s}
+nav button:active{opacity:.7}
 </style>
 </head>
 <body>
@@ -382,7 +386,12 @@ async function act(btn,fn,okMsg){
   try{await fn();if(okMsg)toast(okMsg,'good')}catch(e){toast(friendly(e),'err')}
   finally{free()}}
 /* Refresca saldos sin bloquear el botón ni mostrar error falso si la red va lenta */
-const refreshW=()=>{loadMe().catch(()=>{}).finally(()=>{if(S.view==='wallet'&&$('main'))viewWallet()})};
+async function loadBal(){try{
+  const[w,cw]=await Promise.all([sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id)]);
+  if(w.data)S.wallet=w.data;
+  if(cw.data){S.bal={CUP:0,USD:0};cw.data.forEach(r=>S.bal[r.currency]=Number(r.available))}
+  const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}catch(e){}}
+const refreshW=()=>{if(S.view==='wallet'&&$('main'))viewWallet()};
 const copy=t=>navigator.clipboard.writeText(t).then(()=>toast('Copiado','good'),()=>toast('No se pudo copiar','err'));
 const cpBtn=t=>`<button class="b gh sm" data-cp="${esc(t)}">Copiar</button>`;
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(b)copy(b.dataset.cp)});function bindCopy(){}
@@ -548,7 +557,7 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
     if(!ms.length)throw new Error('Elige al menos un método de pago');
     if(!d)throw new Error('Indica los datos donde recibirás el pago');
     await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c,p_details:d});
-    await loadMe();viewMarket()},'Oferta publicada');
+    await loadBal();viewMarket()},'Oferta publicada');
   const rf=()=>drawOffers();
   $('q').oninput=e=>{F.q=e.target.value;rf()};$('srt').onchange=e=>{F.sort=e.target.value;rf()};
   $('mine').onchange=e=>{F.mine=e.target.checked;rf()};
@@ -574,7 +583,7 @@ function drawOffers(){
     const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
-  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadMe();viewMarket()},'Oferta cancelada'))}
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadBal();viewMarket()},'Oferta cancelada'))}
 
 /* ---------- Cambio USD Clásica ⇄ CUP ---------- */
 async function viewFx(){
@@ -655,7 +664,7 @@ async function viewAds(){
       if(side==='sell'&&asset!=='MOVIL'){const need=rnd(q+feeOf(q,asset),qd(asset));if(need>balOf(asset))throw new Error(`Necesitas ${n(need,qd(asset))} ${ASSETS[asset].chip} (${n(q,qd(asset))} + comisión ${S.fees.trade}%). Puedes publicar hasta ${n(maxNet(balOf(asset),asset),qd(asset))}`)}
       if(side==='buy'&&rnd(tot,qd(quote))>balOf(quote))throw new Error('Saldo insuficiente: necesitas '+n(tot,qd(quote))+' '+quote);
       if(side==='buy'&&asset==='MOVIL'&&ph.replace(/\D/g,'').length<8)throw new Error('Escribe tu número de teléfono para recibir el saldo');
-      await rpc('create_ad',{p_side:side,p_asset:asset,p_quote:quote,p_amount:q,p_price:p,p_details:ph});await loadMe();viewAds()},'Anuncio publicado')};
+      await rpc('create_ad',{p_side:side,p_asset:asset,p_quote:quote,p_amount:q,p_price:p,p_details:ph});await loadBal();viewAds()},'Anuncio publicado')};
   const{data,error}=await sb.from('ads').select('id,user_id,side,asset,quote,amount,price,details,profiles(username)').eq('status','open').limit(300);
   if(my!==NAV)return;
   if(error){$('adl').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
@@ -674,7 +683,7 @@ function drawAds0(){
     <div class="mut" style="margin:6px 0">≈ ${n(o.price,o.price<1?4:2)} ${o.quote} por unidad${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
     ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}%: la paga el vendedor desde su saldo.</p>`+(l.length>LIM?`<button class="b gh w" id="adMore">Mostrar más (${l.length-LIM})</button>`:'');
   {const mb=$('adMore');if(mb)mb.onclick=()=>{A.lim=LIM+40;drawAds()}}
-  box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadMe();viewAds()},'Anuncio cancelado'));
+  box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadBal();viewAds()},'Anuncio cancelado'));
   box.querySelectorAll('[data-ab]').forEach(b=>b.onclick=async()=>{
     if(gate())return;
     const o=S.ads.find(x=>x.id===b.dataset.ab),sell=o.side==='sell',Q=o.quote,L=ASSETS[o.asset].label,mv=o.asset==='MOVIL',tot=rnd(o.amount*o.price,qd(Q)),fee=rnd(o.amount*pc/100,qd(o.asset));
@@ -692,7 +701,7 @@ function drawAds0(){
     if(!m)return;const phone=m.querySelector('#ph')?.value.trim()||'';m.remove();
     act(b,async()=>{
       if(mv&&sell&&phone.replace(/\D/g,'').length<8)throw new Error('Escribe tu número de teléfono');
-      const id=await rpc('take_ad',{p_id:o.id,p_phone:phone});await loadMe();
+      const id=await rpc('take_ad',{p_id:o.id,p_phone:phone});await loadBal();
       if(mv)go('trade',id);else{toast('¡Operación completada!','good');viewAds()}})})}
 async function openMediation(){
   const{data}=await sb.from('trades').select('id,amount,total,quote,created_at').eq('asset','MOVIL').in('status',['pending','review']).or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`);
@@ -731,7 +740,7 @@ async function viewTrade(){
     if(!m)return;const fl=m.querySelector('#mf').files[0];m.remove();
     act(ev.target,async()=>{const p=await uploadProof('trade/'+t.id,isS?'envio':'recepcion',fl);await rpc('trade_upload',{p_trade:t.id,p_path:p});viewTrade()},'Foto enviada: el administrador la revisará')};
   let last=t.status+t.updated_at;
-  POLL=setInterval(async()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;const{data:u}=await sb.from('trades').select('status,updated_at').eq('id',t.id).single();if(u&&u.status+u.updated_at!==last){await loadMe();viewTrade()}},10000)}
+  POLL=setInterval(async()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;const{data:u}=await sb.from('trades').select('status,updated_at').eq('id',t.id).single();if(u&&u.status+u.updated_at!==last){await loadBal();viewTrade()}},10000)}
 
 /* ---------- Conexión lenta / sin internet ---------- */
 function showRetry(){const m=document.querySelector('main');if(!m||!m.querySelector('.sk'))return;
@@ -907,7 +916,7 @@ async function viewOrder(){
   bindCopy(main());
   main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   $('back').onclick=e=>{e.preventDefault();go(admin&&!isBuyer&&!isSeller?'admin':'orders')};
-  const reload=async()=>{await loadMe();viewOrder()};
+  const reload=async()=>{await loadBal();viewOrder()};
   if($('f'))$('f').onchange=()=>{const f=$('f').files[0],b=$('sendB')||$('sendS');
     if(f&&/^image\//.test(f.type)){$('pv').src=URL.createObjectURL(f);$('pv').style.display='block';b.disabled=false}else{$('pv').style.display='none';b.disabled=true}};
   const send=(id,role,fn,msg)=>{if($(id))$(id).onclick=ev=>act(ev.target,async()=>{const p=await uploadProof(o.id,role,$('f').files[0]);await rpc(fn,{p_order:o.id,p_path:p});await reload()},msg)};
@@ -949,14 +958,14 @@ async function viewOrder(){
     if(my!==NAV)return clearInterval(POLL);
     if(document.hidden||!navigator.onLine)return;
     const{data:u}=await sb.from('orders').select('status,updated_at').eq('id',o.id).single();
-    if(u&&u.status+u.updated_at!==last){last=u.status+u.updated_at;toast('La operación se actualizó');await loadMe();viewOrder()}
+    if(u&&u.status+u.updated_at!==last){last=u.status+u.updated_at;toast('La operación se actualizó');await loadBal();viewOrder()}
     else if(dis&&document.activeElement?.id!=='cm')drawChat()},10000)}
 
 /* ---------- Billetera ---------- */
 async function viewWallet(){
-  const my=NAV;await loadMe();if(my!==NAV)return;const st=S.settings;
-  const fl=await sb.from('site_flags').select('key,blocked'),BF={};(fl.data||[]).forEach(x=>BF[x.key]=x.blocked);
-  const blkMsg=(BF.deposits||BF.withdrawals)?`<div class="warnbox bad">⛔ ${[BF.deposits&&'Depósitos y recargas',BF.withdrawals&&'Retiros'].filter(Boolean).join(' y ')} bloqueados temporalmente por el administrador.</div>`:'';
+  const my=NAV;const st=S.settings;
+  const blk=BF=>(BF.deposits||BF.withdrawals)?`<div class="warnbox bad">⛔ ${[BF.deposits&&'Depósitos y recargas',BF.withdrawals&&'Retiros'].filter(Boolean).join(' y ')} bloqueados temporalmente por el administrador.</div>`:'';
+  const blkMsg=`<div id="blkb">${blk(S._bf||{})}</div>`;
   main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}${blkMsg}
   ${walletCard(true)}
   <div class="qa"><button class="qb" data-sc="depcard"><i>⬇️</i>Depositar</button><button class="qb" data-sc="wcard"><i>⬆️</i>Retirar</button><button class="qb" data-gv="hist"><i>🧾</i>Historial</button></div>
@@ -994,6 +1003,9 @@ async function viewWallet(){
     if(!ready)return;
     act(bt,async()=>{await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:net});
       S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW()},'Retiro solicitado')};
+  (async()=>{try{const[,fl]=await Promise.all([loadMe(),sb.from('site_flags').select('key,blocked')]);if(my!==NAV)return;
+    const B={};(fl.data||[]).forEach(x=>B[x.key]=x.blocked);S._bf=B;
+    const w=document.querySelector('main .wal');if(w)w.outerHTML=walletCard(true);const bb=$('blkb');if(bb)bb.innerHTML=blk(B)}catch(e){}})();
   renderCup();renderDepositCard();
   const[d,w]=await Promise.all([
     sb.from('deposits').select('amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(10),
@@ -1072,7 +1084,7 @@ async function renderDepositCard(){
   bindCopy(box);
   $('dver').onclick=ev=>act(ev.target,async()=>{
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dtx').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
-    await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadMe();viewWallet()},'¡Depósito acreditado!');
+    await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadBal();viewWallet()},'¡Depósito acreditado!');
   $('dcan').onclick=ev=>act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}
 
 async function viewProfile(){
