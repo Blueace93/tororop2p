@@ -1529,10 +1529,44 @@ async function adminKycUsers(my){
     $('kuL').querySelectorAll('[data-ka]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar verificación','<p>¿Los documentos son claros y coinciden con la selfie?</p>','Aprobar','ok');if(!m)return;m.remove();
       act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.ka,p_ok:true,p_note:''});const x=find(b.dataset.ka);if(x)x.status='approved';sync();paint();
         const ab=document.querySelector('main .card.hl .big');if(ab&&/^\d+$/.test(ab.textContent))ab.textContent=+ab.textContent+1},'Usuario verificado')});
-    $('kuL').querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar verificación','<label>Motivo (el usuario lo verá)</label><input id="kmo" placeholder="Ej: la selfie no se ve clara">','Rechazar','bad');if(!m)return;const nt=m.querySelector('#kmo').value.trim();m.remove();
-      act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.kr,p_ok:false,p_note:nt||'Documentos no válidos'});const x=find(b.dataset.kr);if(x){x.status='rejected';x.note=nt||'Documentos no válidos'}sync();paint()},'Verificación rechazada')})};
+    $('kuL').querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const nt=await askReject();if(nt===null)return;
+      act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.kr,p_ok:false,p_note:nt});const x=find(b.dataset.kr);if(x){x.status='rejected';x.note=nt}sync();paint()},'Verificación rechazada')})};
   let qt;$('kuQ').oninput=e=>{Q=e.target.value;clearTimeout(qt);qt=setTimeout(paint,150)};
   sync();paint()}
+
+const KREASONS=['La foto del carnet (frente) no se ve clara','Falta el reverso del carnet','La selfie no se ve clara o no sostienes el carnet','El carnet está vencido','El nombre no coincide con el documento','Los datos del documento no se pueden leer','Documento no válido'];
+async function askReject(){
+  const m=await ask('Rechazar verificación',`<label>Motivo (el usuario lo verá)</label><select id="krs">${KREASONS.map(r=>`<option>${esc(r)}</option>`).join('')}<option value="">Otro motivo…</option></select><input id="kmo" placeholder="Detalle adicional (opcional)">`,'Rechazar','bad');
+  if(!m)return null;
+  const r=m.querySelector('#krs').value,d=m.querySelector('#kmo').value.trim();m.remove();
+  return r&&d?r+' — '+d:(r||d||'Documentos no válidos')}
+
+/* Registro de acciones de administradores (solo dueño; se carga al pulsar) */
+const AUD_T={kyc_submissions:'KYC',fiat_topups:'Recarga de saldo',fiat_withdrawals:'Retiro de saldo',withdrawals:'Retiro USDT',deposits:'Depósito USDT',announcements:'Anuncio',profiles:'Administrador',site_flags:'Bloqueo'};
+const AUD_A={approved:'aprobó',rejected:'rechazó',completed:'completó',credited:'acreditó',paid:'pagó',sent:'marcó enviado',insert:'publicó',delete:'eliminó',staff_on:'añadió',staff_off:'quitó',blocked:'bloqueó',unblocked:'desbloqueó'};
+const AUD_G={all:null,kyc:['kyc_submissions'],money:['fiat_topups','fiat_withdrawals','withdrawals','deposits'],other:['announcements','profiles','site_flags']};
+function adminAuditShell(){
+  if($('s-audit'))return;
+  main().insertAdjacentHTML('beforeend','<h3 id="s-audit">Registro de acciones</h3><div id="auditbox"><button class="b gh w" id="auditGo">Ver últimas acciones</button></div>');
+  $('auditGo').onclick=()=>adminAudit(NAV)}
+async function adminAudit(my){
+  const box=$('auditbox');if(!box)return;
+  let F=S.audF||'all',lim=30;
+  const load=async()=>{
+    S.audF=F;box.innerHTML=skel(1);
+    let q=sb.from('admin_actions').select('id,created_at,action,target_table,actor:profiles!admin_actions_actor_id_fkey(username),target:profiles!admin_actions_target_user_fkey(username)').order('created_at',{ascending:false}).limit(lim);
+    if(AUD_G[F])q=q.in('target_table',AUD_G[F]);
+    const{data,error}=await q;
+    if(my!==NAV||!$('auditbox'))return;
+    if(error){box.innerHTML='<div class="warnbox bad">Falta ejecutar <code>admin_secundarios.sql</code> en Supabase.</div>';return}
+    const L=data||[],names={all:'Todo',kyc:'KYC',money:'Dinero',other:'Otros'};
+    box.innerHTML=`<div class="chips">${Object.entries(names).map(([k,v])=>`<button class="chip ${F===k?'on':''}" data-af="${k}">${v}</button>`).join('')}</div>`
+      +(L.length?`<div class="card">${L.map(x=>{const st=String(x.action||'').split(':')[1]||'';
+        return`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>@${esc(x.actor?.username||'?')}</b> ${esc(AUD_A[st]||('cambió a '+st))} · ${esc(AUD_T[x.target_table]||x.target_table||'')}<br><span class="mut">${x.target?.username?'@'+esc(x.target.username)+' · ':''}${when(x.created_at)}</span></div>`}).join('')}</div>`
+        +(L.length>=lim?'<button class="b gh w" id="auditMore">Ver más</button>':''):'<div class="card mut">Todavía no hay acciones registradas.</div>');
+    box.querySelectorAll('[data-af]').forEach(b=>b.onclick=()=>{F=b.dataset.af;lim=30;load()});
+    const mb=$('auditMore');if(mb)mb.onclick=()=>{lim+=30;load()}};
+  load()}
 
 async function viewAdmin(){
   if(!S.profile.is_admin){if(S.profile.is_staff)return viewStaff();return go('market')}
@@ -1546,8 +1580,7 @@ async function viewAdmin(){
     sb.from('kyc_submissions').select('id',{count:'exact',head:true}).eq('status','pending'),
     sb.from('fee_ledger').select('*').order('created_at',{ascending:false}).limit(60),
     sb.from('trades').select('*').eq('asset','MOVIL').in('status',['pending','review']).order('created_at'),
-    sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
-    sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle(),
+    null,null,
     sb.from('referrals').select('reward,currency').eq('rewarded',true),
     sb.from('profiles').select('id',{count:'exact',head:true}).eq('kyc_status','approved'),
     sb.rpc('admin_fee_totals'),
@@ -1611,14 +1644,14 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
-    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt()},
+    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt();adminAuditShell()},
     mny:()=>adminCards(my),
-    cfg:()=>{adminBlocks();adminExtras(an,ai,rr)}},done={};
+    cfg:async()=>{adminBlocks();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
   mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
@@ -1629,29 +1662,80 @@ async function viewAdmin(){
 /* ---------- Administradores adicionales: panel limitado ---------- */
 async function viewStaff(){
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
-  const[ks,an,ai,ac]=await Promise.all([
+  const[ks,ac]=await Promise.all([
     sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,created_at,profiles(username)').eq('status','pending').order('created_at'),
-    sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
-    sb.from('staff_info').select('full_name,about,photo_paths').eq('user_id',S.user.id).maybeSingle(),
     sb.rpc('staff_active_users')]);
   if(my!==NAV)return;
-  const K=ks.data||[],tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
+  const K=ks.data||[],AT=S.stab||'pend';
+  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos'],['mny','💳 Tarjetas']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
-  <div class="tiles">${tl('🪪','KYC',K.length,'s-kyc')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button><button class="tile" data-go="s-cards"><span class="tc" style="color:var(--acc)">💳</span><span>Mis tarjetas</span></button></div>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac.error?'—':(ac.data??0)}</div></div>
   ${ac.error?'<div class="warnbox bad">Falta ejecutar <code>administradores.sql</code> en Supabase.</div>':''}
-  <h3 id="s-kyc">Verificaciones KYC pendientes</h3>`+(K.length?K.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
-  main().querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>$(b.dataset.go)?.scrollIntoView({behavior:'smooth',block:'start'}));
-  main().querySelectorAll('[data-kv]').forEach(b=>b.onclick=async()=>{
-    const x=K.find(k=>String(k.id)===b.dataset.kv);
-    const u=await Promise.all([x.doc_front,x.doc_back,x.selfie].map(async p=>p?(await sb.storage.from('kyc').createSignedUrl(p,600)).data?.signedUrl:null));
-    const m=modal(`<h3>${esc(x.full_name)} · ${esc(x.id_number)}</h3>`+['Frente','Reverso','Selfie con carnet'].map((l,i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}">`:'<p class="mut">No se pudo cargar</p>'}`).join('')+`<button class="b gh w" style="margin-top:10px" id="kvx">Cerrar</button>`);
-    m.querySelector('#kvx').onclick=()=>m.remove();m.querySelectorAll('img').forEach(i=>i.onclick=()=>zoom(i.src))});
-  main().querySelectorAll('[data-ka]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar verificación','<p>¿Los documentos son claros y coinciden con la selfie?</p>','Aprobar','ok');if(!m)return;m.remove();
-    act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.ka),p_ok:true,p_note:''});viewAdmin()},'Usuario verificado')});
-  main().querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar verificación','<label>Motivo (el usuario lo verá)</label><input id="kmo" placeholder="Ej: la selfie no se ve clara">','Rechazar','bad');if(!m)return;const nt=m.querySelector('#kmo').value.trim();m.remove();
-    act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.kr),p_ok:false,p_note:nt||'Documentos no válidos'});viewAdmin()},'Verificación rechazada')});
-  await adminExtras(an,ai,null);adminCards(my)}
+  ${tabsHtml}
+  <h3 id="s-kyc">Verificaciones KYC pendientes</h3><div id="kycbox"></div>
+  <h3 id="s-rec">Recargas de mis tarjetas</h3><div id="recbox">${skel(1)}</div>
+  <h3 id="s-find">Buscar usuarios</h3>
+  <div class="card"><p class="mut" style="margin-top:0">Consulta de solo lectura: usuario, nombre y estado de verificación. No muestra saldos ni movimientos.</p><input id="sfQ" type="search" placeholder="Escribe el usuario o el nombre" autocomplete="off"><div id="sfR"></div></div>`;
+  const TABOF={'s-kyc':'pend','s-rec':'pend','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
+  const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
+  const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
+  if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
+  /* KYC pendientes: se actualiza en el sitio, sin recargar el panel */
+  const drawK=()=>{const bx=$('kycbox');if(!bx)return;
+    bx.innerHTML=K.length?K.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>';
+    const tb=mm.querySelector('[data-at="pend"]');if(tb)tb.textContent='📋 Pendientes'+(K.length?' · '+K.length:'');
+    const bd=$('adbd');if(bd){bd.textContent=K.length;bd.style.display=K.length?'block':'none'}
+    const find=id=>K.find(k=>String(k.id)===String(id)),drop=id=>{const i=K.findIndex(k=>String(k.id)===String(id));if(i>=0)K.splice(i,1);drawK()};
+    bx.querySelectorAll('[data-kv]').forEach(b=>b.onclick=()=>act(b,async()=>{
+      const x=find(b.dataset.kv),u=await kycUrls(x,600);
+      const m=modal(`<h3>${esc(x.full_name)} · ${esc(x.id_number)}</h3>`+['Frente','Reverso','Selfie con carnet'].map((l,i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}" loading="lazy" decoding="async">`:'<p class="mut">No se pudo cargar</p>'}`).join('')+`<button class="b gh w" style="margin-top:10px" id="kvx">Cerrar</button>`);
+      m.querySelector('#kvx').onclick=()=>m.remove();m.querySelectorAll('img').forEach(i=>i.onclick=()=>zoom(i.src))}));
+    bx.querySelectorAll('[data-ka]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar verificación','<p>¿Los documentos son claros y coinciden con la selfie?</p>','Aprobar','ok');if(!m)return;m.remove();
+      act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.ka),p_ok:true,p_note:''});drop(b.dataset.ka);
+        const ab=document.querySelector('main .card.hl .big');if(ab&&/^\d+$/.test(ab.textContent))ab.textContent=+ab.textContent+1},'Usuario verificado')});
+    bx.querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const nt=await askReject();if(nt===null)return;
+      act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.kr),p_ok:false,p_note:nt});drop(b.dataset.kr)},'Verificación rechazada')})};
+  drawK();
+  /* Buscador de usuarios (solo lectura) */
+  let sft;$('sfQ').oninput=()=>{clearTimeout(sft);sft=setTimeout(async()=>{
+    const q=($('sfQ')?.value||'').trim(),R=$('sfR');if(!R)return;if(q.length<2){R.innerHTML='';return}
+    const{data,error}=await sb.rpc('staff_find_users',{p_q:q});if(($('sfQ')?.value||'').trim()!==q)return;
+    if(error){R.innerHTML='<div class="warnbox bad">Falta ejecutar <code>admin_secundarios.sql</code> en Supabase.</div>';return}
+    const st={approved:['Verificado','ok'],pending:['En revisión','warn'],rejected:['Rechazado','bad']};
+    R.innerHTML=(data||[]).length?data.map(u=>{const[t,c]=st[u.kyc_status]||['Sin verificar',''];return`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span><b>@${esc(u.username)}</b>${u.full_name?`<br><span class="mut">${esc(u.full_name)}</span>`:''}</span><span class="tag ${c}">${t}</span></div>`}).join(''):'<p class="mut">No se encontraron usuarios.</p>'},300)};
+  /* Pestañas: cada una carga lo suyo solo cuando se abre */
+  const LD={
+    pend:()=>staffTopups(my),
+    cfg:async()=>{const[an,ai]=await Promise.all([
+      sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
+      sb.from('staff_info').select('full_name,about,photo_paths').eq('user_id',S.user.id).maybeSingle()]);
+      if(my!==NAV)return;adminExtras(an,ai,null)},
+    mny:()=>adminCards(my)},done={};
+  const openTab=k=>{S.stab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
+    if(LD[k]&&!done[k]){done[k]=1;LD[k]()}};
+  mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
+  openTab(AT)}
+
+/* Staff: recargas de saldo pagadas a sus propias tarjetas (se oculta sola si aún no está instalada en Supabase) */
+async function staffTopups(my){
+  const box=$('recbox');if(!box)return;
+  const{data,error}=await sb.rpc('staff_my_topups');
+  if(my!==NAV||!$('recbox'))return;
+  if(error){
+    if(/could not find|does not exist|schema cache|not found/i.test(error.message||'')){const h=$('s-rec');if(h)h.remove();box.remove()}
+    else box.innerHTML='<div class="card mut">No se pudieron cargar las recargas. Cambia de pestaña y vuelve a intentarlo.</div>';
+    return}
+  let L=Array.isArray(data)?data:[];
+  const dd=c=>c==='USD'?2:0;
+  const draw=()=>{
+    box.innerHTML=L.length?L.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,dd(x.currency))} ${esc(x.currency)}</b><span class="mut">@${esc(x.username||'?')}</span></div><div class="mut">${x.card?esc(x.card)+' · ':''}${when(x.created_at)}</div>${x.proof_path?`<button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button>`:''}<div class="grid2" style="margin-top:8px"><button class="b ok sm" data-sa="${x.id}">Acreditar</button><button class="b bad sm" data-sx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>';
+    const drop=id=>{L=L.filter(x=>String(x.id)!==String(id));draw()};
+    box.querySelectorAll('[data-pv]').forEach(b=>b.onclick=async()=>{const{data:u}=await sb.storage.from('proofs').createSignedUrl(b.dataset.pv,600);u?zoom(u.signedUrl):toast('No se pudo cargar la captura','err')});
+    box.querySelectorAll('[data-sa]').forEach(b=>b.onclick=async()=>{const m=await ask('Acreditar recarga','<p>Confirma que el dinero ya llegó a tu tarjeta. El saldo se acreditará al usuario y no se puede deshacer.</p>','Acreditar','ok');if(!m)return;m.remove();
+      act(b,async()=>{await rpc('staff_approve_fiat_topup',{p_id:b.dataset.sa});drop(b.dataset.sa)},'Saldo acreditado')});
+    box.querySelectorAll('[data-sx]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar recarga','<p>La recarga se marcará como rechazada.</p>','Rechazar','bad');if(!m)return;m.remove();
+      act(b,async()=>{await rpc('staff_reject_fiat_topup',{p_id:b.dataset.sx});drop(b.dataset.sx)},'Recarga rechazada')})};
+  draw()}
 
 /* ---------- Dueño: añadir y quitar administradores ---------- */
 async function adminStaffMgmt(){
