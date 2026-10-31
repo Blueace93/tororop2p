@@ -245,6 +245,11 @@ html.lite .sk{background:var(--card)!important}
 .gd-li .gd-s{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:rgba(111,107,255,.18);color:#b9b4ff}.gd-li .gd-s svg{width:21px;height:21px}
 .gd-li.ok .gd-s{background:rgba(46,230,166,.14);color:#2ee6a6}
 .gd-li b{display:block;margin-bottom:2px}.gd-li .mut{font-size:13px;line-height:1.35}
+/* Panel admin: pestañas y rendimiento */
+.atabs{display:flex!important;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;margin:4px 0 14px;scrollbar-width:none}.atabs::-webkit-scrollbar{display:none}.atabs .chip{flex:none;white-space:nowrap}
+main.adm>*{animation:none!important}
+main.adm .card:not(.hl){content-visibility:auto;contain-intrinsic-size:auto 120px}
+main[data-atab="pend"]>[data-tab]:not([data-tab="pend"]):not([data-tab="all"]),main[data-atab="usr"]>[data-tab]:not([data-tab="usr"]):not([data-tab="all"]),main[data-atab="mny"]>[data-tab]:not([data-tab="mny"]):not([data-tab="all"]),main[data-atab="cfg"]>[data-tab]:not([data-tab="cfg"]):not([data-tab="all"]){display:none!important}
 </style>
 </head>
 <body>
@@ -357,7 +362,7 @@ function friendly(e){
 async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
 async function act(btn,fn,okMsg){
   if(btn&&btn.closest)btn=btn.closest('button')||btn;
-  let wd;
+  let wd;if(S.profile&&S.profile.is_admin)S._cfgAt=0;
   const free=()=>{clearTimeout(wd);if(btn){btn.dataset.busy='';if(btn.isConnected)btn.disabled=false}};
   if(btn){if(btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;wd=setTimeout(free,60000)}
   try{await fn();if(okMsg)toast(okMsg,'good')}catch(e){toast(friendly(e),'err')}
@@ -387,12 +392,13 @@ async function boot(){
   if(await mfaGate())return;
   await loadMe();await afterLogin();render();maybeTuto()}
 async function loadMe(){
-  const[p,w,st,cw,fr,fo]=await Promise.all([
+  const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
+  const[p,w,st,cw,fr,fo,sf]=await Promise.all([
     sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single(),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
-    sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),sb.from('fee_rates').select('kind,pct'),sb.from('fx_offers').select('id',{count:'exact',head:true}).eq('seller_id',S.user.id).eq('status','open')]);
+    fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('fx_offers').select('id',{count:'exact',head:true}).eq('seller_id',S.user.id).eq('status','open'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle()]);
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
-  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};S.settings=st.data||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.fxOpen=fo?.count||0;S.profile.is_staff=false;try{const{data:sf}=await sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle();S.profile.is_staff=!!sf?.is_staff}catch(e){}S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
+  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.fxOpen=fo?.count||0;S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
   if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);renderAuth()}
   if(ev==='PASSWORD_RECOVERY')renderReset()});
@@ -485,6 +491,7 @@ async function refreshBadge(){
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
   S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);watchLoad();
+  {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
   ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,alerts:viewAlerts,calc:viewCalc,saved:viewSaved,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
   window.scrollTo({top:0,behavior:'instant'})}
@@ -540,7 +547,7 @@ function drawOffers(){
   l.sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount-a.amount);
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=+S.settings.fee_percent||0;
-  box.innerHTML=l.map(o=>{const mine=o.seller_id===S.user.id,{m,c}=parseM(o.methods);
+  box.innerHTML=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c}=parseM(o.methods);
     return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span></div>
@@ -644,11 +651,13 @@ function drawAds0(){
   const l=(S.ads||[]).filter(o=>(A.mine?o.user_id===S.user.id:(A.tab==='all'||o.side===(A.tab==='buy'?'sell':'buy')))&&(A.asset==='all'||o.asset===A.asset)&&(A.quote==='all'||o.quote===A.quote))
     .sort((a,b)=>A.sort==='amount'?b.amount-a.amount:(AK.indexOf(a.asset)-AK.indexOf(b.asset))||(a.side===b.side?(a.side==='sell'?a.price-b.price:b.price-a.price):(a.side==='sell'?-1:1)));
   if(!l.length){box.innerHTML='<div class="card mut">No hay anuncios con ese filtro. Cambia el filtro o publica el tuyo.</div>';return}
-  box.innerHTML=l.map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
+  const LIM=A.lim||40;
+  box.innerHTML=l.slice(0,LIM).map(o=>{const mine=o.user_id===S.user.id,sell=o.side==='sell',L=ASSETS[o.asset].label;
     return`<div class="card"><div class="row"><span class="tag ${sell?'ok':'warn'}">${sell?'Vende':'Compra'}</span><span class="usr"><span class="av">${esc((o.profiles?.username||'?')[0].toUpperCase())}</span><span class="mut">@${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.user_id)?' · '+repTxt(o.user_id):''}</span></span></div>
     <div class="row" style="margin-top:8px"><span class="usr">${cIco(o.asset,32)}<b style="font-size:18px">${n(o.amount,2)} ${L}</b></span><span class="px"><small>Precio total</small><b>${n(rnd(o.amount*o.price,qd(o.quote)),qd(o.quote))} ${o.quote}</b></span></div>
     <div class="mut" style="margin:6px 0">≈ ${n(o.price,o.price<1?4:2)} ${o.quote} por unidad${o.asset==='MOVIL'?' · Foto del envío + aprobación del admin':''}</div>
-    ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}%: la paga el vendedor desde su saldo.</p>`;
+    ${mine?`<button class="b gh sm" data-ac="${o.id}">Cancelar mi anuncio</button>`:`<button class="b sm" data-ab="${o.id}">${sell?'Comprar':'Vender'} ${ASSETS[o.asset].chip}</button>`}</div>`}).join('')+`<p class="mut">Comisión de ${pc}%: la paga el vendedor desde su saldo.</p>`+(l.length>LIM?`<button class="b gh w" id="adMore">Mostrar más (${l.length-LIM})</button>`:'');
+  {const mb=$('adMore');if(mb)mb.onclick=()=>{A.lim=LIM+40;drawAds()}}
   box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_ad',{p_id:b.dataset.ac});await loadMe();viewAds()},'Anuncio cancelado'));
   box.querySelectorAll('[data-ab]').forEach(b=>b.onclick=async()=>{
     if(gate())return;
@@ -712,7 +721,7 @@ async function viewTrade(){
 function showRetry(){const m=document.querySelector('main');if(!m||!m.querySelector('.sk'))return;
   m.innerHTML=`<div class="card"><h3>No se pudo cargar</h3><p class="mut">La conexión está lenta o se cortó. Tus datos están a salvo.</p><button class="b w" id="rty">Reintentar</button></div>`;
   const b=document.getElementById('rty');if(b)b.onclick=()=>go(S.view)}
-function watchLoad(){clearTimeout(S.wd);S.wd=setTimeout(showRetry,20000)}
+function watchLoad(){clearTimeout(S.wd);S.wd=setTimeout(showRetry,12000)}
 (function(){const bar=document.createElement('div');bar.id='netbar';bar.textContent='Sin conexión · reintentando…';document.body.appendChild(bar);
   const up=()=>{bar.style.display=navigator.onLine?'none':'block'};
   addEventListener('offline',up);addEventListener('online',()=>{up();toast('Conexión recuperada','good');if(S.user){pollNotifs();if(document.querySelector('main .sk, #rty'))go(S.view)}});up();
@@ -1393,7 +1402,7 @@ async function adminExtras(an,ai,rr){
    <input type="file" id="infP" accept="image/*" multiple>
    <p class="mut">Solo usuarios con sesión iniciada pueden ver estas fotos. Máx. 6 MB cada una.</p>
    <button class="b w" id="infGo">Guardar</button></div>`);
-  const back=async sel=>{await viewAdmin();$(sel)?.scrollIntoView({behavior:'smooth',block:'start'})};
+  const back=async sel=>{await viewAdmin();toEl(sel)};
   main().querySelectorAll('#s-info ~ .card [data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   $('annGo').onclick=ev=>act(ev.target,async()=>{
     const t=$('annT').value.trim(),b=$('annB').value.trim(),d=$('annD').value||null;
@@ -1431,7 +1440,7 @@ async function adminRefs(rr){
   $('rfM').value=rs?.mode||'operation';
   $('rfG').onclick=ev=>act(ev.target,async()=>{const pct=+$('rfP').value;if(!(pct>=0&&pct<=100))throw new Error('Porcentaje inválido');
     const{error:e}=await sb.from('referral_settings').upsert({id:1,pct,mode:$('rfM').value,enabled:$('rfE').checked});if(e)throw e;
-    await viewAdmin();$('s-ref')?.scrollIntoView({behavior:'smooth',block:'start'})},'Guardado')}
+    await viewAdmin();toEl('s-ref')},'Guardado')}
 
 /* ---------- Admin ---------- */
 /* ---------- Admin: bloquear / desbloquear depósitos y retiros ---------- */
@@ -1441,7 +1450,7 @@ async function adminBlocks(){
   if(!main().contains(t))return;
   const F={};(data||[]).forEach(x=>F[x.key]=x.blocked);
   const row=(k,lb)=>`<div class="row" style="padding:6px 0"><span><b>${lb}</b><br><span class="tag ${F[k]?'bad':'ok'}">${F[k]?'Bloqueados':'Activos'}</span></span><button class="b ${F[k]?'ok':'bad'} sm" data-bk="${k}" data-v="${F[k]?'0':'1'}">${F[k]?'Desbloquear':'Bloquear'}</button></div>`;
-  t.insertAdjacentHTML('afterend',`<div class="card"><h3 style="margin:0 0 4px">🔒 Bloqueo de depósitos y retiros</h3>${error?'<div class="warnbox bad">Falta ejecutar <code>bloqueos.sql</code> en Supabase.</div>':`<p class="mut" style="margin:0 0 6px">Al bloquear, los usuarios no pueden enviar solicitudes nuevas. Lo que ya está pendiente lo sigues revisando.</p>${row('deposits','Depósitos y recargas')}${row('withdrawals','Retiros')}`}</div>`);
+  t.insertAdjacentHTML('afterend',`<div class="card" id="s-blk" data-tab="cfg"><h3 style="margin:0 0 4px">🔒 Bloqueo de depósitos y retiros</h3>${error?'<div class="warnbox bad">Falta ejecutar <code>bloqueos.sql</code> en Supabase.</div>':`<p class="mut" style="margin:0 0 6px">Al bloquear, los usuarios no pueden enviar solicitudes nuevas. Lo que ya está pendiente lo sigues revisando.</p>${row('deposits','Depósitos y recargas')}${row('withdrawals','Retiros')}`}</div>`);
   main().querySelectorAll('[data-bk]').forEach(b=>b.onclick=async()=>{
     const on=b.dataset.v==='1',nm=b.dataset.bk==='deposits'?'depósitos y recargas':'retiros';
     const m=await ask(on?'Bloquear '+nm:'Desbloquear '+nm,`<p>${on?'Nadie podrá hacer solicitudes nuevas de':'Se permitirán de nuevo las solicitudes de'} ${nm}.</p>`,on?'Bloquear':'Desbloquear',on?'bad':'ok');
@@ -1483,38 +1492,47 @@ function shareKyc(x){
     ta.value=t;ta.style.display='block';ta.select();
     try{await navigator.clipboard.writeText(t);toast('Enlaces copiados','good')}catch(e){toast('Copia el texto de abajo manualmente','')}})}
 
-async function adminKycUsers(){
-  const my=NAV,anchor=$('s-top');if(!anchor)return;
-  const{data,error}=await sb.from('kyc_submissions').select('*,profiles(username)').order('created_at',{ascending:false}).limit(150);
-  if(my!==NAV||!$('s-top'))return;
-  const L=data||[];let F='all',Q='';
-  anchor.insertAdjacentHTML('beforebegin',`<h3 id="s-kycu">Expedientes KYC por usuario</h3>
-   ${error?`<div class="warnbox bad">No se pudieron cargar los expedientes: ${esc(error.message)}</div>`:`
-   <input id="kuQ" type="search" placeholder="Buscar por usuario, nombre o documento">
-   <div class="chips" id="kuC"></div><div id="kuL"></div>`}`);
-  if(error)return;
-  const cnt=k=>k==='all'?L.length:L.filter(x=>x.status===k).length,tabs={all:'Todos',approved:'Aprobados',pending:'Pendientes',rejected:'Rechazados'};
+async function adminKycUsers(my){
+  const box=$('kycbox');if(!box)return;
+  const[pq,rq]=await Promise.all([
+    sb.from('kyc_submissions').select('*,profiles(username)').eq('status','pending').order('created_at'),
+    sb.from('kyc_submissions').select('*,profiles(username)').neq('status','pending').order('created_at',{ascending:false}).limit(100)]);
+  if(my!==NAV||!$('kycbox'))return;
+  const error=pq.error||rq.error;
+  if(error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los expedientes: ${esc(error.message)}</div>`;return}
+  const L=[...(pq.data||[]),...(rq.data||[])];let F=(pq.data||[]).length?'pending':'all',Q='';
+  box.innerHTML=`<input id="kuQ" type="search" placeholder="Buscar por usuario, nombre o documento" autocomplete="off"><div class="chips" id="kuC"></div><div id="kuL"></div>`;
+  const tabs={pending:'Pendientes',all:'Todos',approved:'Aprobados',rejected:'Rechazados'},cnt=k=>k==='all'?L.length:L.filter(x=>x.status===k).length;
+  const sync=()=>{const p=cnt('pending'),t=document.querySelector('[data-go="s-kyc"] .tc'),tb=document.querySelector('[data-at="usr"]');
+    if(t){t.textContent=p;t.parentElement.classList.toggle('hot',p>0)}if(tb)tb.textContent='🪪 Usuarios'+(p?' · '+p:'')};
+  const card=x=>{const[t,c]=KST[x.status]||[x.status||'—',''];
+    return`<div class="card"><div class="row"><b>${esc(x.full_name||'—')}</b><span class="tag ${c}">${esc(t)}</span></div>
+     <div class="mut">@${esc(x.profiles?.username||'—')} · Documento: ${esc(x.id_number||'—')} · ${when(x.created_at)}</div>
+     ${x.status==='rejected'&&(x.note||x.review_note)?`<div class="mut">Motivo: ${esc(x.note||x.review_note)}</div>`:''}
+     <div class="grid2" style="margin-top:8px"><button class="b gh sm" data-kuv="${x.id}">Ver documentos</button><button class="b gh sm" data-kus="${x.id}">Compartir</button></div>
+     ${x.status==='pending'?`<div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div>`:''}</div>`};
   const paint=()=>{
     $('kuC').innerHTML=Object.entries(tabs).map(([k,v])=>`<button class="chip ${F===k?'on':''}" data-kf="${k}">${v} · ${cnt(k)}</button>`).join('');
     const q=Q.trim().toLowerCase(),vis=L.filter(x=>(F==='all'||x.status===F)&&(!q||[x.full_name,x.id_number,x.profiles?.username].some(v=>String(v||'').toLowerCase().includes(q))));
-    $('kuL').innerHTML=(vis.length?vis.slice(0,40).map(x=>{const[t,c]=KST[x.status]||[x.status||'—',''];
-      return`<div class="card"><div class="row"><b>${esc(x.full_name||'—')}</b><span class="tag ${c}">${esc(t)}</span></div>
-       <div class="mut">@${esc(x.profiles?.username||'—')} · Documento: ${esc(x.id_number||'—')} · ${when(x.created_at)}</div>
-       ${x.status==='rejected'&&(x.note||x.review_note)?`<div class="mut">Motivo: ${esc(x.note||x.review_note)}</div>`:''}
-       <div class="grid2" style="margin-top:8px"><button class="b gh sm" data-kuv="${x.id}">Ver documentos</button><button class="b sm" data-kus="${x.id}">Compartir</button></div></div>`}).join('')
-      +(vis.length>40?`<p class="mut">Mostrando 40 de ${vis.length}. Usa el buscador para acotar.</p>`:''):'<div class="card mut">Sin resultados.</div>');
+    $('kuL').innerHTML=(vis.length?vis.slice(0,40).map(card).join('')+(vis.length>40?`<p class="mut">Mostrando 40 de ${vis.length}. Usa el buscador para acotar.</p>`:''):'<div class="card mut">Sin resultados.</div>');
     $('kuC').querySelectorAll('[data-kf]').forEach(b=>b.onclick=()=>{F=b.dataset.kf;paint()});
+    const find=id=>L.find(k=>String(k.id)===String(id));
     $('kuL').querySelectorAll('[data-kuv]').forEach(b=>b.onclick=()=>act(b,async()=>{
-      const x=L.find(k=>String(k.id)===b.dataset.kuv),u=await kycUrls(x,600);
+      const x=find(b.dataset.kuv),u=await kycUrls(x,600);
       const m=modal(`<h3>${esc(x.full_name||'—')} · ${esc(x.id_number||'')}</h3><p class="mut" style="margin:0">@${esc(x.profiles?.username||'—')} · ${(KST[x.status]||[x.status])[0]} · ${when(x.created_at)}</p>`
-        +KDOCS.map(([,l],i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}" style="cursor:zoom-in">`:'<p class="mut">No se pudo cargar</p>'}`).join('')
+        +KDOCS.map(([,l],i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}" loading="lazy" decoding="async" style="cursor:zoom-in">`:'<p class="mut">No se pudo cargar</p>'}`).join('')
         +`<div class="grid2" style="margin-top:10px"><button class="b" id="kvs">Compartir</button><button class="b gh" id="kvc">Cerrar</button></div>`);
       m.querySelectorAll('img').forEach(i=>i.onclick=()=>zoom(i.src));
       m.querySelector('#kvc').onclick=()=>m.remove();
       m.querySelector('#kvs').onclick=()=>{m.remove();shareKyc(x)}}));
-    $('kuL').querySelectorAll('[data-kus]').forEach(b=>b.onclick=()=>shareKyc(L.find(k=>String(k.id)===b.dataset.kus)))};
-  $('kuQ').oninput=e=>{Q=e.target.value;paint()};
-  paint()}
+    $('kuL').querySelectorAll('[data-kus]').forEach(b=>b.onclick=()=>shareKyc(find(b.dataset.kus)));
+    $('kuL').querySelectorAll('[data-ka]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar verificación','<p>¿Los documentos son claros y coinciden con la selfie?</p>','Aprobar','ok');if(!m)return;m.remove();
+      act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.ka,p_ok:true,p_note:''});const x=find(b.dataset.ka);if(x)x.status='approved';sync();paint();
+        const ab=document.querySelector('main .card.hl .big');if(ab&&/^\d+$/.test(ab.textContent))ab.textContent=+ab.textContent+1},'Usuario verificado')});
+    $('kuL').querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar verificación','<label>Motivo (el usuario lo verá)</label><input id="kmo" placeholder="Ej: la selfie no se ve clara">','Rechazar','bad');if(!m)return;const nt=m.querySelector('#kmo').value.trim();m.remove();
+      act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.kr,p_ok:false,p_note:nt||'Documentos no válidos'});const x=find(b.dataset.kr);if(x){x.status='rejected';x.note=nt||'Documentos no válidos'}sync();paint()},'Verificación rechazada')})};
+  let qt;$('kuQ').oninput=e=>{Q=e.target.value;clearTimeout(qt);qt=setTimeout(paint,150)};
+  sync();paint()}
 
 async function viewAdmin(){
   if(!S.profile.is_admin){if(S.profile.is_staff)return viewStaff();return go('market')}
@@ -1525,7 +1543,7 @@ async function viewAdmin(){
     sb.from('withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fiat_topups').select('id,currency,amount,proof_path,created_at,profiles(username)').eq('status','pending').order('created_at'),
     sb.from('fiat_withdrawals').select('*,profiles(username)').eq('status','pending').order('created_at'),
-    sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,created_at,profiles(username)').eq('status','pending').order('created_at'),
+    sb.from('kyc_submissions').select('id',{count:'exact',head:true}).eq('status','pending'),
     sb.from('fee_ledger').select('*').order('created_at',{ascending:false}).limit(60),
     sb.from('trades').select('*').eq('asset','MOVIL').in('status',['pending','review']).order('created_at'),
     sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
@@ -1535,13 +1553,11 @@ async function viewAdmin(){
     sb.rpc('admin_fee_totals'),
     sb.from('fee_payouts').select('currency,amount,created_at').order('created_at',{ascending:false}).limit(5)]);
   if(my!==NAV)return;
-  const TM=tm.data||[],tn={};
-  if(TM.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',[...new Set(TM.flatMap(t=>[t.buyer_id,t.seller_id]))]);(pp||[]).forEach(p=>tn[p.id]=p.username)}
+  const TM=tm.data||[],tn={},un={},fuid=x=>x.user_id||x.payer_id||x.from_user||x.seller_id||x.profile_id;
+  {const ids=[...new Set([...TM.flatMap(t=>[t.buyer_id,t.seller_id]),...(fl.data||[]).slice(0,30).map(fuid)].filter(Boolean))];
+   if(ids.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',ids);(pp||[]).forEach(p=>{tn[p.id]=p.username;un[p.id]=p.username})}}
   const movilHtml=`<h3 id="s-movil">Saldo móvil por revisar</h3>`+(TM.length?TM.map(t=>`<div class="card ${t.status==='review'?'hl':''}"><div class="row"><b>${n(t.amount,2)} saldo móvil · ${n(t.total,qd(t.quote))} ${esc(t.quote)}</b><span class="tag warn">${t.status==='review'?'Mediación pedida':'Esperando fotos'}</span></div><div class="mut">Envía: @${esc(tn[t.seller_id])} → Recibe: @${esc(tn[t.buyer_id])} · Número: <code>${esc(t.phone)}</code></div><div class="mut">Retenido: ${n(t.escrow,qd(t.quote))} ${esc(t.quote)} · Comisión: ${n(t.fee,qd(t.fee_cur))} ${esc(t.fee_cur)} (se descuenta al vendedor)</div><div class="grid2" style="margin-top:8px"><button class="b gh sm" data-tp="${t.id}|s">${t.sender_proof?'Ver foto del envío':'Sin foto del envío'}</button><button class="b gh sm" data-tp="${t.id}|b">${t.receiver_proof?'Ver foto de recepción':'Sin foto de recepción'}</button></div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-tl="${t.id}">Aprobar y liberar</button><button class="b bad sm" data-tf="${t.id}">Rechazar y devolver</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
   const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
-  const fuid=x=>x.user_id||x.payer_id||x.from_user||x.seller_id||x.profile_id,un={};
-  {const ids=[...new Set((fl.data||[]).slice(0,30).map(fuid).filter(Boolean))];
-   if(ids.length){const{data:pu}=await sb.from('profiles').select('id,username').in('id',ids);(pu||[]).forEach(p=>un[p.id]=p.username)}}
   const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)});
   const feeOk=!ft.error&&Array.isArray(ft.data);
   if(!feeOk){const{data:fa}=await sb.from('fee_ledger').select('amount,currency').limit(1000);Object.keys(ftot).forEach(k=>delete ftot[k]);(fa||[]).forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)})}
@@ -1549,17 +1565,19 @@ async function viewAdmin(){
   const fd=c=>c==='CUP'?0:c==='USD'?2:4;
   const hasFees=feeOk&&Object.values(ftot).some(v=>v>0);
   const lastPay=(fp.data||[]).length?`<p class="mut" style="font-size:12px;margin:8px 0 0">Último retiro: ${(()=>{const t=fp.data[0].created_at;return fp.data.filter(x=>x.created_at===t).map(x=>n(x.amount,fd(x.currency))+' '+esc(x.currency)).join(' · ')})()} · ${when(fp.data[0].created_at)}</p>`:'';
-  const feeHtml=`<h3>Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${hasFees?'<button class="b ok sm" id="feeClr" style="margin-top:10px">✅ Ya retiré esto · poner comisiones en 0</button>':''}${lastPay}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(un[fuid(x)]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${!fl.error&&!feeOk?`<p class="mut">Para usar el botón de poner en 0, ejecuta retiro_comisiones.sql en Supabase.</p>`:''}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
+  const feeHtml=`<h3 id="s-fee">Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${hasFees?'<button class="b ok sm" id="feeClr" style="margin-top:10px">✅ Ya retiré esto · poner comisiones en 0</button>':''}${lastPay}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(un[fuid(x)]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${!fl.error&&!feeOk?`<p class="mut">Para usar el botón de poner en 0, ejecuta retiro_comisiones.sql en Supabase.</p>`:''}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
   const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-staff"><span class="tc" style="color:var(--acc)">👥</span><span>Administradores</span></button><button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-kycu"><span class="tc" style="color:var(--acc)">🗂️</span><span>Expedientes KYC</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button><button class="tile" data-go="s-cards"><span class="tc" style="color:var(--acc)">💳</span><span>Tarjetas y comisiones</span></button><button class="tile" data-go="s-kycall"><span class="tc" style="color:var(--acc)">🗂️</span><span>Archivo KYC</span></button></div>`;
+  const tiles=`<div class="tiles" data-tab="pend">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
+  const npend=TM.length+orders.length+(d.data||[]).length+(w.data||[]).length+(ct.data||[]).length+(cw.data||[]).length,AT=S.atab||'pend';
+  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','🪪 Usuarios',ks.count||0],['mny','💰 Dinero',0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
-  ${tiles}
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
   <div class="card" style="margin:0"><div class="mut">Depósitos / retiros</div><div class="big">${(d.data||[]).length} / ${(w.data||[]).length}</div></div></div>
+  ${tabsHtml}${tiles}
   ${movilHtml}${feeHtml}<h3 id="s-ord">Operaciones por revisar</h3>`+(orders.length?orders.map(x=>{const[t,c]=STATUS[x.status];
     return`<div class="card ${x.status==='disputed'?'dg':''}" style="cursor:pointer" data-o="${x.id}"><div class="row"><b>${n(x.amount,2)} USDT · ${mny(due(x,parseM(x.methods).c),parseM(x.methods).c)} ${esc(parseM(x.methods).c)}</b><span class="tag ${c}">${t}</span></div><div class="mut">${when(x.created_at)}</div></div>`}).join(''):'<div class="card mut">Nada pendiente.</div>')+
   `<h3 id="s-dep">Depósitos pendientes</h3>`+((d.data||[]).length?d.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
@@ -1568,28 +1586,17 @@ async function viewAdmin(){
     <div class="row"><span class="mut">${esc(x.network)} · <code>${esc(x.address)}</code></span>${cpBtn(x.address)}</div>
     <div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),4)} USDT</b> (comisión ${n(x.amount-netOf(x),4)}). Luego pulsa “Marcar enviado”.</div>
     <div class="grid2" style="margin-top:8px"><button class="b ok sm" data-wd="${x.id}">Marcar enviado</button><button class="b bad sm" data-wr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>');
-  main().insertAdjacentHTML('beforeend',`<h3 id="s-kyc">Verificaciones KYC pendientes</h3>`+((ks.data||[]).length?ks.data.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3 id="s-top">Recargas de saldo pendientes</h3>`+((ct.data||[]).length?ct.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ca="${x.id}">Acreditar</button><button class="b bad sm" data-cr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3>Retiros de saldo pendientes</h3>`+((cw.data||[]).length?cw.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="row"><code>${esc(x.card)}</code>${cpBtn(x.card)}</div><div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),x.currency==='USD'?2:0)} ${esc(x.currency)}</b> (comisión ${n(x.amount-netOf(x),x.currency==='USD'?2:0)})</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-cd="${x.id}">Marcar enviado</button><button class="b bad sm" data-cx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>'));
-  adminBlocks();
-  adminKycUsers();
+  main().insertAdjacentHTML('beforeend',`<h3 id="s-top">Recargas de saldo pendientes</h3>`+((ct.data||[]).length?ct.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ca="${x.id}">Acreditar</button><button class="b bad sm" data-cr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>')+`<h3>Retiros de saldo pendientes</h3>`+((cw.data||[]).length?cw.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,x.currency==='USD'?2:0)} ${esc(x.currency)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="row"><code>${esc(x.card)}</code>${cpBtn(x.card)}</div><div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),x.currency==='USD'?2:0)} ${esc(x.currency)}</b> (comisión ${n(x.amount-netOf(x),x.currency==='USD'?2:0)})</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-cd="${x.id}">Marcar enviado</button><button class="b bad sm" data-cx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>'));
   {const fb=$('feeClr');if(fb)fb.onclick=async()=>{
     const m=await ask('Poner comisiones en 0',`<p>Confirma que ya tomaste este dinero:</p><p><b>${Object.entries(ftot).filter(([,v])=>v>0).map(([c,v])=>n(v,fd(c))+' '+esc(c)).join(' · ')}</b></p><p class="mut">El historial de comisiones no se borra: solo se registra el retiro y el contador queda en 0. Las comisiones nuevas vuelven a sumar desde cero.</p>`,'Sí, poner en 0','ok');
     if(!m)return;m.remove();
     act(fb,async()=>{await rpc('admin_clear_fees');viewAdmin()},'Comisiones en 0')}}
-  main().querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>$(b.dataset.go)?.scrollIntoView({behavior:'smooth',block:'start'}));
   main().querySelectorAll('[data-tp]').forEach(b=>b.onclick=async()=>{const[id,w]=b.dataset.tp.split('|'),t=TM.find(x=>x.id===id),p=w==='s'?t.sender_proof:t.receiver_proof;
     if(!p)return toast('Aún no hay captura','err');const{data}=await sb.storage.from('proofs').createSignedUrl(p,600);data?zoom(data.signedUrl):toast('No se pudo cargar la captura','err')});
   main().querySelectorAll('[data-tl]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar y liberar','<p>Se liberará el CUP retenido al vendedor (menos la comisión). No se puede deshacer.</p>','Aprobar','ok');if(!m)return;m.remove();
     act(b,async()=>{await rpc('admin_release_trade',{p_id:b.dataset.tl});viewAdmin()},'Operación liberada')});
   main().querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar y devolver','<p>El CUP retenido vuelve al comprador.</p>','Rechazar','bad');if(!m)return;m.remove();
     act(b,async()=>{await rpc('admin_refund_trade',{p_id:b.dataset.tf});viewAdmin()},'Operación devuelta')});
-  main().querySelectorAll('[data-kv]').forEach(b=>b.onclick=async()=>{
-    const x=ks.data.find(k=>k.id===b.dataset.kv);
-    const u=await Promise.all([x.doc_front,x.doc_back,x.selfie].map(async p=>(await sb.storage.from('kyc').createSignedUrl(p,600)).data?.signedUrl));
-    modal(`<h3>${esc(x.full_name)} · ${esc(x.id_number)}</h3>`+['Frente','Reverso','Selfie con carnet'].map((l,i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${u[i]}" alt="${l}">`:'<p class="mut">No se pudo cargar</p>'}`).join('')+`<button class="b gh w" style="margin-top:10px" onclick="this.closest('.ov').remove()">Cerrar</button>`)});
-  main().querySelectorAll('[data-ka]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar verificación','<p>¿Los documentos son claros y coinciden con la selfie?</p>','Aprobar','ok');if(!m)return;m.remove();
-    act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.ka,p_ok:true,p_note:''});viewAdmin()},'Usuario verificado')});
-  main().querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar verificación','<label>Motivo (el usuario lo verá)</label><input id="kmo" placeholder="Ej: la selfie no se ve clara">','Rechazar','bad');if(!m)return;const nt=m.querySelector('#kmo').value.trim();m.remove();
-    act(b,async()=>{await rpc('admin_review_kyc',{p_id:b.dataset.kr,p_ok:false,p_note:nt||'Documentos no válidos'});viewAdmin()},'Verificación rechazada')});
   main().querySelectorAll('[data-pv]').forEach(b=>b.onclick=async()=>{const{data}=await sb.storage.from('proofs').createSignedUrl(b.dataset.pv,3600);data?zoom(data.signedUrl):toast('No se pudo cargar la captura','err')});
   main().querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>go('order',el.dataset.o));
   const bind=(attr,fn,okMsg)=>main().querySelectorAll(`[${attr}]`).forEach(b=>b.onclick=async()=>{
@@ -1603,7 +1610,20 @@ async function viewAdmin(){
   bind('data-cr','admin_reject_fiat_topup','Recarga rechazada');
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
-  await adminExtras(an,ai,rr);adminStaffMgmt();adminCards(my);adminKycArchive(my)}
+  /* Pestañas: cada una carga sus datos solo cuando se abre */
+  const TABOF={'s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
+  const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
+  if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
+  const LD={
+    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt()},
+    mny:()=>adminCards(my),
+    cfg:()=>{adminBlocks();adminExtras(an,ai,rr)}},done={};
+  const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
+    if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
+  mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
+  mm.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openTab(TABOF[b.dataset.go]||'pend',b.dataset.go));
+  openTab(AT)}
 
 
 /* ---------- Administradores adicionales: panel limitado ---------- */
@@ -1635,8 +1655,8 @@ async function viewStaff(){
 
 /* ---------- Dueño: añadir y quitar administradores ---------- */
 async function adminStaffMgmt(){
-  const anchor=$('s-ann');if(!anchor||$('s-staff-h'))return;
-  anchor.insertAdjacentHTML('beforebegin',`<h3 id="s-staff">Administradores</h3><span id="s-staff-h"></span>
+  if($('s-staff-h'))return;
+  main().insertAdjacentHTML('beforeend',`<h3 id="s-staff">Administradores</h3><span id="s-staff-h"></span>
    <div class="card"><p class="mut" style="margin-top:0">Quien añadas aquí verá el botón Admin con funciones limitadas: aprobar o rechazar KYC, publicar anuncios, ver cuántos usuarios activos hay y publicar sus datos en “Información”. No ve dinero, retiros ni comisiones.</p>
    <div id="stL"></div>
    <label>Añadir administrador (busca entre los usuarios registrados)</label><input id="stQ" placeholder="Escribe el nombre de usuario" autocomplete="off"><div id="stR"></div></div>`);
@@ -1683,32 +1703,6 @@ async function adminCards(my){
     box.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{const m=await ask('Eliminar tarjeta','<p>Se quitará de la lista. El historial de lo recibido por ella se conserva.</p>','Eliminar','bad');if(!m)return;m.remove();act(b,async()=>{await rpc('card_delete',{p_id:b.dataset.d});await draw()},'Tarjeta eliminada')});
     box.querySelectorAll('[data-p]').forEach(b=>b.onclick=async()=>{const[a,cu]=b.dataset.p.split('|');const m=await ask('Marcar como pagado','<p>Confirma que ya le transferiste esta comisión al administrador.</p>','Confirmar','ok');if(!m)return;m.remove();act(b,async()=>{await rpc('earnings_pay',{p_admin:a,p_cur:cu});await draw()},'Marcado como pagado')})};
   await draw()}
-
-/* ---------- Admin: archivo KYC por usuario (ver y compartir) ---------- */
-async function adminKycArchive(my){
-  const T='<h3 id="s-kycall">Archivo KYC por usuario</h3>',box=document.createElement('div');box.id='kyca';main().appendChild(box);box.innerHTML=T+skel(1);
-  const{data,error}=await sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,status,created_at,profiles(username)').order('created_at',{ascending:false}).limit(300);
-  if(my!==NAV)return;
-  if(error){box.innerHTML=T+`<div class="warnbox bad">${esc(friendly(error))}</div>`;return}
-  const R=data||[],ST={approved:['Aprobado','ok'],pending:['En revisión','warn'],rejected:['Rechazado','bad']};
-  const urls=(x,sec)=>Promise.all([x.doc_front,x.doc_back,x.selfie].map(async p=>p?(await sb.storage.from('kyc').createSignedUrl(p,sec)).data?.signedUrl:null));
-  box.innerHTML=T+`<input id="kq" placeholder="Buscar por usuario, nombre o carnet" autocomplete="off" style="margin-bottom:10px"><div id="kl"></div>`;
-  const draw=()=>{const q=$('kq').value.trim().toLowerCase(),l=R.filter(x=>!q||[x.profiles?.username,x.full_name,x.id_number].join(' ').toLowerCase().includes(q)).slice(0,50);
-    $('kl').innerHTML=l.length?l.map(x=>{const st=ST[x.status]||[x.status||'—',''];return`<div class="card"><div class="row"><b>@${esc(x.profiles?.username||'?')}</b><span class="tag ${st[1]}">${esc(st[0])}</span></div><div class="mut">${esc(x.full_name)} · ${esc(x.id_number)} · ${when(x.created_at)}</div><div class="grid2" style="margin-top:10px"><button class="b gh sm" data-kvw="${x.id}">Ver</button><button class="b sm" data-ksh="${x.id}">Compartir</button></div></div>`}).join(''):'<div class="card mut">Sin resultados.</div>';
-    $('kl').querySelectorAll('[data-kvw]').forEach(b=>b.onclick=()=>act(b,async()=>{
-      const x=R.find(k=>k.id===b.dataset.kvw),u=await urls(x,600);
-      const m=modal(`<h3>${esc(x.full_name)} · ${esc(x.id_number)}</h3>`+['Frente','Reverso','Selfie con carnet'].map((l,i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}" data-z="${esc(u[i])}">`:'<p class="mut">No se pudo cargar</p>'}`).join('')+`<button class="b gh w" id="kx" style="margin-top:10px">Cerrar</button>`);
-      m.querySelector('#kx').onclick=()=>m.remove();m.querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z))}));
-    $('kl').querySelectorAll('[data-ksh]').forEach(b=>b.onclick=async()=>{
-      const x=R.find(k=>k.id===b.dataset.ksh);
-      const c=await ask('Compartir KYC','<div class="warnbox bad">🔒 Son documentos personales sensibles. Compártelos solo si es realmente necesario y con la persona correcta.</div><p>Se crean enlaces que <b>caducan en 24 horas</b>.</p>','Continuar','ok');if(!c)return;c.remove();
-      act(b,async()=>{
-        const u=await urls(x,86400);if(u.some(v=>!v))throw new Error('No se pudieron generar todos los enlaces');
-        const txt=`KYC · ${x.full_name} (${x.id_number}) · @${x.profiles?.username||''}\nEnlaces válidos por 24 horas:\nFrente: ${u[0]}\nReverso: ${u[1]}\nSelfie con carnet: ${u[2]}`;
-        const m=modal(`<h3>Enlaces listos</h3><p class="mut">Válidos 24 horas. Cualquiera con el enlace puede ver las fotos hasta que caduque.</p><div class="grid2"><button class="b gh" id="kc">Copiar</button><button class="b" id="ks">Compartir</button></div><button class="b gh w" id="kx" style="margin-top:10px">Cerrar</button>`);
-        m.querySelector('#kx').onclick=()=>m.remove();m.querySelector('#kc').onclick=()=>copy(txt);
-        m.querySelector('#ks').onclick=()=>navigator.share?navigator.share({title:'KYC '+x.full_name,text:txt}).catch(()=>{}):copy(txt)})})};
-  $('kq').oninput=draw;draw()}
 
 boot();
 </script>
