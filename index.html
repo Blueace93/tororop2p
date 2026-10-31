@@ -250,6 +250,20 @@ html.lite .sk{background:var(--card)!important}
 main.adm>*{animation:none!important}
 main.adm .card:not(.hl){content-visibility:auto;contain-intrinsic-size:auto 120px}
 main[data-atab="pend"]>[data-tab]:not([data-tab="pend"]):not([data-tab="all"]),main[data-atab="usr"]>[data-tab]:not([data-tab="usr"]):not([data-tab="all"]),main[data-atab="mny"]>[data-tab]:not([data-tab="mny"]):not([data-tab="all"]),main[data-atab="cfg"]>[data-tab]:not([data-tab="cfg"]):not([data-tab="all"]){display:none!important}
+/* Pulido visual del inicio: solo estilos estáticos (sin desenfoques ni animaciones nuevas, para no gastar rendimiento) */
+.hi{font-size:20px;font-weight:500;margin:4px 2px 14px;letter-spacing:-.2px}
+.hi b{font-weight:800;color:#c9c3ff}
+.wal{box-shadow:0 18px 40px -22px rgba(91,69,255,.75),inset 0 1px 0 rgba(255,255,255,.18)}
+.wal-b{font-size:38px}
+#auC{background:linear-gradient(90deg,rgba(61,220,151,.15),rgba(61,220,151,.03))!important;border-color:rgba(61,220,151,.3)!important;border-radius:99px!important;padding:8px 16px!important}
+#auC:after{content:"";margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.22)}
+.chips .chip[data-mk]{padding:8px 14px;font-weight:600}
+.chips .chip[data-mk].on{background:var(--g);border-color:transparent;color:#fff;font-weight:700}
+.tile{font-size:12.5px;letter-spacing:.1px}
+#adl>.card{border-radius:22px;padding:16px;border-color:rgba(255,255,255,.07);box-shadow:0 10px 24px -18px #000}
+#adl>.card:has(.tag.ok){box-shadow:inset 3px 0 0 var(--ok),0 10px 24px -18px #000}
+#adl>.card:has(.tag.warn){box-shadow:inset 3px 0 0 var(--warn),0 10px 24px -18px #000}
+#adl .tag{font-weight:700}
 </style>
 </head>
 <body>
@@ -367,6 +381,8 @@ async function act(btn,fn,okMsg){
   if(btn){if(btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;wd=setTimeout(free,60000)}
   try{await fn();if(okMsg)toast(okMsg,'good')}catch(e){toast(friendly(e),'err')}
   finally{free()}}
+/* Refresca saldos sin bloquear el botón ni mostrar error falso si la red va lenta */
+const refreshW=()=>{loadMe().catch(()=>{}).finally(()=>{if(S.view==='wallet'&&$('main'))viewWallet()})};
 const copy=t=>navigator.clipboard.writeText(t).then(()=>toast('Copiado','good'),()=>toast('No se pudo copiar','err'));
 const cpBtn=t=>`<button class="b gh sm" data-cp="${esc(t)}">Copiar</button>`;
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(b)copy(b.dataset.cp)});function bindCopy(){}
@@ -964,14 +980,20 @@ async function viewWallet(){
     if(!(+$('da').value>0))throw new Error('Indica el monto enviado');
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dt').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('request_deposit',{p_amount:+$('da').value,p_txid:$('dt').value.trim()});viewWallet()},'Aviso enviado');
-  $('wit').onclick=ev=>act(ev.target,async()=>{kycChk();
-    const a=+$('wa').value,ad=$('wd').value.trim();
-    if(!(a>0))throw new Error('Indica un monto válido');
-    if(a>S.wallet.available)throw new Error('Saldo insuficiente');
-    if(!/^0x[a-fA-F0-9]{40}$/.test(ad))throw new Error('Dirección inválida: debe empezar por 0x y tener 42 caracteres');
-    const m=await ask('Confirmar retiro',`<p>Se descontarán <b>${n(a,2)} USDT</b> de tu saldo (comisión ${S.fees.withdraw}%) y recibirás <b>${n(a*(1-S.fees.withdraw/100),2)} USDT</b> por <b>${esc($('wn').value)}</b> a:</p><p><code>${esc(ad)}</code></p><p class="mut">Verifica la dirección: los envíos a una red equivocada no se recuperan.</p>`,'Solicitar retiro');
-    if(!m)return;m.remove();
-    await pinGate();await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:$('wn').value});await loadMe();viewWallet()},'Retiro solicitado');
+  $('wit').onclick=async ev=>{const bt=ev.target.closest('button')||ev.target;
+    if(bt.dataset.busy==='1'||bt.dataset.ask==='1')return;bt.dataset.ask='1';
+    let ready=false,a=0,ad='',net='';
+    try{kycChk();
+      a=+$('wa').value;ad=$('wd').value.trim();net=$('wn').value;
+      if(!(a>0))throw new Error('Indica un monto válido');
+      if(a>S.wallet.available)throw new Error('Saldo insuficiente');
+      if(!/^0x[a-fA-F0-9]{40}$/.test(ad))throw new Error('Dirección inválida: debe empezar por 0x y tener 42 caracteres');
+      const m=await ask('Confirmar retiro',`<p>Se descontarán <b>${n(a,2)} USDT</b> de tu saldo (comisión ${S.fees.withdraw}%) y recibirás <b>${n(a*(1-S.fees.withdraw/100),2)} USDT</b> por <b>${esc(net)}</b> a:</p><p><code>${esc(ad)}</code></p><p class="mut">Verifica la dirección: los envíos a una red equivocada no se recuperan.</p>`,'Solicitar retiro');
+      if(m){m.remove();await pinGate();ready=true}
+    }catch(e){toast(friendly(e),'err')}finally{bt.dataset.ask=''}
+    if(!ready)return;
+    act(bt,async()=>{await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:net});
+      S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW()},'Retiro solicitado')};
   renderCup();renderDepositCard();
   const[d,w]=await Promise.all([
     sb.from('deposits').select('amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(10),
@@ -1010,13 +1032,19 @@ async function renderCup(){
       if(L&&a>L.headroom)throw new Error('Solo puedes recargar hasta '+n(L.headroom,c.d)+' '+c.k+' por ahora');
       const p=await uploadProof('topup/'+S.user.id,'recarga',fl);await rpc('request_fiat_topup',{p_cur:c.k,p_amount:a,p_path:p});await renderCup()},'Recarga enviada: el administrador la revisará')});
   box.querySelectorAll('[data-out]').forEach(b=>b.onclick=async()=>{if(gate())return;
-    const c=C.find(x=>x.k===b.dataset.out);
-    const m=await ask('Retirar '+c.name,`<p class="mut">Disponible: ${n(S.bal[c.k],c.d)} ${c.k}</p><label>Monto (${c.k})</label><input id="ra" data-k="${c.k}" type="number" step="any" inputmode="decimal"><div class="mut" id="rfee" style="margin:-4px 0 8px"></div><div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</div>
+    if(b.dataset.busy==='1'||b.dataset.ask==='1')return;b.dataset.ask='1';
+    const c=C.find(x=>x.k===b.dataset.out);let ready=false,a=0,cd='';
+    try{
+      const m=await ask('Retirar '+c.name,`<p class="mut">Disponible: ${n(S.bal[c.k],c.d)} ${c.k}</p><label>Monto (${c.k})</label><input id="ra" data-k="${c.k}" type="number" step="any" inputmode="decimal"><div class="mut" id="rfee" style="margin:-4px 0 8px"></div><div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</div>
       <label>Tarjeta donde recibirás (16 dígitos)</label>${savedSel('csv','tarjeta')}<input id="rc" inputmode="numeric">`,'Solicitar retiro');
-    if(!m)return;const a=+m.querySelector('#ra').value,cd=m.querySelector('#rc').value.replace(/\s/g,'');m.remove();
-    act(b,async()=>{if(!(a>0)||a>S.bal[c.k])throw new Error('Monto inválido o saldo insuficiente');
-      if(!/^\d{16}$/.test(cd))throw new Error('La tarjeta debe tener 16 dígitos');
-      await pinGate();await rpc('request_fiat_withdrawal',{p_cur:c.k,p_amount:a,p_card:cd});await loadMe();viewWallet()},'Retiro solicitado')})}
+      if(m){a=+m.querySelector('#ra').value;cd=m.querySelector('#rc').value.replace(/\s/g,'');m.remove();
+        if(!(a>0)||a>S.bal[c.k])throw new Error('Monto inválido o saldo insuficiente');
+        if(!/^\d{16}$/.test(cd))throw new Error('La tarjeta debe tener 16 dígitos');
+        await pinGate();ready=true}
+    }catch(e){toast(friendly(e),'err')}finally{b.dataset.ask=''}
+    if(!ready)return;
+    act(b,async()=>{await rpc('request_fiat_withdrawal',{p_cur:c.k,p_amount:a,p_card:cd});
+      S.bal[c.k]=Math.max(0,Number(S.bal[c.k])-a);refreshW()},'Retiro solicitado')})}
 
 async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
