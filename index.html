@@ -1846,11 +1846,21 @@ async function adminCards(my){
     let d;try{d=await rpc('card_overview')}catch(e){box.innerHTML=T+'<div class="warnbox bad">Falta ejecutar <code>tarjetas_admins.sql</code> en Supabase.<br><span class="mut" style="font-size:12px">'+esc(e.message||'')+'</span></div>';return}
     if(my!==NAV)return;
     const O=d.owner,CS=d.cards||[],E=d.earnings||[],LM=d.limits||{},mn=(v,cur)=>`${n(v,qd(cur))} ${esc(cur)}`;
+    const SC=CS.filter(x=>x.admin_id!==S.user.id),last4=v=>'···'+String(v||'').replace(/\s/g,'').slice(-4);
+    const selBox=()=>{const act=CS.filter(x=>x.active),curs=['CUP','USD'].filter(k=>act.some(x=>x.currency===k));
+      if(!curs.length)return'';
+      const opt=(x,on)=>`<option value="${x.id}" ${on?'selected':''}>${x.admin_id===S.user.id?'Mía':'@'+esc(x.username)} · ${last4(x.number)}${x.limit?(x.room<=0?' · llena':' · quedan '+n(x.room,0)):''}</option>`;
+      return`<div class="card"><h3 style="margin:0 0 4px">Qué tarjeta usa la plataforma</h3><p class="mut" style="margin:0 0 6px">Aquí aparecen tus tarjetas y las que agregan los administradores secundarios. Elige una para recibir recargas y otra para pagar retiros.</p>`
+       +curs.map(k=>{const L=act.filter(x=>x.currency===k),tp=L.find(x=>x.topup),po=L.find(x=>x.payout);
+         return`<div style="margin-top:8px"><b>${k==='USD'?'Saldo Clásica (USD)':'Saldo CUP'}</b>
+          <label for="su-${k}-topup">Recibir recargas en</label><select id="su-${k}-topup" data-us="${k}|topup">${L.map(x=>opt(x,x===tp)).join('')}${tp?'':'<option value="" selected disabled>— elige una —</option>'}</select>
+          <label for="su-${k}-payout">Pagar retiros desde</label><select id="su-${k}-payout" data-us="${k}|payout"><option value="">— ninguna —</option>${L.map(x=>opt(x,x===po)).join('')}</select></div>`}).join('')+`</div>`};
     box.innerHTML=T+(O?`<div class="card hl"><div class="mut">Límite de recargas acumulado${LM.CUP&&LM.CUP.per_card?` · ${n(LM.CUP.per_card,0)} CUP por tarjeta`:''} (el total sube con cada tarjeta activa, tuya o de un administrador secundario)</div>${['CUP','USD'].map(k=>LM[k]?`<div class="row"><b>${k==='USD'?'Saldo Clásica':'Saldo CUP'}</b><span>${mn(LM[k].total,k)} de ${mn(LM[k].max,k)} <span class="tag">×${LM[k].mult}</span></span></div>`:'').join('')}</div>`:'')+
+     (O?selBox():'')+(O&&!SC.length?'<div class="warnbox">Ningún administrador secundario ha agregado tarjetas todavía. Las agregan desde su botón Admin → 💳 Tarjetas y aparecerán aquí.</div>':'')+
      `<div class="card"><label for="cc">Moneda</label><select id="cc"><option value="CUP">Saldo CUP</option><option value="USD">Saldo Clásica (USD)</option></select>
       <label for="cn">Número de tarjeta</label><input id="cn" inputmode="numeric" placeholder="0000 0000 0000 0000" autocomplete="off">
       <label for="ch">Titular (opcional)</label><input id="ch" autocomplete="off"><button class="b w" id="cs">Guardar tarjeta</button></div>`+
-     (CS.length?CS.map(x=>`<div class="card ${x.topup||x.payout?'hl':''}"><div class="row"><b>${O?'@'+esc(x.username)+' · ':''}${x.currency==='USD'?'Clásica USD':'CUP'}</b><span>${x.current?'<span class="tag ok">En uso ahora</span> ':''}${x.limit&&x.room<=0?'<span class="tag bad">Llena</span> ':''}${x.topup?'<span class="tag ok">Recargas</span> ':''}${x.payout?'<span class="tag ok">Retiros</span> ':''}${x.active?'':'<span class="tag bad">Inactiva</span>'}</span></div>
+     (CS.length?CS.map(x=>`<div class="card ${x.topup||x.payout?'hl':''}"><div class="row"><span><b>${O?'@'+esc(x.username)+' · ':''}${x.currency==='USD'?'Clásica USD':'CUP'}</b>${O?(x.admin_id===S.user.id?' <span class="tag">Tuya</span>':' <span class="tag warn">Admin secundario</span>'):''}</span><span>${x.current?'<span class="tag ok">En uso ahora</span> ':''}${x.limit&&x.room<=0?'<span class="tag bad">Llena</span> ':''}${x.topup?'<span class="tag ok">Recargas</span> ':''}${x.payout?'<span class="tag ok">Retiros</span> ':''}${x.active?'':'<span class="tag bad">Inactiva</span>'}</span></div>
        <div style="margin:6px 0"><code>${esc(x.number)}</code>${x.holder?` <span class="mut">· ${esc(x.holder)}</span>`:''}</div>
        <div class="mut">Recibido: <b>${mn(x.received,x.currency)}</b> · Pagado en retiros: <b>${mn(x.paid,x.currency)}</b></div>${x.limit?`<div class="mut" style="margin-top:4px">Límite acumulado: <b>${mn(x.received,x.currency)}</b> de <b>${mn(x.limit,x.currency)}</b> · quedan <b>${mn(x.room,x.currency)}</b></div><div style="height:6px;border-radius:99px;background:var(--card2);overflow:hidden;margin:4px 0"><div style="height:100%;width:${Math.min(100,Math.round(x.received/x.limit*100))}%;background:${x.room<=0?'var(--bad)':x.received/x.limit>.8?'var(--warn)':'var(--ok)'}"></div></div>`:''}
        <div class="grid2" style="margin-top:10px">${O&&x.active?`<button class="b ${x.topup?'':'gh'} sm" data-u="${x.id}|topup|${x.topup?0:1}">${x.topup?'Quitar de recargas':'Usar en recargas'}</button><button class="b ${x.payout?'':'gh'} sm" data-u="${x.id}|payout|${x.payout?0:1}">${x.payout?'Quitar de retiros':'Usar en retiros'}</button>`:''}
@@ -1858,6 +1868,11 @@ async function adminCards(my){
      `<h3 style="margin-top:20px">${O?'Comisiones por administrador':'Mis comisiones'}</h3>`+
      (E.length?E.map(x=>`<div class="card"><div class="row"><b>${O?'@'+esc(x.username)+' · ':''}${esc(x.currency)}</b><span>Por pagar: <b>${mn(x.accrued,x.currency)}</b></span></div><div class="mut">Ya pagado: ${mn(x.paid,x.currency)}</div>${O&&x.accrued>0?`<button class="b ok sm" style="margin-top:8px" data-p="${x.admin_id}|${esc(x.currency)}">Marcar como pagado</button>`:''}</div>`).join(''):'<div class="card mut">Todavía no hay comisiones.</div>')+
      `<p class="mut" style="font-size:12px">Reparto: 2/3 de cada comisión para el dueño y 1/3 en partes iguales entre los administradores secundarios con tarjeta activa.</p>`;
+    box.querySelectorAll('[data-us]').forEach(sl=>sl.onchange=()=>{const[cu,kind]=sl.dataset.us.split('|'),v=sl.value,flag=kind==='topup'?'topup':'payout';
+      act(sl,async()=>{
+        for(const x of CS.filter(y=>y.currency===cu&&y[flag]&&String(y.id)!==String(v)))await rpc('card_set_use',{p_id:String(x.id),p_kind:kind,p_on:false});
+        if(v&&!CS.find(y=>String(y.id)===String(v))[flag])await rpc('card_set_use',{p_id:v,p_kind:kind,p_on:true});
+        await draw()},'Actualizado')});
     $('cs').onclick=e=>act(e.currentTarget,async()=>{await rpc('card_save',{p_currency:$('cc').value,p_number:$('cn').value,p_holder:$('ch').value});await draw()},'Tarjeta guardada');
     box.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const[i,k,v]=b.dataset.u.split('|');act(b,async()=>{await rpc('card_set_use',{p_id:i,p_kind:k,p_on:v==='1'});await draw()},'Actualizado')});
     box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const[i,v]=b.dataset.t.split('|');act(b,async()=>{await rpc('card_toggle',{p_id:i,p_active:v==='1'});await draw()},'Actualizado')});
