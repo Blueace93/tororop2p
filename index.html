@@ -1882,17 +1882,18 @@ function drawMaint(){
     if(on&&isAdm()){if(!b){b=document.createElement('div');b.id='mntb';b.textContent='🛠️ Modo mantenimiento ACTIVO: los usuarios no pueden operar';document.body.appendChild(b)}}
     else if(b)b.remove();
     return}
-  const key=JSON.stringify([m.message,m.back_at,!!S.profile]);
+  const key=JSON.stringify([m.message,m.back_at,!!S.profile,!!S.user]);
   if(!el){el=document.createElement('div');el.id='mnt';el.setAttribute('role','alert');document.body.appendChild(el);
-    el.onclick=async e=>{const t=e.target.closest('#mntr,#mnta');if(!t)return;e.preventDefault();
+    el.onclick=async e=>{const t=e.target.closest('#mntr,#mnta,#mntx');if(!t)return;e.preventDefault();
       if(t.id==='mnta'){S.maintPass=true;drawMaint();return}
+      if(t.id==='mntx'){S.maintPass=true;try{await sb.auth.signOut()}catch(x){}S.user=null;S.profile=null;S.wallet=null;drawMaint();renderAuth('login');return}
       t.disabled=true;const r=await getMaint();t.disabled=false;
       if(!r)return toast('No se pudo comprobar. Revisa tu internet','err');
       S.maint=r;if(!r.active){location.reload();return}drawMaint()}}
   if(el.dataset.k!==key){el.dataset.k=key;
     el.innerHTML=`<div class="mnt-c"><div class="mnt-i">🛠️</div><h1>PÁGINA EN MANTENIMIENTO</h1>${m.message?`<p class="mnt-m">${esc(m.message)}</p>`:''}
       <div class="mnt-w">${m.back_at?`<div class="mut">Volveremos el</div><b>${esc(new Date(m.back_at).toLocaleString('es',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}))}</b>`:''}<div id="mntl" class="mut"></div></div>
-      <button class="b w" id="mntr">Comprobar ahora</button>${S.profile?'':'<a href="#" id="mnta" class="mut">Acceso administrador</a>'}</div>`}
+      <button class="b w" id="mntr">Comprobar ahora</button>${(S.user||S.profile)?'<a href="#" id="mntx" class="mut">Cerrar sesión · entrar como administrador</a>':'<a href="#" id="mnta" class="mut">Acceso administrador</a>'}</div>`}
   const l=$('mntl');if(l)l.textContent=maintLeft(m.back_at);
   document.body.style.overflow='hidden';$app.inert=true;
   if(!S.mntT)S.mntT=setInterval(async()=>{if(document.hidden)return;const r=await getMaint();if(r){S.maint=r;if(!r.active){location.reload();return}}drawMaint()},15000)}
