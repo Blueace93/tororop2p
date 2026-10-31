@@ -380,9 +380,11 @@ function friendly(e){
 async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
 async function act(btn,fn,okMsg){
   if(btn&&btn.closest)btn=btn.closest('button')||btn;
-  let wd;if(S.profile&&S.profile.is_admin)S._cfgAt=0;
-  const free=()=>{clearTimeout(wd);if(btn){btn.dataset.busy='';if(btn.isConnected)btn.disabled=false}};
-  if(btn){if(btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;wd=setTimeout(free,60000)}
+  let wd,hint,orig=null;if(S.profile&&S.profile.is_admin)S._cfgAt=0;
+  const free=()=>{clearTimeout(wd);clearTimeout(hint);if(btn){btn.dataset.busy='';if(btn.isConnected){btn.disabled=false;if(orig!==null)btn.innerHTML=orig}}};
+  if(btn){if(btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;
+    if(btn.classList&&btn.classList.contains('b')){orig=btn.innerHTML;btn.textContent='Enviando…'}
+    wd=setTimeout(free,60000);hint=setTimeout(()=>toast('Sigue enviando… con internet lento puede tardar. No repitas la operación.'),8000)}
   try{await fn();if(okMsg)toast(okMsg,'good')}catch(e){toast(friendly(e),'err')}
   finally{free()}}
 /* Refresca saldos sin bloquear el botón ni mostrar error falso si la red va lenta */
@@ -1005,7 +1007,8 @@ async function viewWallet(){
       S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW()},'Retiro solicitado')};
   (async()=>{try{const[,fl]=await Promise.all([loadMe(),sb.from('site_flags').select('key,blocked')]);if(my!==NAV)return;
     const B={};(fl.data||[]).forEach(x=>B[x.key]=x.blocked);S._bf=B;
-    const w=document.querySelector('main .wal');if(w)w.outerHTML=walletCard(true);const bb=$('blkb');if(bb)bb.innerHTML=blk(B)}catch(e){}})();
+    const w=document.querySelector('main .wal');if(w)w.outerHTML=walletCard(true);const bb=$('blkb');if(bb)bb.innerHTML=blk(B);
+    const bg=document.querySelectorAll('#cupcard .big');if(bg[0])bg[0].innerHTML=n(S.bal.CUP,0)+' <span class="mut">CUP</span>';if(bg[1])bg[1].innerHTML=n(S.bal.USD,2)+' <span class="mut">USD</span>'}catch(e){}})();
   renderCup();renderDepositCard();
   const[d,w]=await Promise.all([
     sb.from('deposits').select('amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(10),
@@ -1020,14 +1023,10 @@ async function renderCup(){
   const H=S.settings.cup_holder||CFG.holder;
   const C=[{k:'CUP',name:'Saldo CUP',card:S.settings.cup_card||CFG.card,d:0,tx:'Úsalo para comprar USDT en ofertas en CUP. Si vendes USDT y el comprador paga con saldo, lo recibes aquí.'},
            {k:'USD',name:'Saldo Clásica (USD)',card:S.settings.usd_card||CFG.card_usd,d:2,tx:'Tu dinero en dólares de la tarjeta Clásica. Úsalo en ofertas en Saldo Clásica; si vendes, lo recibes aquí.'}];
-  const[t,w]=await Promise.all([
-    sb.from('fiat_topups').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12),
-    sb.from('fiat_withdrawals').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12)]);
-  if(!$('cupcard'))return;
   const ST={pending:['Pendiente','warn'],approved:['Acreditado','ok'],done:['Enviado','ok'],rejected:['Rechazado','bad']};
   const hist=(a,l,c)=>(a||[]).filter(x=>x.currency===c.k).slice(0,4).map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-top:6px"><span class="mut">${l} ${n(x.amount,c.d)} ${c.k} · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join('');
   box.innerHTML=C.map(c=>`<div class="card hl"><div class="row" style="justify-content:flex-start;flex-wrap:nowrap;gap:12px">${cIco(c.k,44)}<div><div class="mut">${c.name}</div><div class="big">${n(S.bal[c.k],c.d)} <span class="mut">${c.k}</span></div></div></div>
-    <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div>${hist(t.data,'Recarga',c)}${hist(w.data,'Retiro',c)}</div>`).join('');
+    <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div><div data-hc="${c.k}"></div></div>`).join('');
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
     const c=C.find(x=>x.k===b.dataset.in);
     let ac=null;try{ac=await rpc('active_recharge_card',{p_cur:c.k})}catch(e){}
@@ -1056,7 +1055,12 @@ async function renderCup(){
     }catch(e){toast(friendly(e),'err')}finally{b.dataset.ask=''}
     if(!ready)return;
     act(b,async()=>{await rpc('request_fiat_withdrawal',{p_cur:c.k,p_amount:a,p_card:cd});
-      S.bal[c.k]=Math.max(0,Number(S.bal[c.k])-a);refreshW()},'Retiro solicitado')})}
+      S.bal[c.k]=Math.max(0,Number(S.bal[c.k])-a);refreshW()},'Retiro solicitado')});
+  try{const[t,w]=await Promise.all([
+    sb.from('fiat_topups').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12),
+    sb.from('fiat_withdrawals').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12)]);
+    if(!box.isConnected)return;
+    C.forEach(c=>{const h=box.querySelector('[data-hc="'+c.k+'"]');if(h)h.innerHTML=hist(t.data,'Recarga',c)+hist(w.data,'Retiro',c)})}catch(e){}}
 
 async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
