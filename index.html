@@ -344,7 +344,6 @@ const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="b
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 ${walletCard()}
 <div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios activos en la plataforma</span></span></div>
-<div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
 <div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
 const setActU=()=>{const e=$('auC');if(!e||S.actU==null)return;e.style.display='flex';$('auN').textContent=n(S.actU,0)};
 const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}};
@@ -352,7 +351,7 @@ const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');[['tRef','refs']
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
-const balCur=(c,m)=>c==='CUP'?(m.includes('Saldo CUP')?'CUP':null):c==='Saldo Clásica'?(m.includes('Saldo Clásica')?'USD':null):null;
+const balCur=()=>null;
 const logoSvg=(s=30)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="url(#lgG)"/><circle cx="20" cy="20" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30.5" cy="9.5" r="3" fill="#ef6a5b"/></svg>`;
 const brand=(s=30)=>`<span class="lg">${logoSvg(s)}<span class="logo">Tororo<i> P2P</i></span></span>`;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -375,12 +374,12 @@ S.seen=new Set();S.np0=true;S.st={};
 
 const STATUS={
   awaiting_payment:['Esperando pago del comprador','warn'],
-  payment_sent:['Pago enviado · falta recibo del vendedor','warn'],
+  payment_sent:['Pago enviado · el vendedor debe confirmar','warn'],
   seller_confirmed:['Vendedor confirmó · revisión del admin','warn'],
   disputed:['En disputa con el administrador','bad'],
   released:['Completada','ok'],refunded:['Devuelta al vendedor','bad'],cancelled:['Cancelada','bad']};
-const METHODS=['Transfermóvil','EnZona','Saldo CUP','Saldo Clásica','Saldo Móvil','Efectivo'];
-const CURS=['CUP','Saldo Clásica','Saldo Móvil'];
+const METHODS=['Transfermóvil','EnZona','Efectivo'];
+const CURS=['CUP','MLC','Saldo Clásica','Saldo Móvil'];
 const SEP=' | Moneda: ';
 const parseM=s=>{const [m,c]=String(s||'').split(SEP);return{m:m||'',c:c||'CUP'}};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -469,9 +468,7 @@ const CI={
  MOVIL:'<rect width="40" height="40" fill="url(#gm)"/><rect x="13.5" y="8.5" width="13" height="23" rx="3.2" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="20" cy="27.6" r="1.4" fill="#fff"/>'};
 const cIco=(k,z=34)=>`<span class="ci" style="width:${z}px;height:${z}px"><svg viewBox="0 0 40 40" aria-hidden="true">${CI[k]||CI.USD}</svg></span>`;
 const walletCard=full=>`<div class="wal"><div class="wal-h"><span class="wal-t">Mi billetera</span>${full?'':'<a href="#" id="tw" class="wal-a">Depositar / retirar →</a>'}</div>
- <div class="wal-main">${cIco('USDT',50)}<div><div class="wal-l">${full?'Disponible · ':''}USDT <span>Tether</span></div><div class="wal-b">${n(S.wallet?.available,2)}</div></div>${(S.wallet?.locked>0)?`<div class="wal-lk">🔒 ${n(S.wallet.locked,2)} en ofertas</div>`:''}</div>
- <div class="wal-sub"><div class="wal-c">${cIco('CUP',36)}<div><div class="wal-l">Saldo CUP</div><b>${n(S.bal?.CUP,0)}</b><small>CUP</small></div></div>
- <div class="wal-c">${cIco('USD',36)}<div><div class="wal-l">Saldo Clásica</div><b>${n(S.bal?.USD,2)}</b><small>USD</small></div></div></div></div>`;
+ <div class="wal-main">${cIco('USDT',50)}<div><div class="wal-l">${full?'Disponible · ':''}USDT <span>Tether</span></div><div class="wal-b">${n(S.wallet?.available,2)}</div></div>${(S.wallet?.locked>0)?`<div class="wal-lk">🔒 ${n(S.wallet.locked,2)} en ofertas</div>`:''}</div></div>`;
 /* ---- Botones flotantes ---- */
 const updFab=v=>{const f=$('fab');if(!f)return;f.classList.remove('open');if($('fabg'))$('fabg').style.display='none';f.classList.toggle('show',v==='market'||v==='wallet')};
 const toEl=id=>{let k=0;const t=setInterval(()=>{const e=$(id);if(e||++k>25){clearInterval(t);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})}},120)};
@@ -480,7 +477,7 @@ function bindFab(){
   const set=o=>{f.classList.toggle('open',o);g.style.display=o?'block':'none'};
   $('fabm').onclick=()=>set(!f.classList.contains('open'));g.onclick=()=>set(false);
   f.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{set(false);const a=b.dataset.fa;
-    if(a==='pub'){S.mk='ads';go('market');if($('adn'))$('adn').click()}else{go('wallet');toEl(a==='dep'?'depcard':'wcard')}});
+    if(a==='pub'){go('market');setTimeout(()=>{const t=$('tg'),sl=$('sell');if(t&&sl&&sl.style.display==='none')t.click()},500)}else{go('wallet');toEl(a==='dep'?'depcard':'wcard')}});
   if(!window._scr){window._scr=1;let tk=0;addEventListener('scroll',()=>{if(tk)return;tk=1;requestAnimationFrame(()=>{tk=0;const u=$('up');if(u)u.classList.toggle('show',window.scrollY>480)})},{passive:true})}up.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
   updFab(S.view)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-sc],[data-gv]');if(!b)return;if(b.dataset.sc){const t=$(b.dataset.sc);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})}else go(b.dataset.gv)});
@@ -494,7 +491,7 @@ function renderAuth(mode='login'){
   $app.innerHTML=`<div class="auth"><div class="ac">
     <div style="display:flex;justify-content:center;margin-bottom:14px">${brand(50)}</div>
     <div><h1 class="hero">${reg?'Crea tu cuenta en minutos':'Bienvenido de nuevo'}</h1>
-    <p class="mut" style="text-align:center;margin:0 0 18px">Cambia USDT por CUP o saldo móvil, con un administrador que respalda cada operación.</p></div>
+    <p class="mut" style="text-align:center;margin:0 0 18px">Compra y vende USDT pagando en CUP, MLC, Clásica o saldo móvil, con un administrador que respalda cada operación.</p></div>
     <div class="glass">
       <div class="seg" style="margin-top:0"><button type="button" id="tl" class="${reg?'':'on'}">Entrar</button><button type="button" id="tr" class="${reg?'on':''}">Registrarme</button></div>
       ${reg&&lsGet('pending_ref')?`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">🎁 Te invitó un amigo (código ${esc(lsGet('pending_ref'))})</div>`:''}
@@ -557,7 +554,7 @@ const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'i
 
 /* ---------- Mercado ---------- */
 const chipsHtml=(sel,id)=>`<div class="chips" id="${id}">${METHODS.map(m=>`<button type="button" class="chip ${m.startsWith('Saldo')?'sc':''} ${sel.includes(m)?'on':''}" data-m="${m}">${m}</button>`).join('')}</div>`;
-async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='usd')return viewFx();
+async function viewMarket(){
   const my=NAV,F=S.f;
   main().innerHTML=`${topHtml()}
   <div class="card"><div class="row"><div><b>Vender USDT</b><div class="mut">Disponible: ${n(S.wallet?.available,2)} USDT</div></div>
@@ -569,7 +566,8 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
       <div class="mut" id="otot"></div>
       <label>Métodos de pago que aceptas</label>${chipsHtml([],'om')}
       <label>Datos donde recibirás el pago (solo los verá quien te compre)</label>
-      ${savedSel('osv')}<textarea id="od" rows="2" placeholder="Ej: tarjeta 9205 …, a nombre de … / número de teléfono para saldo"></textarea>
+      <div id="odcw"><input id="odc" inputmode="numeric" placeholder="Número de tarjeta" autocomplete="off"></div>
+      <input id="odp" inputmode="tel" placeholder="Número de teléfono (para confirmar)" autocomplete="off">
       <p class="mut">Al publicar, queda bloqueado el monto <b>más la comisión</b> de la plataforma (la paga el vendedor desde su saldo). Si no te alcanza para el %, publica un poco menos: por ejemplo, 99 en vez de 100.</p>
       <button class="b w" id="mk">Publicar oferta</button></div></div>
   <div class="card"><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
@@ -580,14 +578,16 @@ async function viewMarket(){if(!S.mk||S.mk==='ads')return viewAds();if(S.mk==='u
   $('srt').value=F.sort;bindTop();
   $('tg').onclick=()=>{if(gate())return;const s=$('sell');s.style.display=s.style.display==='none'?'block':'none'};
   $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)/(1+FPO()/100)*100)/100;calc()};
-  const calc=()=>{const c=$('oc').value;$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;const a=+$('oa').value,f=FPO()?rnd(a*FPO()/100,4):0;$('otot').textContent=(t>0?`Recibirás en total: ${mny(t,c)} ${c}`:'')+(a>0&&f?` · Se retendrán ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%: ${n(f,4)})`:'')};
+  const calc=()=>{const c=$('oc').value;$('odcw').style.display=c==='Saldo Móvil'?'none':'block';$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;const a=+$('oa').value,f=FPO()?rnd(a*FPO()/100,4):0;$('otot').textContent=(t>0?`Recibirás en total: ${mny(t,c)} ${c}`:'')+(a>0&&f?` · Se retendrán ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%: ${n(f,4)})`:'')};
   ['oa','op','oc'].forEach(i=>$(i).oninput=calc);
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
-    const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),d=$('od').value.trim();
+    const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),card=($('odc').value||'').replace(/\s+/g,' ').trim(),ph=($('odp').value||'').trim(),d=(c!=='Saldo Móvil'&&card?'Tarjeta: '+card+' · ':'')+(ph?'Teléfono: '+ph:'');
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
     {const f=rnd(a*FPO()/100,4),av=S.wallet?.available||0;if(a+f>av)throw new Error(`Necesitas ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%). Puedes publicar hasta ${n(Math.floor(av/(1+FPO()/100)*100)/100,2)} USDT`)}
     if(!ms.length)throw new Error('Elige al menos un método de pago');
+    if(c!=='Saldo Móvil'&&!card)throw new Error('Indica el número de tarjeta donde recibirás el pago');
+    if(!ph)throw new Error('Indica tu número de teléfono');
     if(!d)throw new Error('Indica los datos donde recibirás el pago');
     await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c,p_details:d});
     await loadBal();viewMarket()},'Oferta publicada');
@@ -864,7 +864,7 @@ async function viewNotifs(){
 /* ---------- Operaciones ---------- */
 const ACTIVE=['awaiting_payment','payment_sent','seller_confirmed','disputed'];
 async function viewOrders(){
-  const my=NAV;main().innerHTML='<h2>Mis operaciones</h2>'+skel(3);
+  const my=NAV;main().innerHTML='<h2>Mis operaciones</h2>'+skel(3);await expireSweep();
   const[{data,error},tq]=await Promise.all([
     sb.from('orders').select('id,seller_id,buyer_id,amount,price_cup,total_cup,status,methods,created_at')
       .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).order('created_at',{ascending:false}).limit(150),
@@ -904,8 +904,9 @@ function uploader(btnId,label,cls){
   return`<input type="file" id="f" accept="image/*"><img id="pv" class="proof hide" style="display:none" alt="Vista previa">
   <button class="b ${cls} w" id="${btnId}" disabled>${label}</button>`}
 
+const expireSweep=async()=>{if(Date.now()-(S._exp||0)<20000)return;S._exp=Date.now();try{await sb.rpc('expire_orders')}catch(e){}};
 async function viewOrder(){
-  const my=NAV;main().innerHTML=skel(3);
+  const my=NAV;main().innerHTML=skel(3);await expireSweep();
   const{data:o,error}=await sb.from('orders').select('*').eq('id',S.orderId).single();
   if(my!==NAV)return;
   if(error||!o){main().innerHTML='<div class="card mut">No se encontró la operación.</div>';return}
@@ -914,21 +915,21 @@ async function viewOrder(){
   const{data:ps}=await sb.from('profiles').select('id,username').in('id',[o.buyer_id,o.seller_id]);
   const name=id=>'@'+esc((ps||[]).find(p=>p.id===id)?.username||'?');
   const{m:meths,c:cur}=parseM(o.methods),showDetails=isBuyer||admin;
-  const[bp,sp]=await Promise.all([proofImg(o.buyer_proof,'El comprador'),proofImg(o.seller_proof,'El vendedor')]);
+  const[bp,sp,mp]=await Promise.all([proofImg(o.buyer_proof,'El comprador'),proofImg(o.seller_proof,'El vendedor'),o.mediation_proof?proofImg(o.mediation_proof,'El comprador'):Promise.resolve('')]);
   if(my!==NAV)return;
   const si=stepIdx(o.status),dis=o.status==='disputed';
-  const labels=['Pago del comprador','Recibo del vendedor','Revisión admin','Completada'];
+  const labels=['Pago del comprador','Confirma el vendedor','Liberación','Completada'];
   const stepper=['cancelled','refunded'].includes(o.status)?'':`<div class="steps">${labels.map((l,i)=>`<div class="st ${i<si||o.status==='released'?'d':i===si&&!dis?'c':''}"><b>${i<si||o.status==='released'?'✓':i+1}</b>${l}</div>`).join('')}</div>`;
 
   let act_='';
   const bc=balCur(cur,meths);
   if(isBuyer&&o.status==='awaiting_payment'&&bc)act_+=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">Paga al instante con tu saldo ${bc==='USD'?'Clásica (USD)':'CUP'} (${mny(S.bal[bc],cur)} disponibles). Sin captura: el vendedor lo recibe en su saldo cuando se liberen los USDT.</div><button class="b ok w" id="paybal" ${S.bal[bc]>=due(o,cur)?'':'disabled'}>Pagar ${mny(due(o,cur),cur)} ${bc} con mi saldo</button><p class="mut" style="text-align:center">o paga fuera de la plataforma:</p>`;
-  if(isBuyer&&o.status==='awaiting_payment')act_+=`<div class="warnbox">Envía <b>${mny(due(o,cur),cur)} ${esc(cur)}</b> con los datos de arriba y sube la <b>captura de tu pago</b> (obligatoria).</div>${uploader('sendB','Ya pagué · enviar captura','')}
+  if(isBuyer&&o.status==='awaiting_payment')act_+=`<div class="warnbox">Envía <b>${mny(due(o,cur),cur)} ${esc(cur)}</b> con los datos de arriba y sube la <b>captura de tu pago</b> (obligatoria).<br>⏱️ Tienes <b>${Math.max(0,Math.ceil((new Date(o.created_at).getTime()+30*60000-Date.now())/60000))} min</b> para pagar; si no, la operación se cancela sola.</div>${uploader('sendB','Ya pagué · enviar captura','')}
     <button class="b gh w" id="cancel" style="margin-top:8px">Cancelar operación</button>`;
-  if(isSeller&&o.status==='payment_sent')act_+=`<div class="warnbox">El comprador dice que ya pagó. Comprueba que llegó y sube la <b>captura del recibo de pago</b> (obligatoria).</div>${uploader('sendS','Recibí el pago · enviar captura','ok')}`;
-  if(isBuyer&&o.status==='payment_sent')act_+='<p class="mut">Captura enviada. Esperando que el vendedor suba el recibo.</p>';
+  if(isSeller&&o.status==='payment_sent')act_+=`<div class="warnbox">El comprador dice que ya pagó. Revisa su captura y comprueba en tu cuenta que el dinero llegó.${o.seller_denied_at?' <b>Marcaste que no lo recibiste.</b> Si ya llegó, confírmalo.':''}</div><div class="grid2"><button class="b ok" id="sOk">✅ Pago recibido</button>${o.seller_denied_at?'':'<button class="b bad" id="sNo">❌ No he recibido</button>'}</div><p class="mut" style="font-size:12px">Al confirmar, los USDT se liberan al comprador automáticamente.</p>`;
+  if(isBuyer&&o.status==='payment_sent')act_+=`<p class="mut">Captura enviada. Esperando que el vendedor confirme que recibió el pago.${o.seller_denied_at?' <b>El vendedor indicó que no lo recibió.</b>':''}</p>${(o.seller_denied_at||(Date.now()-new Date(o.updated_at))/60000>=15)?'<button class="b w" id="med">🛡️ Solicitar mediación del administrador</button>':'<p class="mut" style="font-size:12px">Si en 15 minutos el vendedor no responde, podrás pedir mediación.</p>'}`;
   if((isBuyer||isSeller)&&o.status==='seller_confirmed')act_+='<p class="mut">Pago confirmado. El administrador revisará y liberará los USDT.</p>';
-  if((isBuyer||isSeller)&&['payment_sent','seller_confirmed'].includes(o.status))
+  if((isSeller&&o.status==='payment_sent')||((isBuyer||isSeller)&&o.status==='seller_confirmed'))
     act_+=`<button class="b gh w" id="disp" style="margin-top:10px">⚖️ Pedir revisión del administrador / Abrir disputa</button>`;
   if(admin&&['payment_sent','seller_confirmed','disputed'].includes(o.status))act_+=`<div class="grid2" style="margin-top:10px"><button class="b ok" id="rel">Liberar USDT al comprador</button><button class="b bad" id="ref">Devolver al vendedor</button></div>`;
   if(admin&&o.status==='awaiting_payment')act_+=`<button class="b bad sm" id="ref">Devolver al vendedor</button>`;
@@ -945,7 +946,7 @@ async function viewOrder(){
     ${showDetails?`<div class="row"><span><b>Datos para pagar:</b><br><code>${esc(o.payment_details)}</code></span>${cpBtn(o.payment_details||'')}</div>`:''}
   </div>${stepper}
   ${dis?'<div class="warnbox bad">Esta operación está en disputa. Habla con el administrador en el chat de abajo y aporta pruebas.</div>':''}
-  <div class="grid2"><div class="card"><h3>Pago del comprador</h3>${bp}</div><div class="card"><h3>Recibo del vendedor</h3>${sp}</div></div>
+  <div class="card"><h3>Pago del comprador</h3>${bp}</div>${o.seller_proof?`<div class="card"><h3>Recibo del vendedor</h3>${sp}</div>`:''}${o.mediation_proof?`<div class="card"><h3>🛡️ Mediación del comprador</h3><p>Referencia: <b>${esc(o.mediation_ref||'')}</b></p>${mp}</div>`:''}
   <div class="card">${act_||'<span class="mut">No hay acciones pendientes.</span>'}</div>
   <div id="chatbox"></div><div id="ratebox"></div>`;
   bindCopy(main());
@@ -956,7 +957,12 @@ async function viewOrder(){
     if(f&&/^image\//.test(f.type)){$('pv').src=URL.createObjectURL(f);$('pv').style.display='block';b.disabled=false}else{$('pv').style.display='none';b.disabled=true}};
   const send=(id,role,fn,msg)=>{if($(id))$(id).onclick=ev=>act(ev.target,async()=>{const p=await uploadProof(o.id,role,$('f').files[0]);await rpc(fn,{p_order:o.id,p_path:p});await reload()},msg)};
   send('sendB','buyer','submit_buyer_proof','Captura de pago enviada');
-  send('sendS','seller','submit_seller_proof','Recibo enviado');
+  if($('sOk'))$('sOk').onclick=async ev=>{const m=await ask('Confirmar pago recibido',`<p>Confirmas que recibiste <b>${mny(due(o,cur),cur)} ${esc(cur)}</b>. Los <b>${n(o.amount,2)} USDT</b> se liberarán al comprador ahora mismo y no se puede deshacer.</p>`,'Sí, lo recibí','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_confirm',{p_order:o.id});await reload()},'USDT liberados al comprador')};
+  if($('sNo'))$('sNo').onclick=async ev=>{const m=await ask('No he recibido el pago','<p>La operación queda en pausa. El comprador podrá pedir mediación al administrador y subir sus comprobantes.</p>','Confirmar','bad');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_deny',{p_order:o.id});await reload()},'Operación en pausa')};
+  if($('med'))$('med').onclick=async ev=>{const m=await ask('Solicitar mediación',`<p class="mut">Sube una captura de tus <b>últimas operaciones</b> de Transfermóvil o EnZona y escribe el <b>número de referencia</b> del pago (6 a 12 dígitos). El administrador lo revisará.</p><label>Número de referencia</label><input id="mref" inputmode="numeric" maxlength="12" placeholder="Ej: 12345678"><label>Captura del historial</label><input type="file" id="mf" accept="image/*">`,'Enviar a mediación','ok');
+    if(!m)return;const ref=m.querySelector('#mref').value.replace(/\D/g,''),f=m.querySelector('#mf').files[0];
+    if(ref.length<6||ref.length>12){m.remove();return toast('Escribe el número de referencia (6 a 12 dígitos) y vuelve a intentarlo','err')}if(!f){m.remove();return toast('Sube la captura de tus últimas operaciones y vuelve a intentarlo','err')}m.remove();
+    act(ev.target,async()=>{const p=await uploadProof(o.id,'mediation',f);await rpc('request_mediation',{p_order:o.id,p_ref:ref,p_path:p});await reload()},'Mediación solicitada: el administrador la revisará')};
   if($('paybal'))$('paybal').onclick=async ev=>{const m=await ask('Pagar con saldo',`<p>Se descontarán <b>${mny(due(o,cur),cur)} ${bc}</b> de tu saldo y quedarán retenidos hasta que el administrador libere los USDT.</p>`,'Pagar ahora','ok');
     if(!m)return;m.remove();act(ev.target,async()=>{await rpc('pay_order_with_balance',{p_order:o.id});await reload()},'Pago realizado con tu saldo')};
   if($('cancel'))$('cancel').onclick=async ev=>{const m=await ask('Cancelar operación','<p>¿Seguro que quieres cancelarla?</p>','Sí, cancelar','bad');if(!m)return;m.remove();
@@ -1004,7 +1010,7 @@ async function viewWallet(){
   main().innerHTML=`<h2>Mi billetera</h2>${kycBanner()}${blkMsg}
   ${walletCard(true)}
   <div class="qa"><button class="qb" data-sc="depcard"><i>⬇️</i>Depositar</button><button class="qb" data-sc="wcard"><i>⬆️</i>Retirar</button><button class="qb" data-gv="hist"><i>🧾</i>Historial</button></div>
-  <div id="cupcard">${skel(1)}</div>
+  <div id="cupcard"></div>
   <div class="card" id="depcard"><h3 style="display:flex;align-items:center;gap:8px">${cIco('USDT',24)} Depositar USDT</h3>${skel(1)}</div>
   <details class="card"><summary class="mut">Depósito manual (solo si el automático falla)</summary>
     <p class="mut">Envía a la dirección de depósito del administrador y avisa aquí; él lo acreditará a mano.</p>
@@ -1052,6 +1058,7 @@ async function viewWallet(){
   $('hist').innerHTML=list('Mis depósitos',d.data)+list('Mis retiros',w.data)+'<button class="b gh w" id="hfull" style="margin-bottom:12px">🧾 Ver historial completo</button>';$('hfull').onclick=()=>go('hist')}
 
 async function renderCup(){
+  return;
   const box=$('cupcard');if(!box)return;
   const H=S.settings.cup_holder||CFG.holder;
   const C=[{k:'CUP',name:'Saldo CUP',card:S.settings.cup_card||CFG.card,d:0,tx:'Úsalo para comprar USDT en ofertas en CUP. Si vendes USDT y el comprador paga con saldo, lo recibes aquí.'},
@@ -1172,7 +1179,7 @@ const TST={pending:['Esperando envío','warn'],review:['En revisión del admin',
 const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
 function viewMore(){S.bkTo=null;
-  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['alerts','🔔','Alertas de precio','Te avisamos cuando llegue a tu precio'],['calc','🧮','Calculadora','USDT · CUP · USD'],['saved','💳','Métodos guardados','Tarjetas, teléfonos y direcciones'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['saved','💳','Métodos guardados','Tarjetas, teléfonos y direcciones'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -1391,15 +1398,15 @@ function renderMfa(){
 
 /* ----- Ayuda y tutorial ----- */
 const FAQ=()=>[
- ['¿Cómo compro USDT, CUP o saldo?','En Mercado toca “Comprar”, elige el saldo que quieres y toca el anuncio que más te convenga. Revisa el resumen y confirma. Si pagas con tu saldo interno, se completa al instante. En saldo móvil debes subir la foto del envío y esperar la aprobación del administrador.'],
- ['¿Cómo vendo?','En Mercado toca “+ Publicar anuncio”. Lo que vendes queda retenido junto con la comisión de la plataforma ('+S.fees.trade+'%), que paga el vendedor desde su saldo. Si no te alcanza para la comisión, publica un poco menos (por ejemplo 99 en vez de 100).'],
+ ['¿Cómo compro USDT?','En Mercado elige una oferta y toca “Comprar”. Verás los datos del vendedor: haz el pago por Transfermóvil o EnZona dentro de 30 minutos y sube la captura. Cuando el vendedor confirme que recibió el dinero, los USDT llegan solos a tu billetera.'],
+ ['¿Cómo vendo USDT?','En Mercado toca “+ Vender USDT”, elige la moneda en la que quieres cobrar (CUP, MLC, Saldo Clásica o Saldo móvil), pon tu precio y tus datos de cobro: tarjeta y teléfono, o solo el teléfono si es saldo. Tus USDT quedan bloqueados mientras la oferta esté publicada.'],
+ ['¿Qué hago cuando me pagan?','Revisa la captura del comprador y comprueba en tu cuenta que el dinero llegó. Si llegó, toca “Pago recibido” y los USDT se liberan al comprador. Si no, toca “No he recibido”.'],
+ ['¿Y si el vendedor no confirma mi pago?','Si ya pagaste y el vendedor marca “No he recibido” o no responde en 15 minutos, toca “Solicitar mediación”: sube una captura de tus últimas operaciones y el número de referencia del pago. El administrador lo revisa y decide.'],
+ ['¿Qué pasa si no pago a tiempo?','Tienes 30 minutos para pagar y subir la captura. Si no, la operación se cancela sola y la oferta vuelve al mercado.'],
  ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
- ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
- ['¿Cómo recargo saldo CUP o Clásica?','En Billetera toca “Recargar” en el saldo que quieras, transfiere a la tarjeta indicada y sube la captura. El administrador acredita tu saldo al verificarla.'],
  ['¿Cómo deposito USDT?','En Billetera, sección “Depositar USDT”, sigue las indicaciones. Si el depósito automático falla, usa el depósito manual y avisa con el TxID.'],
- ['¿Cómo funciona el saldo móvil?','Es una transferencia externa, por eso exige foto del envío y de la recepción. El pago queda retenido y se libera cuando el administrador aprueba la operación.'],
- ['Tengo un problema con una operación','Abre la operación y pulsa “Pedir revisión del administrador / Abrir disputa”. Podrás hablar con el administrador en el chat y aportar pruebas. También puedes escribir a soporte por WhatsApp.'],
- ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% (la paga el vendedor) y cada retiro '+S.fees.withdraw+'%.'],
+ ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
+ ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+S.fees.withdraw+'%.'],
  ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
  ['¿Cómo protejo mi cuenta?','En Más → Seguridad puedes crear un PIN para los retiros y activar la verificación en dos pasos. También verás tus accesos recientes.'],
  ['¿Para qué sirven las estrellas?','Al terminar una operación puedes calificar a la otra persona. Las estrellas y el número de operaciones se ven en cada oferta para que elijas con confianza.']];
@@ -1412,10 +1419,10 @@ function viewHelp(){
 const GI={shield:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),id:_i('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h3M6 16c.6-1.5 2-2 3-2s2.4.5 3 2"/>'),lock:_i('<rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>'),check:_i('<path d="M5 12l4 4 10-10"/>'),eye:_i('<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/>')};
 const gl=(ic,t,d,ok)=>`<div class="gd-li ${ok?'ok':''}"><span class="gd-s">${ic}</span><div><b>${t}</b><span class="mut">${d}</span></div></div>`;
 const TUTO=[
- ()=>`<div style="display:flex;justify-content:center;margin-bottom:12px;filter:drop-shadow(0 14px 22px rgba(79,141,255,.55))">${logoSvg(84)}</div><h3>¡Bienvenido a ${esc(APP_NAME)}!</h3><p class="mut">Compra y vende saldo entre personas, con un administrador que respalda cada operación.</p><div class="gd-coins">${cIco('USDT',44)}${cIco('CUP',44)}${cIco('USD',44)}${cIco('MOVIL',44)}</div><p class="mut" style="font-size:13px">USDT · Saldo CUP · Saldo Clásica · Saldo móvil</p>`,
- ()=>`<div class="gd-ic">${IC.market}</div><h3>Así funciona</h3><p class="mut">Tres pasos y ya estás operando.</p>${gl(GI.id,'1. Verifica tu identidad','Una sola vez, desde Perfil. Así todos los usuarios son personas reales.')}${gl(IC.wallet,'2. Carga tu billetera','Deposita USDT o recarga saldo CUP y Clásica desde Billetera.')}${gl(IC.market,'3. Compra o vende','En Mercado filtra por saldo y moneda, toma un anuncio o publica el tuyo.')}`,
- ()=>`<div class="gd-ic">${IC.orders}</div><h3>Comprar y vender</h3><p class="mut">Tú pones el precio total y la plataforma te muestra cuánto sale cada unidad.</p>${gl(IC.market,'Elige o publica','Toma un anuncio existente o crea el tuyo con tu precio.')}${gl(IC.orders,'Paga y confirma','Sigue cada paso en Operaciones y sube la captura cuando se pida.')}${gl(IC.wallet,'Recibe tu saldo','Cuando se confirma, el saldo llega a tu billetera.')}`,
- ()=>`<div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.shield}</div><h3>¿Por qué es segura?</h3>${gl(GI.lock,'Saldo retenido','Mientras dura una operación, el saldo queda retenido y no se puede usar en otra cosa ni retirar.',1)}${gl(GI.shield,'Un administrador respalda cada operación','Revisa los pagos y, si hay un problema, media entre ambas partes.',1)}${gl(GI.id,'Usuarios verificados','Para operar se exige verificar la identidad (KYC).',1)}${gl(GI.eye,'Datos privados','Tus documentos se guardan en un espacio privado y se ven con enlaces temporales.',1)}${gl(IC.profile,'Protege tu cuenta','Activa tu PIN y la verificación en dos pasos en Más → Seguridad.',1)}`,
+ ()=>`<div style="display:flex;justify-content:center;margin-bottom:12px;filter:drop-shadow(0 14px 22px rgba(79,141,255,.55))">${logoSvg(84)}</div><h3>¡Bienvenido a ${esc(APP_NAME)}!</h3><p class="mut">Compra y vende USDT entre personas, pagando en CUP, MLC, Clásica o saldo móvil, con un administrador que respalda cada operación.</p><div class="gd-coins">${cIco('USDT',44)}${cIco('CUP',44)}${cIco('USD',44)}${cIco('MOVIL',44)}</div><p class="mut" style="font-size:13px">USDT · pagos en CUP · MLC · Clásica · Saldo móvil</p>`,
+ ()=>`<div class="gd-ic">${IC.market}</div><h3>Así funciona</h3><p class="mut">Tres pasos y ya estás operando.</p>${gl(GI.id,'1. Verifica tu identidad','Una sola vez, desde Perfil. Así todos los usuarios son personas reales.')}${gl(IC.wallet,'2. Deposita tus USDT','Si vas a vender, deposita USDT en Billetera. Si vas a comprar, no necesitas saldo.')}${gl(IC.market,'3. Compra o vende','En Mercado toma una oferta o publica la tuya con tu precio y tus datos de cobro.')}`,
+ ()=>`<div class="gd-ic">${IC.orders}</div><h3>Comprar y vender</h3><p class="mut">Pagas directo al vendedor y los USDT te llegan solos.</p>${gl(IC.market,'Elige una oferta','Verás los datos de cobro del vendedor.')}${gl(IC.orders,'Paga y sube la captura','Tienes 30 minutos para pagar por Transfermóvil o EnZona.')}${gl(IC.wallet,'Recibe tus USDT','Cuando el vendedor confirma, los USDT llegan a tu billetera.')}`,
+ ()=>`<div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.shield}</div><h3>¿Por qué es segura?</h3>${gl(GI.lock,'USDT bloqueados','Los USDT del vendedor quedan bloqueados mientras dura la operación: no puede gastarlos ni retirarlos.',1)}${gl(GI.shield,'Un administrador respalda cada operación','Revisa los pagos y, si hay un problema, media entre ambas partes.',1)}${gl(GI.id,'Usuarios verificados','Para operar se exige verificar la identidad (KYC).',1)}${gl(GI.eye,'Datos privados','Tus documentos se guardan en un espacio privado y se ven con enlaces temporales.',1)}${gl(IC.profile,'Protege tu cuenta','Activa tu PIN y la verificación en dos pasos en Más → Seguridad.',1)}`,
  ()=>`<div class="gd-ic">${GI.chat}</div><h3>Buenas prácticas</h3><p class="mut">Pequeños hábitos que te mantienen a salvo.</p>${gl(GI.lock,'Nunca compartas tu contraseña ni tu PIN','Ni el soporte ni los administradores te los van a pedir.')}${gl(GI.check,'Paga solo a los datos que muestra la operación','No cambies el método ni pagues fuera de la plataforma.')}${gl(GI.chat,'¿Dudas o problemas?','Escribe a Soporte desde el botón verde o en Más → Ayuda.')}`];
 function showTuto(i){
   const last=i===TUTO.length-1,key='tuto_'+S.user.id;
@@ -1680,15 +1687,15 @@ async function viewAdmin(){
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles" data-tab="pend">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
+  const tiles=`<div class="tiles" data-tab="pend">${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
   const npend=TM.length+orders.length+(d.data||[]).length+(w.data||[]).length+(ct.data||[]).length+(cw.data||[]).length,AT=S.atab||'pend';
-  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','🪪 Usuarios',ks.count||0],['mny','💰 Dinero',0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
+  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','🪪 Usuarios',ks.count||0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
   <div class="card" style="margin:0"><div class="mut">Depósitos / retiros</div><div class="big">${(d.data||[]).length} / ${(w.data||[]).length}</div></div></div>
   ${tabsHtml}${tiles}
-  ${movilHtml}${feeHtml}<h3 id="s-ord">Operaciones por revisar</h3>`+(orders.length?orders.map(x=>{const[t,c]=STATUS[x.status];
+  ${feeHtml}<h3 id="s-ord">Operaciones por revisar</h3>`+(orders.length?orders.map(x=>{const[t,c]=STATUS[x.status];
     return`<div class="card ${x.status==='disputed'?'dg':''}" style="cursor:pointer" data-o="${x.id}"><div class="row"><b>${n(x.amount,2)} USDT · ${mny(due(x,parseM(x.methods).c),parseM(x.methods).c)} ${esc(parseM(x.methods).c)}</b><span class="tag ${c}">${t}</span></div><div class="mut">${when(x.created_at)}</div></div>`}).join(''):'<div class="card mut">Nada pendiente.</div>')+
   `<h3 id="s-dep">Depósitos pendientes</h3>`+((d.data||[]).length?d.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
     <div class="mut">TxID: ${esc(x.txid||'—')}</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-da="${x.id}">Acreditar</button><button class="b bad sm" data-dr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>')+
@@ -1727,7 +1734,6 @@ async function viewAdmin(){
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
     usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt();adminAuditShell()},
-    mny:()=>adminCards(my),
     cfg:async()=>{adminBlocks();adminMaint();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
@@ -1744,13 +1750,13 @@ async function viewStaff(){
     sb.rpc('staff_active_users')]);
   if(my!==NAV)return;
   const K=ks.data||[],AT=S.stab||'pend';
-  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos'],['mny','💳 Tarjetas']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
+  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac.error?'—':(ac.data??0)}</div></div>
   ${ac.error?'<div class="warnbox bad">Falta ejecutar <code>administradores.sql</code> en Supabase.</div>':''}
   ${tabsHtml}
   <h3 id="s-kyc">Verificaciones KYC pendientes</h3><div id="kycbox"></div>
-  <h3 id="s-rec">Recargas de mis tarjetas</h3><div id="recbox">${skel(1)}</div>
+  <div id="recbox" style="display:none"></div>
   <h3 id="s-find">Buscar usuarios</h3>
   <div class="card"><p class="mut" style="margin-top:0">Consulta de solo lectura: usuario, nombre y estado de verificación. No muestra saldos ni movimientos.</p><input id="sfQ" type="search" placeholder="Escribe el usuario o el nombre" autocomplete="off"><div id="sfR"></div></div>`;
   const TABOF={'s-kyc':'pend','s-rec':'pend','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
@@ -1786,8 +1792,7 @@ async function viewStaff(){
     cfg:async()=>{const[an,ai]=await Promise.all([
       sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
       sb.from('staff_info').select('full_name,about,photo_paths').eq('user_id',S.user.id).maybeSingle()]);
-      if(my!==NAV)return;adminExtras(an,ai,null)},
-    mny:()=>adminCards(my)},done={};
+      if(my!==NAV)return;adminExtras(an,ai,null)}},done={};
   const openTab=k=>{S.stab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}};
   mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
