@@ -236,6 +236,15 @@ main>*:nth-child(n+9){animation:none!important}
 html.lite *,html.lite *:before,html.lite *:after{animation:none!important;transition:none!important}
 html.lite .sk{background:var(--card)!important}
 #netbar{position:fixed;left:0;right:0;top:0;z-index:99;background:#7a2b25;color:#fff;text-align:center;font-size:13px;padding:6px 10px calc(6px + env(safe-area-inset-top,0px)*0);display:none}
+.gd{text-align:center;max-height:64dvh;overflow-y:auto}
+.gd-bar{display:flex;gap:6px;justify-content:center;margin:0 0 16px}.gd-bar i{height:5px;width:18px;border-radius:5px;background:var(--line)}.gd-bar i.on{width:30px;background:linear-gradient(90deg,var(--acc,#6f6bff),var(--acc2,#2bb6ff))}
+.gd-ic{width:72px;height:72px;margin:0 auto 12px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(135deg,#6f6bff,#2bb6ff);color:#fff;box-shadow:0 14px 28px -14px rgba(79,141,255,.9)}.gd-ic svg{width:34px;height:34px}
+.gd h3{font-size:20px;margin:4px 0 6px}.gd p{margin:0 0 10px}
+.gd-coins{display:flex;gap:12px;justify-content:center;margin:14px 0 6px}
+.gd-li{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:11px 0;border-top:1px solid var(--line)}.gd-li:first-of-type{border-top:0}
+.gd-li .gd-s{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:rgba(111,107,255,.18);color:#b9b4ff}.gd-li .gd-s svg{width:21px;height:21px}
+.gd-li.ok .gd-s{background:rgba(46,230,166,.14);color:#2ee6a6}
+.gd-li b{display:block;margin-bottom:2px}.gd-li .mut{font-size:13px;line-height:1.35}
 </style>
 </head>
 <body>
@@ -289,9 +298,12 @@ document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('r
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 ${walletCard()}
+<div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios activos en la plataforma</span></span></div>
 <div class="chips"><button class="chip ${(!S.mk||S.mk==='ads')?'on':''}" data-mk="ads">Mercado</button><button class="chip ${S.mk==='usdt'?'on':''}" data-mk="usdt">USDT con pago externo</button>${S.fxOpen?`<button class="chip ${S.mk==='usd'?'on':''}" data-mk="usd">Cambio USD anterior</button>`:''}</div>
 <div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
-const bindTop=()=>{$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
+const setActU=()=>{const e=$('auC');if(!e||S.actU==null)return;e.style.display='flex';$('auN').textContent=n(S.actU,0)};
+const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}};
+const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -975,11 +987,13 @@ async function renderCup(){
     <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div>${hist(t.data,'Recarga',c)}${hist(w.data,'Retiro',c)}</div>`).join('');
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
     const c=C.find(x=>x.k===b.dataset.in);
-    if(!c.card)return toast('La tarjeta de recarga aún no está configurada. Contacta al soporte','err');
+    let ac=null;try{ac=await rpc('active_recharge_card',{p_cur:c.k})}catch(e){}
+    const cardNo=ac?.number||c.card,H2=ac?.holder||H;
+    if(!cardNo)return toast('La tarjeta de recarga aún no está configurada. Contacta al soporte','err');
     let L=null;try{L=(await rpc('recharge_status'))?.[c.k]||null}catch(e){}
     if(L&&L.blocked)return toast('Recargas de '+c.k+' en pausa momentánea por actualización. Vuelve a intentarlo más tarde.','err');
     const m=await ask('Recargar '+c.name,`<div class="warnbox">Transfiere ${c.k} a esta tarjeta y sube la captura. El administrador acredita tu saldo al verificarla.${L?`<br>Máximo que puedes recargar ahora: <b>${n(L.headroom,c.d)} ${c.k}</b>.`:''}</div>
-      <div class="row"><span><code>${esc(c.card)}</code><br><span class="mut">${esc(H)}</span></span>${cpBtn(c.card)}</div>
+      <div class="row"><span><code>${esc(cardNo)}</code><br><span class="mut">${esc(H2)}</span></span>${cpBtn(cardNo)}</div>
       <label>Monto transferido (${c.k})</label><input id="ta" type="number" min="0.01" step="any" inputmode="decimal">
       <label>Captura de la transferencia</label><input id="tf" type="file" accept="image/*">`,'Enviar recarga','ok');
     if(!m)return;const a=+m.querySelector('#ta').value,fl=m.querySelector('#tf').files[0];m.remove();
@@ -1309,12 +1323,20 @@ function viewHelp(){
    FAQ().map(([q,a])=>`<details class="card"><summary style="cursor:pointer;font-weight:600">${esc(q)}</summary><p class="mut" style="margin:8px 0 0">${esc(a)}</p></details>`).join('')+
    (wa?`<a style="display:block;text-align:center;text-decoration:none;margin-top:4px;padding:12px;border:1px solid var(--line);border-radius:14px;color:var(--tx)" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">💬 Hablar con soporte</a>`:'');
   bk();$('tuv').onclick=()=>showTuto(0)}
-const TUTO=[['👋','Bienvenido a '+APP_NAME,'Cambia USDT, CUP y saldo móvil entre usuarios, con un administrador que respalda cada operación.'],['🪪','Verifica tu identidad','Para comprar, vender y retirar necesitas verificar tu identidad una sola vez. Hazlo desde Perfil.'],['💼','Carga tu billetera','En Billetera puedes depositar USDT o recargar saldo CUP y Clásica.'],['🛒','Compra o vende','En Mercado elige Comprar o Vender, filtra por saldo y publica un anuncio o toma uno existente.'],['⭐','Opera con confianza','Mira las estrellas de cada vendedor, califica al terminar y escribe a soporte si tienes dudas.']];
+const GI={shield:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),id:_i('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h3M6 16c.6-1.5 2-2 3-2s2.4.5 3 2"/>'),lock:_i('<rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>'),check:_i('<path d="M5 12l4 4 10-10"/>'),eye:_i('<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/>')};
+const gl=(ic,t,d,ok)=>`<div class="gd-li ${ok?'ok':''}"><span class="gd-s">${ic}</span><div><b>${t}</b><span class="mut">${d}</span></div></div>`;
+const TUTO=[
+ ()=>`<div style="display:flex;justify-content:center;margin-bottom:12px;filter:drop-shadow(0 14px 22px rgba(79,141,255,.55))">${logoSvg(84)}</div><h3>¡Bienvenido a ${esc(APP_NAME)}!</h3><p class="mut">Compra y vende saldo entre personas, con un administrador que respalda cada operación.</p><div class="gd-coins">${cIco('USDT',44)}${cIco('CUP',44)}${cIco('USD',44)}${cIco('MOVIL',44)}</div><p class="mut" style="font-size:13px">USDT · Saldo CUP · Saldo Clásica · Saldo móvil</p>`,
+ ()=>`<div class="gd-ic">${IC.market}</div><h3>Así funciona</h3><p class="mut">Tres pasos y ya estás operando.</p>${gl(GI.id,'1. Verifica tu identidad','Una sola vez, desde Perfil. Así todos los usuarios son personas reales.')}${gl(IC.wallet,'2. Carga tu billetera','Deposita USDT o recarga saldo CUP y Clásica desde Billetera.')}${gl(IC.market,'3. Compra o vende','En Mercado filtra por saldo y moneda, toma un anuncio o publica el tuyo.')}`,
+ ()=>`<div class="gd-ic">${IC.orders}</div><h3>Comprar y vender</h3><p class="mut">Tú pones el precio total y la plataforma te muestra cuánto sale cada unidad.</p>${gl(IC.market,'Elige o publica','Toma un anuncio existente o crea el tuyo con tu precio.')}${gl(IC.orders,'Paga y confirma','Sigue cada paso en Operaciones y sube la captura cuando se pida.')}${gl(IC.wallet,'Recibe tu saldo','Cuando se confirma, el saldo llega a tu billetera.')}`,
+ ()=>`<div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.shield}</div><h3>¿Por qué es segura?</h3>${gl(GI.lock,'Saldo retenido','Mientras dura una operación, el saldo queda retenido y no se puede usar en otra cosa ni retirar.',1)}${gl(GI.shield,'Un administrador respalda cada operación','Revisa los pagos y, si hay un problema, media entre ambas partes.',1)}${gl(GI.id,'Usuarios verificados','Para operar se exige verificar la identidad (KYC).',1)}${gl(GI.eye,'Datos privados','Tus documentos se guardan en un espacio privado y se ven con enlaces temporales.',1)}${gl(IC.profile,'Protege tu cuenta','Activa tu PIN y la verificación en dos pasos en Más → Seguridad.',1)}`,
+ ()=>`<div class="gd-ic">${GI.chat}</div><h3>Buenas prácticas</h3><p class="mut">Pequeños hábitos que te mantienen a salvo.</p>${gl(GI.lock,'Nunca compartas tu contraseña ni tu PIN','Ni el soporte ni los administradores te los van a pedir.')}${gl(GI.check,'Paga solo a los datos que muestra la operación','No cambies el método ni pagues fuera de la plataforma.')}${gl(GI.chat,'¿Dudas o problemas?','Escribe a Soporte desde el botón verde o en Más → Ayuda.')}`];
 function showTuto(i){
-  const t=TUTO[i],last=i===TUTO.length-1,key='tuto_'+S.user.id;
-  const m=modal(`<div style="text-align:center"><div style="font-size:48px">${t[0]}</div><h3>${esc(t[1])}</h3><p class="mut">${esc(t[2])}</p><div class="mut" style="font-size:12px">${i+1} / ${TUTO.length}</div></div><div class="grid2" style="margin-top:12px"><button class="b gh" id="t0">${last?'Cerrar':'Saltar'}</button><button class="b" id="t1">${last?'¡Listo!':'Siguiente'}</button></div>`);
+  const last=i===TUTO.length-1,key='tuto_'+S.user.id;
+  const m=modal(`<div class="gd"><div class="gd-bar">${TUTO.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>${TUTO[i]()}</div><div class="grid2" style="margin-top:14px"><button class="b gh" id="t0">${i===0?'Saltar':'Atrás'}</button><button class="b" id="t1">${last?'¡Empezar!':'Siguiente'}</button></div>`);
   const fin=()=>{lsSet(key,'1');m.remove()};
-  m.onclick=e=>{if(e.target===m)fin()};m.querySelector('#t0').onclick=fin;
+  m.onclick=e=>{if(e.target===m)fin()};
+  m.querySelector('#t0').onclick=()=>{if(i===0)fin();else{m.remove();showTuto(i-1)}};
   m.querySelector('#t1').onclick=()=>{if(last)fin();else{m.remove();showTuto(i+1)}}}
 function maybeTuto(){if(S.user&&!S.profile?.is_admin&&!S.profile?.is_staff&&!lsGet('tuto_'+S.user.id))setTimeout(()=>showTuto(0),900)}
 
@@ -1532,7 +1554,7 @@ async function viewAdmin(){
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-staff"><span class="tc" style="color:var(--acc)">👥</span><span>Administradores</span></button><button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-kycu"><span class="tc" style="color:var(--acc)">🗂️</span><span>Expedientes KYC</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button></div>`;
+  const tiles=`<div class="tiles">${tl('📱','Saldo móvil',TM.length,'s-movil')}${tl('🪪','KYC',(ks.data||[]).length,'s-kyc')}${tl('💰','Recargas',(ct.data||[]).length,'s-top')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}<button class="tile" data-go="s-staff"><span class="tc" style="color:var(--acc)">👥</span><span>Administradores</span></button><button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-kycu"><span class="tc" style="color:var(--acc)">🗂️</span><span>Expedientes KYC</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button><button class="tile" data-go="s-cards"><span class="tc" style="color:var(--acc)">💳</span><span>Tarjetas y comisiones</span></button><button class="tile" data-go="s-kycall"><span class="tc" style="color:var(--acc)">🗂️</span><span>Archivo KYC</span></button></div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   ${tiles}
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
@@ -1581,7 +1603,7 @@ async function viewAdmin(){
   bind('data-cr','admin_reject_fiat_topup','Recarga rechazada');
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
-  await adminExtras(an,ai,rr);adminStaffMgmt()}
+  await adminExtras(an,ai,rr);adminStaffMgmt();adminCards(my);adminKycArchive(my)}
 
 
 /* ---------- Administradores adicionales: panel limitado ---------- */
@@ -1595,7 +1617,7 @@ async function viewStaff(){
   if(my!==NAV)return;
   const K=ks.data||[],tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
-  <div class="tiles">${tl('🪪','KYC',K.length,'s-kyc')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button></div>
+  <div class="tiles">${tl('🪪','KYC',K.length,'s-kyc')}<button class="tile" data-go="s-ann"><span class="tc" style="color:var(--acc)">${(an.data||[]).length}</span><span>📢 Anuncios</span></button><button class="tile" data-go="s-info"><span class="tc" style="color:var(--acc)">✎</span><span>ℹ️ Mis datos</span></button><button class="tile" data-go="s-cards"><span class="tc" style="color:var(--acc)">💳</span><span>Mis tarjetas</span></button></div>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac.error?'—':(ac.data??0)}</div></div>
   ${ac.error?'<div class="warnbox bad">Falta ejecutar <code>administradores.sql</code> en Supabase.</div>':''}
   <h3 id="s-kyc">Verificaciones KYC pendientes</h3>`+(K.length?K.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
@@ -1609,7 +1631,7 @@ async function viewStaff(){
     act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.ka),p_ok:true,p_note:''});viewAdmin()},'Usuario verificado')});
   main().querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const m=await ask('Rechazar verificación','<label>Motivo (el usuario lo verá)</label><input id="kmo" placeholder="Ej: la selfie no se ve clara">','Rechazar','bad');if(!m)return;const nt=m.querySelector('#kmo').value.trim();m.remove();
     act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.kr),p_ok:false,p_note:nt||'Documentos no válidos'});viewAdmin()},'Verificación rechazada')});
-  await adminExtras(an,ai,null)}
+  await adminExtras(an,ai,null);adminCards(my)}
 
 /* ---------- Dueño: añadir y quitar administradores ---------- */
 async function adminStaffMgmt(){
@@ -1635,6 +1657,58 @@ async function adminStaffMgmt(){
       const m=await ask('Hacer administrador',`<p>@${esc(b.dataset.un)} podrá aprobar o rechazar KYC, publicar anuncios, ver los usuarios activos y publicar sus datos en “Información”.</p>`,'Hacer administrador','ok');if(!m)return;m.remove();
       act(b,async()=>{await rpc('admin_set_staff',{p_user:b.dataset.sa,p_on:true});$('stQ').value='';R.innerHTML='';await loadL()},'Administrador añadido')})},300)};
   await loadL()}
+
+/* ---------- Tarjetas de administradores y comisiones ---------- */
+async function adminCards(my){
+  const T='<h3 id="s-cards">Tarjetas y comisiones</h3>',box=document.createElement('div');box.id='cardsbox';main().appendChild(box);box.innerHTML=T+skel(2);
+  const draw=async()=>{
+    let d;try{d=await rpc('card_overview')}catch(e){box.innerHTML=T+'<div class="warnbox bad">Falta ejecutar <code>tarjetas_admins.sql</code> en Supabase.<br><span class="mut" style="font-size:12px">'+esc(e.message||'')+'</span></div>';return}
+    if(my!==NAV)return;
+    const O=d.owner,CS=d.cards||[],E=d.earnings||[],LM=d.limits||{},mn=(v,cur)=>`${n(v,qd(cur))} ${esc(cur)}`;
+    box.innerHTML=T+(O?`<div class="card hl"><div class="mut">Límite de recargas actual (sube con cada administrador secundario con tarjeta activa)</div>${['CUP','USD'].map(k=>LM[k]?`<div class="row"><b>${k==='USD'?'Saldo Clásica':'Saldo CUP'}</b><span>${mn(LM[k].total,k)} de ${mn(LM[k].max,k)} <span class="tag">×${LM[k].mult}</span></span></div>`:'').join('')}</div>`:'')+
+     `<div class="card"><label for="cc">Moneda</label><select id="cc"><option value="CUP">Saldo CUP</option><option value="USD">Saldo Clásica (USD)</option></select>
+      <label for="cn">Número de tarjeta</label><input id="cn" inputmode="numeric" placeholder="0000 0000 0000 0000" autocomplete="off">
+      <label for="ch">Titular (opcional)</label><input id="ch" autocomplete="off"><button class="b w" id="cs">Guardar tarjeta</button></div>`+
+     (CS.length?CS.map(x=>`<div class="card ${x.topup||x.payout?'hl':''}"><div class="row"><b>${O?'@'+esc(x.username)+' · ':''}${x.currency==='USD'?'Clásica USD':'CUP'}</b><span>${x.topup?'<span class="tag ok">Recargas</span> ':''}${x.payout?'<span class="tag ok">Retiros</span> ':''}${x.active?'':'<span class="tag bad">Inactiva</span>'}</span></div>
+       <div style="margin:6px 0"><code>${esc(x.number)}</code>${x.holder?` <span class="mut">· ${esc(x.holder)}</span>`:''}</div>
+       <div class="mut">Recibido: <b>${mn(x.received,x.currency)}</b> · Pagado en retiros: <b>${mn(x.paid,x.currency)}</b></div>
+       <div class="grid2" style="margin-top:10px">${O&&x.active?`<button class="b ${x.topup?'':'gh'} sm" data-u="${x.id}|topup|${x.topup?0:1}">${x.topup?'Quitar de recargas':'Usar en recargas'}</button><button class="b ${x.payout?'':'gh'} sm" data-u="${x.id}|payout|${x.payout?0:1}">${x.payout?'Quitar de retiros':'Usar en retiros'}</button>`:''}
+       <button class="b gh sm" data-t="${x.id}|${x.active?0:1}">${x.active?'Desactivar':'Activar'}</button><button class="b bad sm" data-d="${x.id}">Eliminar</button></div></div>`).join(''):'<div class="card mut">Aún no hay tarjetas.</div>')+
+     `<h3 style="margin-top:20px">${O?'Comisiones por administrador':'Mis comisiones'}</h3>`+
+     (E.length?E.map(x=>`<div class="card"><div class="row"><b>${O?'@'+esc(x.username)+' · ':''}${esc(x.currency)}</b><span>Por pagar: <b>${mn(x.accrued,x.currency)}</b></span></div><div class="mut">Ya pagado: ${mn(x.paid,x.currency)}</div>${O&&x.accrued>0?`<button class="b ok sm" style="margin-top:8px" data-p="${x.admin_id}|${esc(x.currency)}">Marcar como pagado</button>`:''}</div>`).join(''):'<div class="card mut">Todavía no hay comisiones.</div>')+
+     `<p class="mut" style="font-size:12px">Reparto: 2/3 de cada comisión para el dueño y 1/3 en partes iguales entre los administradores secundarios con tarjeta activa.</p>`;
+    $('cs').onclick=e=>act(e.currentTarget,async()=>{await rpc('card_save',{p_currency:$('cc').value,p_number:$('cn').value,p_holder:$('ch').value});await draw()},'Tarjeta guardada');
+    box.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const[i,k,v]=b.dataset.u.split('|');act(b,async()=>{await rpc('card_set_use',{p_id:i,p_kind:k,p_on:v==='1'});await draw()},'Actualizado')});
+    box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const[i,v]=b.dataset.t.split('|');act(b,async()=>{await rpc('card_toggle',{p_id:i,p_active:v==='1'});await draw()},'Actualizado')});
+    box.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{const m=await ask('Eliminar tarjeta','<p>Se quitará de la lista. El historial de lo recibido por ella se conserva.</p>','Eliminar','bad');if(!m)return;m.remove();act(b,async()=>{await rpc('card_delete',{p_id:b.dataset.d});await draw()},'Tarjeta eliminada')});
+    box.querySelectorAll('[data-p]').forEach(b=>b.onclick=async()=>{const[a,cu]=b.dataset.p.split('|');const m=await ask('Marcar como pagado','<p>Confirma que ya le transferiste esta comisión al administrador.</p>','Confirmar','ok');if(!m)return;m.remove();act(b,async()=>{await rpc('earnings_pay',{p_admin:a,p_cur:cu});await draw()},'Marcado como pagado')})};
+  await draw()}
+
+/* ---------- Admin: archivo KYC por usuario (ver y compartir) ---------- */
+async function adminKycArchive(my){
+  const T='<h3 id="s-kycall">Archivo KYC por usuario</h3>',box=document.createElement('div');box.id='kyca';main().appendChild(box);box.innerHTML=T+skel(1);
+  const{data,error}=await sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,status,created_at,profiles(username)').order('created_at',{ascending:false}).limit(300);
+  if(my!==NAV)return;
+  if(error){box.innerHTML=T+`<div class="warnbox bad">${esc(friendly(error))}</div>`;return}
+  const R=data||[],ST={approved:['Aprobado','ok'],pending:['En revisión','warn'],rejected:['Rechazado','bad']};
+  const urls=(x,sec)=>Promise.all([x.doc_front,x.doc_back,x.selfie].map(async p=>p?(await sb.storage.from('kyc').createSignedUrl(p,sec)).data?.signedUrl:null));
+  box.innerHTML=T+`<input id="kq" placeholder="Buscar por usuario, nombre o carnet" autocomplete="off" style="margin-bottom:10px"><div id="kl"></div>`;
+  const draw=()=>{const q=$('kq').value.trim().toLowerCase(),l=R.filter(x=>!q||[x.profiles?.username,x.full_name,x.id_number].join(' ').toLowerCase().includes(q)).slice(0,50);
+    $('kl').innerHTML=l.length?l.map(x=>{const st=ST[x.status]||[x.status||'—',''];return`<div class="card"><div class="row"><b>@${esc(x.profiles?.username||'?')}</b><span class="tag ${st[1]}">${esc(st[0])}</span></div><div class="mut">${esc(x.full_name)} · ${esc(x.id_number)} · ${when(x.created_at)}</div><div class="grid2" style="margin-top:10px"><button class="b gh sm" data-kvw="${x.id}">Ver</button><button class="b sm" data-ksh="${x.id}">Compartir</button></div></div>`}).join(''):'<div class="card mut">Sin resultados.</div>';
+    $('kl').querySelectorAll('[data-kvw]').forEach(b=>b.onclick=()=>act(b,async()=>{
+      const x=R.find(k=>k.id===b.dataset.kvw),u=await urls(x,600);
+      const m=modal(`<h3>${esc(x.full_name)} · ${esc(x.id_number)}</h3>`+['Frente','Reverso','Selfie con carnet'].map((l,i)=>`<p class="mut">${l}</p>${u[i]?`<img src="${esc(u[i])}" alt="${l}" data-z="${esc(u[i])}">`:'<p class="mut">No se pudo cargar</p>'}`).join('')+`<button class="b gh w" id="kx" style="margin-top:10px">Cerrar</button>`);
+      m.querySelector('#kx').onclick=()=>m.remove();m.querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z))}));
+    $('kl').querySelectorAll('[data-ksh]').forEach(b=>b.onclick=async()=>{
+      const x=R.find(k=>k.id===b.dataset.ksh);
+      const c=await ask('Compartir KYC','<div class="warnbox bad">🔒 Son documentos personales sensibles. Compártelos solo si es realmente necesario y con la persona correcta.</div><p>Se crean enlaces que <b>caducan en 24 horas</b>.</p>','Continuar','ok');if(!c)return;c.remove();
+      act(b,async()=>{
+        const u=await urls(x,86400);if(u.some(v=>!v))throw new Error('No se pudieron generar todos los enlaces');
+        const txt=`KYC · ${x.full_name} (${x.id_number}) · @${x.profiles?.username||''}\nEnlaces válidos por 24 horas:\nFrente: ${u[0]}\nReverso: ${u[1]}\nSelfie con carnet: ${u[2]}`;
+        const m=modal(`<h3>Enlaces listos</h3><p class="mut">Válidos 24 horas. Cualquiera con el enlace puede ver las fotos hasta que caduque.</p><div class="grid2"><button class="b gh" id="kc">Copiar</button><button class="b" id="ks">Compartir</button></div><button class="b gh w" id="kx" style="margin-top:10px">Cerrar</button>`);
+        m.querySelector('#kx').onclick=()=>m.remove();m.querySelector('#kc').onclick=()=>copy(txt);
+        m.querySelector('#ks').onclick=()=>navigator.share?navigator.share({title:'KYC '+x.full_name,text:txt}).catch(()=>{}):copy(txt)})})};
+  $('kq').oninput=draw;draw()}
 
 boot();
 </script>
