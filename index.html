@@ -266,8 +266,10 @@ main[data-atab="pend"]>[data-tab]:not([data-tab="pend"]):not([data-tab="all"]),m
 #adl .tag{font-weight:700}
 /* Respuesta táctil inmediata */
 button.b,.chip,.tile,.qb,nav button,.seg button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
-button.b:active,.chip:active,.tile:active,.qb:active,.seg button:active{transform:scale(.97);transition:transform .05s}
+button.b:active,.chip:active,.tile:active,.qb:active,.seg button:active{filter:brightness(.82)}
 nav button:active{opacity:.7}
+/* En Billetera los botones flotantes tapaban los botones de retiro/recarga */
+body[data-view="wallet"] .fab,body[data-view="wallet"] .fab-bg,body[data-view="wallet"] .up{display:none!important}
 </style>
 </head>
 <body>
@@ -517,7 +519,7 @@ async function refreshBadge(){
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
-  S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);watchLoad();
+  S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
   ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,alerts:viewAlerts,calc:viewCalc,saved:viewSaved,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
@@ -1026,7 +1028,7 @@ async function renderCup(){
   const ST={pending:['Pendiente','warn'],approved:['Acreditado','ok'],done:['Enviado','ok'],rejected:['Rechazado','bad']};
   const hist=(a,l,c)=>(a||[]).filter(x=>x.currency===c.k).slice(0,4).map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-top:6px"><span class="mut">${l} ${n(x.amount,c.d)} ${c.k} · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join('');
   box.innerHTML=C.map(c=>`<div class="card hl"><div class="row" style="justify-content:flex-start;flex-wrap:nowrap;gap:12px">${cIco(c.k,44)}<div><div class="mut">${c.name}</div><div class="big">${n(S.bal[c.k],c.d)} <span class="mut">${c.k}</span></div></div></div>
-    <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div><div data-hc="${c.k}"></div></div>`).join('');
+    <p class="mut">${c.tx}</p><p class="mut" style="font-size:12px">⏱️ Retiros: comisión del ${S.fees.withdraw}%. Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red.</p><div class="grid2"><button class="b ok" data-in="${c.k}">Recargar</button><button class="b gh" data-out="${c.k}">Retirar</button></div></div>`).join('')+'<div id="cuphist"></div>';
   box.querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{
     const c=C.find(x=>x.k===b.dataset.in);
     let ac=null;try{ac=await rpc('active_recharge_card',{p_cur:c.k})}catch(e){}
@@ -1060,7 +1062,7 @@ async function renderCup(){
     sb.from('fiat_topups').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12),
     sb.from('fiat_withdrawals').select('currency,amount,status,created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(12)]);
     if(!box.isConnected)return;
-    C.forEach(c=>{const h=box.querySelector('[data-hc="'+c.k+'"]');if(h)h.innerHTML=hist(t.data,'Recarga',c)+hist(w.data,'Retiro',c)})}catch(e){}}
+    const rows=C.map(c=>hist(t.data,'Recarga',c)+hist(w.data,'Retiro',c)).join('');const h=box.querySelector('#cuphist');if(h&&rows)h.innerHTML='<div class="card"><h3 style="margin:0 0 4px">Últimos movimientos de saldo</h3>'+rows+'</div>'}catch(e){}}
 
 async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
