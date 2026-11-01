@@ -178,10 +178,9 @@ html.lite .axc,html.lite .axc:before,html.lite .axl i,html.lite .axb span,html.l
 @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,24px)}}
 /* Acceso */
 .auth{min-height:100dvh;max-width:none;margin:0;padding:28px 16px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.auth:before,.auth:after{content:"";position:absolute;width:340px;height:340px;border-radius:50%;filter:blur(80px);z-index:0;animation:float 14s ease-in-out infinite;pointer-events:none}
-.auth:before{background:#6d5efc;top:-100px;left:-90px;opacity:.5}.auth:after{background:#12b5d6;bottom:-120px;right:-100px;opacity:.32;animation-delay:-6s}
-.ac{position:relative;z-index:1;width:100%;max-width:400px}
-.ac>*{animation:up .55s cubic-bezier(.2,.8,.2,1) both}.ac>*:nth-child(2){animation-delay:.06s}.ac>*:nth-child(3){animation-delay:.12s}.ac>*:nth-child(4){animation-delay:.18s}.ac>*:nth-child(5){animation-delay:.24s}
+.auth:before,.auth:after{content:"";position:absolute;border-radius:50%;z-index:0;pointer-events:none;width:440px;height:440px}
+.auth:before{top:-190px;left:-160px;background:radial-gradient(circle,rgba(109,94,252,.42),transparent 66%);animation:float 14s ease-in-out infinite}
+.auth:after{bottom:-200px;right:-170px;background:radial-gradient(circle,rgba(18,181,214,.28),transparent 66%);animation:float 14s -6s ease-in-out infinite}
 .auth .lg svg{filter:drop-shadow(0 8px 22px rgba(109,94,252,.65))}
 .hero{font-size:27px;line-height:1.15;text-align:center;margin:0 0 8px;letter-spacing:-.6px;background:linear-gradient(180deg,#fff,#b9b6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
 .glass{background:rgba(18,20,32,.72);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);border:1px solid rgba(255,255,255,.1);border-radius:26px;padding:18px;box-shadow:0 30px 80px -30px #000,inset 0 1px 0 rgba(255,255,255,.06)}
@@ -315,6 +314,39 @@ body[data-view="wallet"] .fab,body[data-view="wallet"] .fab-bg,body[data-view="w
 #mnt .mnt-w{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 16px}
 #mnt .mnt-w b{display:block;font-size:17px;margin:2px 0 6px;text-transform:capitalize}#mnt a{display:inline-block;margin-top:16px;font-size:12px}
 #mntb{position:fixed;top:0;left:0;right:0;z-index:98;background:#7a2b25;color:#fff;text-align:center;font-size:11px;padding:2px 8px;pointer-events:none}
+
+/* ===== Acceso compacto ===== */
+/* El modo ahorro apaga todo, pero el login mantiene sus animaciones (solo mueven transform/opacity: son baratas) */
+html.lite .auth .axc{animation-name:axf!important;animation-duration:3.4s!important;animation-timing-function:ease-in-out!important;animation-iteration-count:infinite!important}
+html.lite .auth .axc+.axl+.axc{animation-delay:-1.7s!important}
+html.lite .auth .axc:before{animation-name:axr!important;animation-duration:2.6s!important;animation-iteration-count:infinite!important}
+html.lite .auth .axl i{animation-name:axd!important;animation-duration:2.4s!important;animation-timing-function:linear!important;animation-iteration-count:infinite!important}
+html.lite .auth .axl i:nth-child(2){animation-delay:.8s!important}html.lite .auth .axl i:nth-child(3){animation-delay:1.6s!important}
+html.lite .auth .axb span{animation-name:axs!important;animation-duration:7s!important;animation-timing-function:ease-in-out!important;animation-iteration-count:infinite!important}
+html.lite .auth .axb span:nth-child(2){animation-delay:-2s!important}html.lite .auth .axb span:nth-child(3){animation-delay:-4s!important}html.lite .auth .axb span:nth-child(4){animation-delay:-1s!important}
+html.lite .auth:before{animation-name:float!important;animation-duration:14s!important;animation-timing-function:ease-in-out!important;animation-iteration-count:infinite!important}
+html.lite .auth:after{animation-name:float!important;animation-duration:14s!important;animation-delay:-6s!important;animation-timing-function:ease-in-out!important;animation-iteration-count:infinite!important}
+html.lite .auth .ac>*{animation-name:vin!important;animation-duration:.5s!important;animation-fill-mode:both!important}
+html.lite .auth .ac>*:nth-child(2){animation-delay:.08s!important}html.lite .auth .ac>*:nth-child(3){animation-delay:.16s!important}html.lite .auth .ac>*:nth-child(4){animation-delay:.24s!important}html.lite .auth .ac>*:nth-child(5){animation-delay:.32s!important}html.lite .auth .ac>*:nth-child(6){animation-delay:.4s!important}
+
+body:has(.auth){padding-bottom:0!important}
+.auth{padding:12px 16px}
+.auth .ac{width:100%;max-width:400px;position:relative;z-index:1}
+.auth .lg{margin-bottom:4px!important}
+.auth .ax{margin:0 0 6px}.auth .axl{width:64px}
+.auth .hero{font-size:23px;margin:0 0 4px}
+.auth .ap{text-align:center;margin:0 0 12px;font-size:13px;line-height:1.35}
+.auth .glass{padding:14px}
+.auth .glass label{font-size:12px;margin:8px 0 0}
+.auth .fld{margin:3px 0 6px}.auth .fld input{padding:11px 42px}
+.auth .glass .seg{margin-bottom:2px}
+.auth .trust{margin-top:12px;gap:6px}.auth .trust span{font-size:11px;padding:4px 9px}
+.auth.reg .ap,.auth.reg .trust{display:none}
+@media(max-height:640px){.auth .ax,.auth .ap{display:none}}
+/* barra de carga: respuesta visible a cada toque */
+#ldbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:99;background:linear-gradient(90deg,var(--acc),#4fc3f7);transform:scaleX(0);transform-origin:left;pointer-events:none;opacity:0}
+#ldbar.on{opacity:1;animation:ldb 1.4s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes ldb{0%{transform:scaleX(0)}70%{transform:scaleX(.85)}100%{transform:scaleX(1);opacity:0}}
 </style>
 </head>
 <body>
@@ -528,11 +560,11 @@ const _ic=p=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentCol
 const _eye='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 function renderAuth(mode='login'){
   const reg=mode==='register';
-  $app.innerHTML=`<div class="auth"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
-    <div style="display:flex;justify-content:center;margin-bottom:14px">${brand(50)}</div>
-    <div class="ax" aria-hidden="true"><span class="axc">${cIco('USDT',54)}</span><span class="axl"><i></i><i></i><i></i></span><span class="axc">${cIco('CUP',54)}</span></div>
+  $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
+    <div class="lg" style="display:flex;justify-content:center">${brand(38)}</div>
+    <div class="ax" aria-hidden="true"><span class="axc">${cIco('USDT',44)}</span><span class="axl"><i></i><i></i><i></i></span><span class="axc">${cIco('CUP',44)}</span></div>
     <div><h1 class="hero">${reg?'Crea tu cuenta en minutos':'Bienvenido de nuevo'}</h1>
-    <p class="mut" style="text-align:center;margin:0 0 18px">Compra y vende USDT pagando en CUP, MLC, Clásica o saldo móvil. Hecho para Cuba 🇨🇺, con un administrador que respalda cada operación.</p></div>
+    <p class="mut ap">Compra y vende USDT pagando en CUP, MLC, Clásica o saldo móvil, con un administrador que respalda cada operación.</p></div>
     <div class="glass">
       <div class="seg" style="margin-top:0"><button type="button" id="tl" class="${reg?'':'on'}">Entrar</button><button type="button" id="tr" class="${reg?'on':''}">Registrarme</button></div>
       ${reg&&lsGet('pending_ref')?`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">🎁 Te invitó un amigo (código ${esc(lsGet('pending_ref'))})</div>`:''}
@@ -557,7 +589,7 @@ function renderAuth(mode='login'){
       if(!data.session){toast('Cuenta creada. Revisa tu correo para confirmarla.','good');return}
     }else{const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}
     await boot()});
-  $('go').onclick=submit;$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()}}
+  $('go').onclick=submit;$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};window.scrollTo({top:0,behavior:'instant'})}
 function renderReset(){
   $app.innerHTML=`<div class="auth"><div class="ac">
     <div style="display:flex;justify-content:center;margin-bottom:14px">${brand(50)}</div>
@@ -586,6 +618,7 @@ async function refreshBadge(){
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
+  {let b=document.getElementById('ldbar');if(!b){b=document.createElement('div');b.id='ldbar';document.body.appendChild(b)}b.classList.remove('on');void b.offsetWidth;b.classList.add('on')}
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
