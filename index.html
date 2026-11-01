@@ -153,6 +153,28 @@ main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08
 @keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}}@keyframes pop{from{opacity:0;transform:scale(.94) translateY(8px)}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(124,108,255,.55)}70%{box-shadow:0 0 0 9px rgba(124,108,255,0)}100%{box-shadow:0 0 0 0 rgba(124,108,255,0)}}
+
+/* ---- animaciones ligeras (solo transform/opacity) ---- */
+@keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main.vin{animation:vin .18s ease-out}
+.chip:active,.tile:active,.qb:active{transform:scale(.96)}
+.chip,.tile,.qb,button.b{transition:transform .12s,filter .15s,box-shadow .2s,background .2s}
+.bump{display:inline-block;animation:bump .5s}@keyframes bump{40%{transform:scale(1.18);color:#2ee6a6}}
+@keyframes axd{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(86px);opacity:0}}
+@keyframes axf{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes axr{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.5);opacity:0}}
+@keyframes axs{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-18px) rotate(12deg)}}
+.ax{display:flex;align-items:center;justify-content:center;gap:6px;margin:2px 0 14px}
+.axc{position:relative;display:grid;place-items:center;animation:axf 3.4s ease-in-out infinite}.axc+.axl+.axc{animation-delay:-1.7s}
+.axc:before{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(46,230,166,.6);animation:axr 2.6s infinite}
+.axc .flag{position:absolute;right:-8px;bottom:-4px;width:26px;height:18px;border-radius:4px;box-shadow:0 2px 8px #0008;border:1px solid #fff3}
+.axl{position:relative;width:96px;height:20px}.axl:before{content:"";position:absolute;left:0;right:0;top:9px;border-top:2px dashed rgba(255,255,255,.28)}
+.axl i{position:absolute;left:0;top:5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:axd 2.4s linear infinite;opacity:0}
+.axl i:nth-child(2){animation-delay:.8s}.axl i:nth-child(3){animation-delay:1.6s}
+.axb{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}.axb span{position:absolute;opacity:.16;animation:axs 7s ease-in-out infinite}
+.auth .ac>*{animation:vin .5s both}.auth .ac>*:nth-child(2){animation-delay:.08s}.auth .ac>*:nth-child(3){animation-delay:.16s}.auth .ac>*:nth-child(4){animation-delay:.24s}.auth .ac>*:nth-child(5){animation-delay:.32s}.auth .ac>*:nth-child(6){animation-delay:.4s}
+html.lite .axc,html.lite .axc:before,html.lite .axl i,html.lite .axb span,html.lite .auth:before,html.lite .auth:after,html.lite main.vin,html.lite .auth .ac>*{animation:none!important}html.lite .axl i:first-child{opacity:1}html.lite .glass{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+@media (prefers-reduced-motion:reduce){.axc,.axc:before,.axl i,.axb span,main.vin,.auth .ac>*,.bump{animation:none!important}.axl i:first-child{opacity:1}}
 @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,24px)}}
 /* Acceso */
 .auth{min-height:100dvh;max-width:none;margin:0;padding:28px 16px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
@@ -255,6 +277,7 @@ html.lite .sk{background:var(--card)!important}
 .gd-cap{min-height:58px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);font-size:14px;line-height:1.4;transition:opacity .3s}
 .gd-q{display:flex;flex-direction:column;gap:8px;margin:12px 0}.gd-q button{text-align:left;border:1px solid var(--line);background:rgba(111,107,255,.12);color:inherit;border-radius:14px;padding:12px;font:inherit;cursor:pointer;transition:.25s}.gd-q button.on{border-color:#2ee6a6;background:rgba(46,230,166,.12)}.gd-q button .a{display:none;margin-top:8px;font-size:13px;opacity:.9;line-height:1.4}.gd-q button.on .a{display:block;animation:gdUp .35s both}
 .gd-chk .gd-li{opacity:0;transform:translateX(-12px);transition:.45s}.gd-chk .gd-li.sh{opacity:1;transform:none}
+html.lite .gd>*,html.lite .gd-hero i,html.lite .gd-hero .gd-ic{animation:none!important}html.lite .ov{backdrop-filter:none!important}html.lite .gd-n,html.lite .gd-chk .gd-li{transition:none}
 @media (prefers-reduced-motion:reduce){.gd>*,.gd-hero i,.gd-hero .gd-ic{animation:none!important}}
 .gd-coins{display:flex;gap:12px;justify-content:center;margin:14px 0 6px}
 .gd-li{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:11px 0;border-top:1px solid var(--line)}.gd-li:first-of-type{border-top:0}
@@ -410,7 +433,12 @@ function friendly(e){
   if(/Failed to fetch|NetworkError|Load failed/i.test(m))return'Sin conexión. Revisa tu internet';
   if(/abort|timed? ?out/i.test(m))return'La conexión está lenta y se agotó el tiempo. Inténtalo otra vez; si era un pago o retiro, revisa Historial antes de repetir.';
   return m}
-async function rpc(name,args={}){const{data,error}=await sb.rpc(name,args);if(error)throw new Error(friendly(error));return data}
+try{if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||4)<=2)document.documentElement.classList.add('lite')}catch(e){}
+function countTo(el,v){const from=parseFloat(String(el.textContent).replace(/\./g,'').replace(',','.'))||0,to=+v||0;
+  if(from===to||document.documentElement.classList.contains('lite')||matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=n(to,2);return}
+  const t0=performance.now();el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
+  const f=now=>{const k=Math.min(1,(now-t0)/600);el.textContent=n(from+(to-from)*(1-Math.pow(1-k,3)),2);if(k<1&&el.isConnected)requestAnimationFrame(f);else el.textContent=n(to,2)};requestAnimationFrame(f)}
+async function rpc(name,args={}){const{data,error}=await Promise.race([sb.rpc(name,args),new Promise((_,j)=>setTimeout(()=>j(new Error('La conexión está muy lenta. Revisa en Operaciones si se aplicó antes de repetir.')),40000))]);if(error)throw new Error(friendly(error));return data}
 async function act(btn,fn,okMsg,q){
   if(btn&&btn.closest)btn=btn.closest('button')||btn;
   let wd,hint,orig=null;if(S.profile&&S.profile.is_admin)S._cfgAt=0;
@@ -429,7 +457,7 @@ async function loadBal(){try{
   const[w,cw]=await Promise.all([sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id)]);
   if(w.data)S.wallet=w.data;
   if(cw.data){S.bal={CUP:0,USD:0};cw.data.forEach(r=>S.bal[r.currency]=Number(r.available))}
-  const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}catch(e){}}
+  const hb=$('hb');if(hb)countTo(hb,S.wallet.available)}catch(e){}}
 const refreshW=()=>{if(S.view==='wallet'&&$('main'))viewWallet()};
 const copy=t=>navigator.clipboard.writeText(t).then(()=>toast('Copiado','good'),()=>toast('No se pudo copiar','err'));
 const cpBtn=t=>`<button class="b gh sm" data-cp="${esc(t)}">Copiar</button>`;
@@ -500,10 +528,11 @@ const _ic=p=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentCol
 const _eye='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 function renderAuth(mode='login'){
   const reg=mode==='register';
-  $app.innerHTML=`<div class="auth"><div class="ac">
+  $app.innerHTML=`<div class="auth"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
     <div style="display:flex;justify-content:center;margin-bottom:14px">${brand(50)}</div>
+    <div class="ax" aria-hidden="true"><span class="axc">${cIco('USDT',54)}</span><span class="axl"><i></i><i></i><i></i></span><span class="axc">${cIco('CUP',54)}</span></div>
     <div><h1 class="hero">${reg?'Crea tu cuenta en minutos':'Bienvenido de nuevo'}</h1>
-    <p class="mut" style="text-align:center;margin:0 0 18px">Compra y vende USDT pagando en CUP, MLC, Clásica o saldo móvil, con un administrador que respalda cada operación.</p></div>
+    <p class="mut" style="text-align:center;margin:0 0 18px">Compra y vende USDT pagando en CUP, MLC, Clásica o saldo móvil. Hecho para Cuba 🇨🇺, con un administrador que respalda cada operación.</p></div>
     <div class="glass">
       <div class="seg" style="margin-top:0"><button type="button" id="tl" class="${reg?'':'on'}">Entrar</button><button type="button" id="tr" class="${reg?'on':''}">Registrarme</button></div>
       ${reg&&lsGet('pending_ref')?`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">🎁 Te invitó un amigo (código ${esc(lsGet('pending_ref'))})</div>`:''}
@@ -561,6 +590,7 @@ function go(v,orderId){
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
   ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
+  {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
 
@@ -803,10 +833,10 @@ async function viewOrder(){
   if(error||!o){main().innerHTML='<div class="card mut">No se encontró la operación.</div>';return}
   const admin=S.profile.is_admin,isBuyer=o.buyer_id===S.user.id,isSeller=o.seller_id===S.user.id;
   const[t,c]=STATUS[o.status]||[o.status,''];
-  const{data:ps}=await sb.from('profiles').select('id,username').in('id',[o.buyer_id,o.seller_id]);
+  const[{data:ps},{data:xb}]=await Promise.all([sb.from('profiles').select('id,username').in('id',[o.buyer_id,o.seller_id]),sb.from('order_xbank').select('flagged_at').eq('order_id',o.id).maybeSingle()]);
   const name=id=>'@'+esc((ps||[]).find(p=>p.id===id)?.username||'?');
   const{m:meths,c:cur,bank}=parseM(o.methods),showDetails=isBuyer||admin;
-  const{data:xb}=await sb.from('order_xbank').select('flagged_at').eq('order_id',o.id).maybeSingle();const xbank=xb?.flagged_at?new Date(xb.flagged_at).getTime():0,H72=72*3600000,xdue=xbank&&Date.now()-xbank>=H72;
+  const xbank=xb?.flagged_at?new Date(xb.flagged_at).getTime():0,H72=72*3600000,xdue=xbank&&Date.now()-xbank>=H72;
   const[bp,sp,mp]=await Promise.all([proofImg(o.buyer_proof,'El comprador'),proofImg(o.seller_proof,'El vendedor'),o.mediation_proof?proofImg(o.mediation_proof,'El comprador'):Promise.resolve('')]);
   if(my!==NAV)return;
   const si=stepIdx(o.status),dis=o.status==='disputed';
@@ -1203,7 +1233,7 @@ const TUTO=[
 
 TUTO.splice(1,0,...TUTO.splice(3,4));
 function tutoFx(m){
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches||document.documentElement.classList.contains('lite');
   m.querySelectorAll('.gd-stats b').forEach(b=>{const t=+b.dataset.n,from=0,d=1400,t0=performance.now();
     const f=now=>{if(!b.isConnected)return;const k=reduce?1:Math.min(1,(now-t0)/d);b.textContent=Math.round(from+(t-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
   const fl=m.querySelector('.gd-flow');
