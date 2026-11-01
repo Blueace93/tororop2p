@@ -1038,12 +1038,12 @@ const PAY_URL='https://tororo-pagos.lazaromichelfn.workers.dev';
 const payNet=g=>Math.round((g*0.996-(g<10?0.30:0))*1e4)/1e4;
 const payGross=N=>{let g=N/0.996;if(g<10)g=(N+0.30)/0.996;return Math.ceil(g*100)/100};
 function renderAutoDeposit(box){
-  box.innerHTML=`<h3>Depositar</h3><div class="seg" style="margin-top:0"><button type="button" id="dm">Manual (sin comisión)</button><button type="button" id="da" class="on">⚡ Automático</button></div>
-    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. La pasarela cobra <b>0,4 %</b> (más <b>0,30 USDT</b> si envías menos de 10).</p>
+  box.innerHTML=`<h3>Depositar</h3>${depTabs('auto')}
+    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. <b>Trondealer</b> cobra <b>0,4 %</b> (más <b>0,30 USDT</b> si envías menos de 10). Si prefieres no pagar comisión, usa la opción <b>Gratis</b>.</p>
     <label>¿Cuánto quieres recibir en tu saldo? (mínimo 5 USDT)</label><input id="dau" type="number" min="5" step="any" inputmode="decimal" placeholder="Ej: 20">
     <div id="dac" class="warnbox" style="display:none"></div>
     <button class="b w" id="dag" style="margin-top:8px">Ver mi dirección de depósito</button><div id="dab"></div>`;
-  $('dm').onclick=()=>renderDepositCard(true);
+  bindDepTabs();
   const calc=()=>{const N=+$('dau').value,c=$('dac');if(!(N>0)){c.style.display='none';return}
     if(N<5){c.style.display='block';c.innerHTML='El mínimo es <b>5 USDT</b>.';return}
     const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión de la pasarela: ${n(g-N,2)} USDT · Si envías otro monto recibirás tu envío menos esa comisión.</span>`};
@@ -1061,24 +1061,28 @@ function renderAutoDeposit(box){
     bindCopy($('dab'));
     const before=S.wallet?.available||0;let tries=0;clearInterval(S._payT);
     S._payT=setInterval(async()=>{if(!$('dab')||++tries>120)return clearInterval(S._payT);if(document.hidden)return;await loadBal();if((S.wallet?.available||0)>before+1e-9){clearInterval(S._payT);toast('¡Depósito acreditado!','good');viewWallet()}},10000)})}
-async function renderDepositCard(manual){
+const depTabs=m=>`<div class="seg" style="margin-top:0"><button type="button" id="dtf" class="${m==='free'?'on':''}">🆓 Gratis</button><button type="button" id="dta" class="${m==='auto'?'on':''}">⚡ Trondealer</button></div>`;
+const bindDepTabs=()=>{const f=$('dtf'),a=$('dta');if(f)f.onclick=()=>{if(S.depMode==='free')return;S.depMode='free';renderDepositCard()};if(a)a.onclick=()=>{if(S.depMode==='auto')return;S.depMode='auto';renderDepositCard()}};
+async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
+  if(!S.depMode)S.depMode='free';
+  if(S.depMode==='auto')return renderAutoDeposit(box);
   let it=null;try{it=await rpc('get_my_intent')}catch(e){}
-  if(!$('depcard'))return;
-  if(!it&&!manual)return renderAutoDeposit(box);
+  if(!$('depcard')||S.depMode!=='free')return;
   if(!it){
-    box.innerHTML=`<h3>Depositar</h3><div class="seg" style="margin-top:0"><button type="button" id="dm" class="on">Manual (sin comisión)</button><button type="button" id="da">⚡ Automático</button></div><label>Red y moneda</label>
+    box.innerHTML=`<h3>Depositar</h3>${depTabs('free')}
+      <p class="mut">Sin comisión. Te damos un monto exacto con decimales para reconocer tu pago y luego pegas el ID de la transacción (TxID).</p>
+      <label>Red y moneda</label>
       <select id="dnet"><option value="BEP20|USDT">BNB Smart Chain (BEP20) · USDT</option><option value="ARBITRUM|USDT">Arbitrum One · USDT</option><option value="ARBITRUM|USDC">Arbitrum One · USDC</option></select>
       <label>¿Cuánto quieres depositar? (entero, mínimo 5)</label><input id="dbase" type="number" min="5" step="1" inputmode="numeric">
-      <button class="b w" id="dnew">Generar instrucciones de depósito</button>
-      <p class="mut">Te daremos un monto exacto con decimales para identificar tu pago automáticamente.</p>`;
-    $('da').onclick=()=>renderAutoDeposit(box);
+      <button class="b w" id="dnew">Generar instrucciones de depósito</button>`;
+    bindDepTabs();
     $('dnew').onclick=ev=>act(ev.target,async()=>{
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
     return}
   const netName=it.network==='BEP20'?'BNB Smart Chain (BEP20)':'Arbitrum One',amt=Number(it.amount).toFixed(4);
-  box.innerHTML=`<h3>Depósito en curso</h3>
+  box.innerHTML=`<h3>Depósito en curso</h3>${depTabs('free')}
     <div class="warnbox">Envía <b>EXACTAMENTE ${amt} ${esc(it.symbol)}</b> por la red <b>${esc(netName)}</b>. Otro monto, red o moneda no se reconocerá y podrías perder los fondos.</div>
     <div class="row"><span class="mut">Monto exacto</span>${cpBtn(amt)}</div>
     <div class="row"><span><span class="mut">Dirección</span><br><code>${esc(it.address)}</code></span>${cpBtn(it.address)}</div>
@@ -1086,11 +1090,12 @@ async function renderDepositCard(manual){
     <label>Cuando lo envíes, pega el ID de la transacción (TxID)</label><input id="dtx" placeholder="0x...">
     <button class="b ok w" id="dver">Verificar y acreditar</button>
     <button class="b gh sm" id="dcan" style="margin-top:8px">Cancelar solicitud</button>`;
-  bindCopy(box);
+  bindDepTabs();bindCopy(box);
   $('dver').onclick=ev=>act(ev.target,async()=>{
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dtx').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadBal();viewWallet()},'¡Depósito acreditado!');
-  $('dcan').onclick=ev=>act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}
+  $('dcan').onclick=async ev=>{const m=await ask('Cancelar solicitud','<p>Si <b>ya enviaste</b> los USDT, no canceles: pega el TxID y pulsa «Verificar y acreditar». Cancela solo si todavía no enviaste nada.</p>','Cancelar solicitud','bad');if(!m)return;m.remove();
+    act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}}
 
 async function viewProfile(){
   const P=S.profile,st=P.kyc_status||'none';
@@ -1291,7 +1296,7 @@ const FAQ=()=>[
  ['¿Y si el vendedor no confirma mi pago?','Si ya pagaste y el vendedor marca “No he recibido” o no responde en 15 minutos, toca “Solicitar mediación”: sube una captura de tus últimas operaciones y el número de referencia del pago. El administrador lo revisa y decide.'],
  ['¿Qué pasa si no pago a tiempo?','Tienes 30 minutos para pagar y subir la captura. Si no, la operación se cancela sola y la oferta vuelve al mercado.'],
  ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
- ['¿Cómo deposito USDT?','En Billetera, sección “Depositar USDT”, sigue las indicaciones. Si el depósito automático falla, usa el depósito manual y avisa con el TxID.'],
+ ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos y pegas el TxID) o «Trondealer» (automático, sin TxID, con una comisión de 0,4 %). Si algo falla, usa el depósito manual y avisa con el TxID.'],
  ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
  ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+S.fees.withdraw+'%.'],
  ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
