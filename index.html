@@ -882,7 +882,7 @@ async function viewOrder(){
   const xbank=xb?.flagged_at?new Date(xb.flagged_at).getTime():0,H72=72*3600000,xdue=xbank&&Date.now()-xbank>=H72;
   const[bp,sp,mp]=await Promise.all([proofImg(o.buyer_proof,'El comprador'),proofImg(o.seller_proof,'El vendedor'),o.mediation_proof?proofImg(o.mediation_proof,'El comprador'):Promise.resolve('')]);
   if(my!==NAV)return;
-  const si=stepIdx(o.status),dis=o.status==='disputed';
+  const si=stepIdx(o.status),dis=o.status==='disputed',med=dis||!!o.mediation_ref||!!o.mediation_proof,fin_=['released','refunded','cancelled'].includes(o.status),staff=!!S.profile.is_staff;
   const labels=['Pago del comprador','Confirma el vendedor','Liberación','Completada'];
   const stepper=['cancelled','refunded'].includes(o.status)?'':`<div class="steps">${labels.map((l,i)=>`<div class="st ${i<si||o.status==='released'?'d':i===si&&!dis?'c':''}"><b>${i<si||o.status==='released'?'✓':i+1}</b>${l}</div>`).join('')}</div>`;
 
@@ -908,7 +908,7 @@ async function viewOrder(){
     <p class="mut">Métodos: ${esc(meths)} · Moneda: ${esc(cur)}</p>
     ${showDetails?`<div class="row"><span><b>Datos para pagar:</b><br><code>${esc(o.payment_details)}</code></span>${cpBtn(o.payment_details||'')}</div>`:''}
   </div>${stepper}
-  ${dis?'<div class="warnbox bad">Esta operación está en disputa. Habla con el administrador en el chat de abajo y aporta pruebas.</div>':''}
+  ${med&&!fin_?'<div class="warnbox bad">🛡️ Esta operación está en <b>mediación</b>. Comprador, vendedor y administrador hablan juntos en el chat de abajo. Aporta tus pruebas y espera la decisión.</div>':dis?'<div class="warnbox bad">Esta operación está en disputa. Habla con el administrador en el chat de abajo y aporta pruebas.</div>':''}
   <div class="card"><h3>Pago del comprador</h3>${bp}</div>${o.seller_proof?`<div class="card"><h3>Recibo del vendedor</h3>${sp}</div>`:''}${o.mediation_proof?`<div class="card"><h3>🛡️ Mediación del comprador</h3><p>Referencia: <b>${esc(o.mediation_ref||'')}</b></p>${mp}</div>`:''}
   <div class="card">${act_||'<span class="mut">No hay acciones pendientes.</span>'}</div>
   <div id="chatbox"></div><div id="ratebox"></div>`;
@@ -930,7 +930,7 @@ async function viewOrder(){
   if($('med'))$('med').onclick=async ev=>{const m=await ask('Solicitar mediación',`<p class="mut">Sube una captura de tus <b>últimas operaciones</b> de Transfermóvil o EnZona y escribe el <b>número de referencia</b> del pago (6 a 12 dígitos). El administrador lo revisará.</p><label>Número de referencia</label><input id="mref" inputmode="numeric" maxlength="12" placeholder="Ej: 12345678"><label>Captura del historial</label><input type="file" id="mf" accept="image/*">`,'Enviar a mediación','ok');
     if(!m)return;const ref=m.querySelector('#mref').value.replace(/\D/g,''),f=m.querySelector('#mf').files[0];
     if(ref.length<6||ref.length>12){m.remove();return toast('Escribe el número de referencia (6 a 12 dígitos) y vuelve a intentarlo','err')}if(!f){m.remove();return toast('Sube la captura de tus últimas operaciones y vuelve a intentarlo','err')}m.remove();
-    act(ev.target,async()=>{const p=await uploadProof(o.id,'mediation',f);await rpc('request_mediation',{p_order:o.id,p_ref:ref,p_path:p});await reload()},'Mediación solicitada: el administrador la revisará')};
+    act(ev.target,async()=>{const p=await uploadProof(o.id,'mediation',f);await rpc('request_mediation',{p_order:o.id,p_ref:ref,p_path:p});try{await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Mediación solicitada] Referencia del pago: '+ref+'. Adjunté la captura de mis últimas operaciones.'})}catch(e){}await reload()},'Mediación solicitada: el administrador la revisará')};
   if($('cancel'))$('cancel').onclick=async ev=>{const m=await ask('Cancelar operación','<p>¿Seguro que quieres cancelarla?</p>','Sí, cancelar','bad');if(!m)return;m.remove();
     act(ev.target,async()=>{await rpc('cancel_order',{p_order:o.id});go('orders')},'Operación cancelada')};
   if($('disp'))$('disp').onclick=async ev=>{
@@ -944,14 +944,14 @@ async function viewOrder(){
   adm('ref','admin_refund','¿Devolver los USDT al vendedor?','Devuelto al vendedor','bad');
 
   /* chat de disputa */
-  const canChat=(isBuyer||isSeller||admin);
+  const canChat=(isBuyer||isSeller||admin||staff);
   const drawChat=async()=>{
     const{data:ms,error:ce}=await sb.from('order_messages').select('id,sender_id,body,created_at').eq('order_id',o.id).order('created_at');
     const box=$('chatbox');if(!box||my!==NAV)return;
-    if(ce){box.innerHTML=dis?`<div class="warnbox bad">El chat no está disponible: falta crear la tabla order_messages (ver archivo SQL).</div>`:'';return}
-    if(!ms.length&&!dis)return box.innerHTML='';
-    const open=dis&&canChat,keep=box.querySelector('#cm')?.value||'';
-    box.innerHTML=`<div class="card"><h3>💬 Discusión con el administrador</h3><div class="chat" id="cl">${ms.length?ms.map(x=>{const nm=x.sender_id===o.buyer_id||x.sender_id===o.seller_id?name(x.sender_id):'Administrador';
+    if(ce){box.innerHTML=med?`<div class="warnbox bad">El chat no está disponible: falta crear la tabla order_messages (ver archivo SQL).</div>`:'';return}
+    if(!ms.length&&!med)return box.innerHTML='';
+    const open=med&&!fin_&&canChat,keep=box.querySelector('#cm')?.value||'';
+    box.innerHTML=`<div class="card"><h3>💬 Chat de mediación</h3>${med?`<p class="mut" style="font-size:12px;margin:-4px 0 8px">👥 Comprador ${name(o.buyer_id)} · Vendedor ${name(o.seller_id)} · 🛡️ Administrador${fin_?' · <b>Mediación cerrada</b>':''}</p>`:''}<div class="chat" id="cl">${ms.length?ms.map(x=>{const nm=x.sender_id===o.buyer_id||x.sender_id===o.seller_id?name(x.sender_id):'Administrador';
       return`<div class="msg ${x.sender_id===S.user.id?'me':''} ${nm==='Administrador'?'ad':''}"><small>${nm} · ${when(x.created_at)}</small>${esc(x.body)}</div>`}).join(''):'<span class="mut">Sin mensajes todavía.</span>'}</div>
       ${open?`<div class="row" style="flex-wrap:nowrap"><input id="cm" placeholder="Escribe un mensaje…" style="margin:0" value="${esc(keep)}"><button class="b" id="cs">Enviar</button></div>`:''}</div>`;
     const cl=$('cl');cl.scrollTop=cl.scrollHeight;
@@ -966,7 +966,7 @@ async function viewOrder(){
     if(document.hidden||!navigator.onLine)return;
     const{data:u}=await sb.from('orders').select('status,updated_at').eq('id',o.id).single();
     if(u&&u.status+u.updated_at!==last){last=u.status+u.updated_at;toast('La operación se actualizó');await loadBal();viewOrder()}
-    else if(dis&&document.activeElement?.id!=='cm')drawChat()},10000)}
+    else if(med&&!fin_&&document.activeElement?.id!=='cm')drawChat()},10000)}
 
 /* ---------- Billetera ---------- */
 async function viewWallet(){
