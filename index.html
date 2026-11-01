@@ -315,6 +315,16 @@ body[data-view="wallet"] .fab,body[data-view="wallet"] .fab-bg,body[data-view="w
 #mnt .mnt-w b{display:block;font-size:17px;margin:2px 0 6px;text-transform:capitalize}#mnt a{display:inline-block;margin-top:16px;font-size:12px}
 #mntb{position:fixed;top:0;left:0;right:0;z-index:98;background:#7a2b25;color:#fff;text-align:center;font-size:11px;padding:2px 8px;pointer-events:none}
 
+
+/* ---- anuncio a pantalla completa (se puede cerrar) ---- */
+#annf{position:fixed;inset:0;z-index:9000;background:radial-gradient(120% 55% at 50% -8%,#1c1a3d 0%,rgba(9,10,16,0) 60%) no-repeat,#090a10;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto;animation:vin .25s ease-out}
+#annf .af-c{max-width:440px;width:100%}#annf .af-i{font-size:54px;margin-bottom:6px;display:inline-block;animation:axf 3s ease-in-out infinite}
+#annf h1{font-size:24px;line-height:1.2;margin:0 0 12px;letter-spacing:-.3px}
+#annf .af-b{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 16px;text-align:left;white-space:pre-wrap;word-break:break-word;max-height:42dvh;overflow:auto}
+#annf .af-d{display:inline-block;margin:0 0 12px}#annf .af-n{font-size:12px;opacity:.7;margin:10px 0 0}
+#annf .af-x{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:inherit;font-size:18px;cursor:pointer}
+html.lite #annf,html.lite #annf .af-i{animation:none}
+
 /* ===== Acceso compacto ===== */
 /* El modo ahorro apaga todo, pero el login mantiene sus animaciones (solo mueven transform/opacity: son baratas) */
 html.lite .auth .axc{animation-name:axf!important;animation-duration:3.4s!important;animation-timing-function:ease-in-out!important;animation-iteration-count:infinite!important}
@@ -519,7 +529,7 @@ async function boot(){
   S.user=session?.user||null;
   if(!S.user)return renderAuth(lsGet('pending_ref')?'register':'login');
   if(await mfaGate())return;
-  await loadMe();await afterLogin();render();maybeTuto()}
+  await loadMe();await afterLogin();render();maybeTuto();setTimeout(checkAnnPopup,1800)}
 async function loadMe(){
   const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
   const[p,w,st,cw,fr,sf]=await Promise.all([
@@ -788,7 +798,7 @@ async function pollNotifs(){
       S.lastPend=tot;S.adminPend=tot;
       const bd=$('adbd');if(bd){bd.textContent=tot;bd.style.display=tot?'block':'none'}}
     if(S.pollN%4===1)try{const{data:la}=await sb.from('announcements').select('id,title,created_at').order('created_at',{ascending:false}).limit(1);const l=la&&la[0];
-      if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn()}}catch(e){}
+      if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
     S.np0=false;updBell()}catch(e){}finally{NPB=false}}
 function startNotifs(){
   clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,30000);
@@ -1321,6 +1331,29 @@ async function viewAnn(){
   $('back').onclick=e=>{e.preventDefault();go('market')};
   if((data||[]).length){lsSet('ann_seen_'+S.user.id,data[0].created_at);S.annNew=false;updAnn()}}
 
+
+/* ---------- Anuncio a pantalla completa ---------- */
+function showAnnFull(list,i=0,prev){
+  const a=list[i];if(!a){S.annPop=false;return}S.annPop=true;
+  document.getElementById('annf')?.remove();
+  const el=document.createElement('div');el.id='annf';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  const last=i===list.length-1;
+  el.innerHTML=`<button class="af-x" id="afx" aria-label="Cerrar">✕</button><div class="af-c"><div class="af-i">📢</div><h1>${esc(a.title)}</h1>${a.event_date?`<span class="tag warn af-d">📅 ${esc(fdate(a.event_date))}</span>`:''}${a.body?`<div class="af-b">${esc(a.body)}</div>`:''}<button class="b w" id="afo" style="padding:14px">${last?'Entendido':'Siguiente'}</button>${list.length>1?`<p class="af-n">Anuncio ${i+1} de ${list.length}</p>`:''}</div>`;
+  document.body.appendChild(el);document.body.style.overflow='hidden';
+  const done=()=>{el.remove();document.removeEventListener('keydown',esc_);
+    if(!prev){if(a.created_at)lsSet('ann_full_'+S.user.id,a.created_at);if(last){lsSet('ann_seen_'+S.user.id,a.created_at);S.annNew=false;updAnn()}}
+    if(last){document.body.style.overflow='';S.annPop=false}else showAnnFull(list,i+1,prev)};
+  const esc_=e=>{if(e.key==='Escape')finish()};
+  const finish=()=>{if(!prev&&a.created_at)lsSet('ann_full_'+S.user.id,list[list.length-1].created_at||a.created_at);if(!prev)lsSet('ann_seen_'+S.user.id,list[list.length-1].created_at||a.created_at);S.annNew=false;updAnn();el.remove();document.removeEventListener('keydown',esc_);document.body.style.overflow='';S.annPop=false};
+  document.addEventListener('keydown',esc_);
+  $('afo').onclick=done;$('afx').onclick=finish;$('afo').focus()}
+async function checkAnnPopup(tries=0){
+  if(!S.user||S.annPop||S.profile?.is_admin||S.profile?.is_staff||document.getElementById('mnt'))return;
+  if(document.querySelector('.ov')&&tries<6)return setTimeout(()=>checkAnnPopup(tries+1),2500);
+  const key='ann_full_'+S.user.id;let since=lsGet(key);if(!since)since=new Date(Date.now()-7*864e5).toISOString();
+  try{const{data,error}=await sb.from('announcements').select('id,title,body,event_date,created_at').gt('created_at',since).order('created_at',{ascending:true}).limit(5);
+    if(error||!data||!data.length||S.annPop)return;showAnnFull(data)}catch(e){}}
+
 /* ---------- Admin: anuncios y mis datos ---------- */
 async function adminExtras(an,ai,rr){
   const SI=!S.profile.is_admin,infoUp=o=>SI?sb.from('staff_info').upsert({user_id:S.user.id,...o}):sb.from('admin_info').upsert({id:1,...o});
@@ -1332,7 +1365,7 @@ async function adminExtras(an,ai,rr){
   <div class="card"><label>Título</label><input id="annT" maxlength="120" placeholder="Ej: Actualización el sábado">
    <label>Mensaje</label><textarea id="annB" rows="3" placeholder="Ej: El sábado habrá actualizaciones y la app puede ir más lenta."></textarea>
    <label>Fecha a la que se refiere (opcional)</label><input id="annD" type="date">
-   <button class="b w" id="annGo">Publicar anuncio</button></div>
+   <button class="b gh w" id="annPv" style="margin-bottom:8px">👁️ Ver cómo lo verán los usuarios</button><button class="b w" id="annGo">Publicar anuncio</button></div>
   ${A.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b><span class="mut">${when(x.created_at)}</span></div>${x.event_date?`<div class="mut">📅 ${esc(fdate(x.event_date))}</div>`:''}${x.body?`<div class="pre mut" style="margin:6px 0">${esc(x.body)}</div>`:''}<button class="b bad sm" data-annx="${x.id}">Eliminar</button></div>`).join('')||'<div class="card mut">Todavía no has publicado anuncios.</div>'}
   <h3 id="s-info">Mis datos (se ven en “Información”)</h3>
   <div class="card"><label>Nombre</label><input id="infN" value="${esc(I.full_name)}" placeholder="Tu nombre">
@@ -1344,6 +1377,7 @@ async function adminExtras(an,ai,rr){
    <button class="b w" id="infGo">Guardar</button></div>`);
   const back=async sel=>{await viewAdmin();toEl(sel)};
   main().querySelectorAll('#s-info ~ .card [data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+  $('annPv').onclick=()=>{const t=$('annT').value.trim();if(!t)return toast('Escribe un título para ver la vista previa','err');showAnnFull([{title:t,body:$('annB').value.trim(),event_date:$('annD').value||null}],0,true)};
   $('annGo').onclick=ev=>act(ev.target,async()=>{
     const t=$('annT').value.trim(),b=$('annB').value.trim(),d=$('annD').value||null;
     if(!t)throw new Error('Escribe un título para el anuncio');
