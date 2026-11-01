@@ -1584,12 +1584,12 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
-    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt();adminAuditShell()},
+    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt();adminDuty(my);adminAuditShell()},
     cfg:async()=>{adminBlocks();adminMaint();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
@@ -1601,26 +1601,29 @@ async function viewAdmin(){
 /* ---------- Administradores adicionales: panel limitado ---------- */
 async function viewStaff(){
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
-  const[ks,ac]=await Promise.all([
+  const[ks,ac,du]=await Promise.all([
     sb.from('kyc_submissions').select('id,full_name,id_number,doc_front,doc_back,selfie,created_at,profiles(username)').eq('status','pending').order('created_at'),
-    sb.rpc('staff_active_users')]);
+    sb.rpc('staff_active_users'),sb.rpc('staff_my_duty')]);
   if(my!==NAV)return;
-  const K=ks.data||[],AT=S.stab||'pend';
-  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
+  const K=ks.data||[],AT=S.stab||'pend',DUTY=du.error?{on:true,can:false}:(du.data||{on:true,can:false});
+  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],...(DUTY.can?[['med','⚖️ Mediaciones']]:[]),['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
+  ${DUTY.on?`<div class="warnbox" style="margin-bottom:12px">🟢 Estás <b>de turno</b>${DUTY.until?' hasta '+when(DUTY.until):''}.</div>`:'<div class="warnbox bad" style="margin-bottom:12px">⏸️ Estás <b>fuera de turno</b>. Puedes consultar, pero no revisar verificaciones ni resolver mediaciones hasta que el dueño te asigne turno.</div>'}
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac.error?'—':(ac.data??0)}</div></div>
   ${ac.error?'<div class="warnbox bad">Falta ejecutar <code>administradores.sql</code> en Supabase.</div>':''}
   ${tabsHtml}
   <h3 id="s-kyc">Verificaciones KYC pendientes</h3><div id="kycbox"></div>
   <div id="recbox" style="display:none"></div>
+  ${DUTY.can?'<h3 id="s-med">Mediaciones pendientes</h3><div id="medbox"></div>':''}
   <h3 id="s-find">Buscar usuarios</h3>
   <div class="card"><p class="mut" style="margin-top:0">Consulta de solo lectura: usuario, nombre y estado de verificación. No muestra saldos ni movimientos.</p><input id="sfQ" type="search" placeholder="Escribe el usuario o el nombre" autocomplete="off"><div id="sfR"></div></div>`;
-  const TABOF={'s-kyc':'pend','s-rec':'pend','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
+  const TABOF={'s-kyc':'pend','s-rec':'pend','s-med':'med','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   /* KYC pendientes: se actualiza en el sitio, sin recargar el panel */
   const drawK=()=>{const bx=$('kycbox');if(!bx)return;
+    if(!DUTY.on){bx.innerHTML='<div class="card mut">Estás fuera de turno.</div>';return}
     bx.innerHTML=K.length?K.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>';
     const tb=mm.querySelector('[data-at="pend"]');if(tb)tb.textContent='📋 Pendientes'+(K.length?' · '+K.length:'');
     const bd=$('adbd');if(bd){bd.textContent=K.length;bd.style.display=K.length?'block':'none'}
@@ -1634,7 +1637,7 @@ async function viewStaff(){
         const ab=document.querySelector('main .card.hl .big');if(ab&&/^\d+$/.test(ab.textContent))ab.textContent=+ab.textContent+1},'Usuario verificado')});
     bx.querySelectorAll('[data-kr]').forEach(b=>b.onclick=async()=>{const nt=await askReject();if(nt===null)return;
       act(b,async()=>{await rpc('staff_review_kyc',{p_id:String(b.dataset.kr),p_ok:false,p_note:nt});drop(b.dataset.kr)},'Verificación rechazada')})};
-  drawK();
+  drawK();staffMed(DUTY,my);
   /* Buscador de usuarios (solo lectura) */
   let sft;$('sfQ').oninput=()=>{clearTimeout(sft);sft=setTimeout(async()=>{
     const q=($('sfQ')?.value||'').trim(),R=$('sfR');if(!R)return;if(q.length<2){R.innerHTML='';return}
@@ -1784,6 +1787,51 @@ const OBX={
     if(bad)toast(bad+' acción(es) guardada(s) no se pudieron enviar','err');
     if(ok&&S.view==='order')go(S.view)}};
 addEventListener('online',()=>setTimeout(()=>OBX.flush(),1500));
+
+/* ---------- Turnos de administradores (dueño) ---------- */
+async function adminDuty(my){
+  if($('s-duty-h'))return;
+  main().insertAdjacentHTML('beforeend','<h3 id="s-duty">Turnos de administradores</h3><span id="s-duty-h"></span><div class="card" id="dutyb">'+skel(1)+'</div>');
+  const eod=d=>{const x=new Date(d);x.setHours(23,59,59,0);return x},todayEnd=()=>eod(new Date()),weekEnd=()=>{const x=new Date();x.setDate(x.getDate()+(7-x.getDay()));return eod(x)};
+  const draw=async()=>{
+    const{data,error}=await sb.rpc('admin_duty_overview');
+    if(my!==NAV||!$('dutyb'))return;
+    if(error){$('dutyb').innerHTML='<div class="warnbox bad">Falta ejecutar <code>turnos_admin.sql</code> en Supabase.</div>';return}
+    const st=data.staff||[],ac=data.actions||[];
+    $('dutyb').innerHTML=`<p class="mut" style="margin-top:0">Elige quién está de turno. Quien esté libre no puede revisar verificaciones ni resolver mediaciones.</p>
+    <label style="display:flex;gap:10px;margin:6px 0 12px;align-items:flex-start"><input type="checkbox" id="dcr" ${data.can_resolve?'checked':''} style="width:auto;margin:3px 0 0"><span>Los administradores de turno pueden resolver mediaciones (liberar o devolver USDT). Cada decisión queda registrada con su motivo.</span></label>
+    ${st.length?st.map(u=>`<div class="card" style="margin:0 0 8px"><div class="row"><b>@${esc(u.username)}</b><span class="tag ${u.on?'ok':''}">${u.on?'De turno'+(u.until?' hasta '+when(u.until):''):'Libre'}</span></div><div class="grid2" style="margin-top:8px"><button class="b sm" data-dt="${u.id}|today">Hoy</button><button class="b sm" data-dt="${u.id}|week">Esta semana</button><button class="b gh sm" data-dt="${u.id}|always">Sin límite</button>${u.on?`<button class="b bad sm" data-dt="${u.id}|off">Quitar turno</button>`:''}</div></div>`).join(''):'<p class="mut">Primero añade administradores arriba.</p>'}
+    <h4 style="margin:14px 0 6px">Últimas decisiones de mediación</h4>${ac.length?ac.map(a=>`<div class="mut" style="font-size:13px;padding:6px 0;border-top:1px solid var(--line)"><b>@${esc(a.staff||'?')}</b> · ${a.action==='release'?'liberó al comprador':'devolvió al vendedor'} · orden ${esc(String(a.order_id).slice(0,8))} · ${when(a.created_at)}<br>${esc(a.note||'')}</div>`).join(''):'<p class="mut">Todavía no hay decisiones.</p>'}`;
+    $('dcr').onchange=e=>act(e.target,async()=>{await rpc('admin_set_staff_cfg',{p_can_resolve:e.target.checked});await draw()},'Guardado');
+    $('dutyb').querySelectorAll('[data-dt]').forEach(b=>b.onclick=()=>{const[id,k]=b.dataset.dt.split('|');
+      act(b,async()=>{await rpc('admin_set_duty',{p_user:id,p_on:k!=='off',p_until:k==='today'?todayEnd().toISOString():k==='week'?weekEnd().toISOString():null});await draw()},k==='off'?'Turno quitado':'Turno asignado')})};
+  await draw()}
+
+/* ---------- Mediaciones para administradores secundarios de turno ---------- */
+async function staffMed(D,my){
+  const box=$('medbox');if(!box||!D.can)return;
+  if(!D.on){box.innerHTML='<div class="card mut">Estás fuera de turno.</div>';return}
+  box.innerHTML=skel(1);
+  const{data,error}=await sb.rpc('staff_mediation_queue');
+  if(my!==NAV||!$('medbox'))return;
+  if(error){box.innerHTML=`<div class="warnbox bad">${esc(friendly(error))}</div>`;return}
+  const R=data||[],tb=main().querySelector('[data-at="med"]');if(tb)tb.textContent='⚖️ Mediaciones'+(R.length?' · '+R.length:'');
+  box.innerHTML=R.length?R.map(o=>`<div class="card"><div class="row"><b>${n(o.amount,2)} USDT</b><span class="tag warn">Ref. ${esc(o.mediation_ref||'—')}</span></div><div class="mut">@${esc(o.buyer)} compra a @${esc(o.seller)} · ${when(o.updated_at)}</div><button class="b sm" style="margin-top:8px" data-mo="${o.id}">Revisar</button></div>`).join(''):'<div class="card mut">No hay mediaciones pendientes.</div>';
+  box.querySelectorAll('[data-mo]').forEach(b=>b.onclick=()=>act(b,async()=>{
+    const o=R.find(x=>x.id===b.dataset.mo);
+    const[bp,mp]=await Promise.all([o.buyer_proof?proofImg(o.buyer_proof,'El comprador'):'',o.mediation_proof?proofImg(o.mediation_proof,'El comprador'):'']);
+    const msgs=(o.messages||[]).map(x=>`<div class="mut" style="font-size:12px;margin-bottom:3px"><b>@${esc(x.who||'?')}</b>: ${esc(x.body)}</div>`).join('')||'<p class="mut">Sin mensajes.</p>';
+    const m=modal(`<h3>Mediación · ${n(o.amount,2)} USDT</h3><p class="mut">Comprador @${esc(o.buyer)} · Vendedor @${esc(o.seller)}${o.seller_denied?' · <b>el vendedor marcó que no recibió</b>':''}</p>
+      <p>Precio ${n(o.price,2)} · ${esc(o.methods||'')}</p><p class="mut">Cobro del vendedor: ${esc(o.details||'—')}</p><p>Referencia del comprador: <b>${esc(o.mediation_ref||'—')}</b></p>
+      <h4>Captura del pago</h4>${bp||'<p class="mut">—</p>'}<h4>Captura de sus últimas operaciones</h4>${mp||'<p class="mut">—</p>'}<h4>Chat</h4>${msgs}
+      <div class="grid2" style="margin-top:12px"><button class="b ok" id="mrl">Liberar al comprador</button><button class="b bad" id="mrf">Devolver al vendedor</button></div><button class="b gh w" id="mx" style="margin-top:8px">Cerrar</button>`);
+    m.querySelector('#mx').onclick=()=>m.remove();m.querySelectorAll('img').forEach(i=>i.onclick=()=>zoom(i.src));
+    const dec=(btn,action,title,txt)=>btn.onclick=async()=>{
+      const q=await ask(title,`<p>${txt}</p><label>Motivo (obligatorio)</label><textarea id="rn" rows="3" placeholder="Ej: la referencia coincide con el pago"></textarea>`,'Confirmar',action==='release'?'ok':'bad');if(!q)return;
+      const note=q.querySelector('#rn').value.trim();q.remove();if(note.length<5)return toast('Escribe el motivo (mínimo 5 letras) y vuelve a intentarlo','err');m.remove();
+      act(btn,async()=>{await rpc('staff_resolve_order',{p_order:o.id,p_action:action,p_note:note});await staffMed(D,my)},action==='release'?'USDT liberados al comprador':'USDT devueltos al vendedor')};
+    dec(m.querySelector('#mrl'),'release','Liberar USDT al comprador','Confirmas que el pago del comprador es real. No se puede deshacer.');
+    dec(m.querySelector('#mrf'),'refund','Devolver USDT al vendedor','Confirmas que el pago del comprador no es real. La orden se cancela.')}))}
 
 boot();
 </script>
