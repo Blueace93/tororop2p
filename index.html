@@ -1055,7 +1055,8 @@ function renderAutoDeposit(box){
     const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),20000),adm=!!S.profile?.is_admin;let r,d=null,why='';
     try{r=await fetch(PAY_URL+'/assign',{method:'POST',headers:{authorization:'Bearer '+session.access_token,'content-type':'application/json'},body:'{}',signal:ctl.signal});
       try{d=JSON.parse(await r.text())}catch(e){}}
-    catch(e){why=e&&e.name==='AbortError'?'tiempo agotado (20 s)':'sin respuesta: red, CORS o servicio caído'}
+    catch(e){why=e&&e.name==='AbortError'?'tiempo agotado (20 s)':'sin respuesta';
+      if(adm&&why==='sin respuesta'){try{await Promise.race([fetch(PAY_URL,{mode:'no-cors',cache:'no-store'}),sleep(6000).then(()=>{throw 0})]);why='el servicio responde pero bloquea a la página (CORS): el worker debe contestar OPTIONS y enviar access-control-allow-origin'}catch(x){why='el servicio no es alcanzable: worker sin publicar, URL incorrecta o dominio workers.dev bloqueado en tu red'}}}
     finally{clearTimeout(to)}
     if(!r)throw new Error('No se pudo conectar con el servicio de pagos. Inténtalo de nuevo en un momento.'+(adm?' ['+why+']':''));
     if(!r.ok||!d||!d.address)throw new Error((d&&d.error)||('El servicio de pagos respondió con un error'+(adm?' (HTTP '+r.status+(d?'':', respuesta no válida')+')':'. Inténtalo de nuevo en un momento.')));
