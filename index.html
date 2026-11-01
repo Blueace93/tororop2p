@@ -64,7 +64,7 @@ code{background:var(--bg);padding:2px 6px;border-radius:6px;word-break:break-all
 .md{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;width:100%;max-width:420px;max-height:90vh;overflow:auto}
 .md img{max-width:100%;border-radius:8px}
 .chat{max-height:280px;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.msg{max-width:82%;padding:8px 11px;border-radius:12px;background:var(--card2);font-size:14px;word-break:break-word}
+.msg{white-space:pre-wrap;max-width:82%;padding:8px 11px;border-radius:12px;background:var(--card2);font-size:14px;word-break:break-word}
 .msg.me{align-self:flex-end;background:#0e3a30}.msg.ad{border:1px solid var(--warn)}
 .msg small{display:block;color:var(--mut);font-size:11px}
 .lg{display:flex;align-items:center;gap:8px}
@@ -862,7 +862,9 @@ async function uploadProof(orderId,role,file){
   const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
   const path=`${orderId}/${role}-${Date.now()}.${ext}`;
   const{error}=await sb.storage.from('proofs').upload(path,file,{contentType:file.type});
-  if(error)throw new Error(friendly(error));return path}
+  if(error)throw new Error(friendly(error));
+  if(role==='buyer'||role==='mediation')try{await sb.from('proof_hashes').insert({order_id:orderId,role,phash:await aHash(file),user_id:S.user.id})}catch(e){}
+  return path}
 const stepIdx=s=>({awaiting_payment:0,payment_sent:1,seller_confirmed:2,released:3}[s]??-1);
 function uploader(btnId,label,cls){
   return`<input type="file" id="f" accept="image/*"><img id="pv" class="proof hide" style="display:none" alt="Vista previa">
@@ -958,6 +960,15 @@ async function viewOrder(){
     if(open){const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat()},null,true);
       $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter')go_()}}};
   drawChat();
+  if((admin||staff)&&med&&!fin_&&(o.buyer_proof||o.mediation_proof)){
+    const runAna=async(force,btn)=>{if(S._ana===o.id)return;S._ana=o.id;
+      try{if(!force){const{data:ex}=await sb.from('order_messages').select('id').eq('order_id',o.id).like('body',HDR+'%').limit(1);if(ex&&ex.length)return}
+        if(btn){btn.disabled=true;btn.textContent='Analizando…'}toast('🤖 Analizando las capturas…');
+        const body=await analyzeProofs(o,cur);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body});if(error)throw error;
+        if(my===NAV)await drawChat();toast('Análisis publicado en el chat','good')}
+      catch(e){toast('No se pudo analizar: '+friendly(e),'err')}finally{S._ana=null;if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🤖 Analizar capturas de nuevo'}}};
+    $('chatbox').insertAdjacentHTML('afterend','<button class="b gh w" id="anaB" style="margin-top:8px">🤖 Analizar capturas de nuevo</button>');
+    $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200)}
   if(o.status==='released'&&(isBuyer||isSeller))drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);
   /* actualización automática */
   let last=o.status+o.updated_at;
@@ -1331,6 +1342,51 @@ async function viewAnn(){
   $('back').onclick=e=>{e.preventDefault();go('market')};
   if((data||[]).length){lsSet('ann_seen_'+S.user.id,data[0].created_at);S.annNew=false;updAnn()}}
 
+
+
+/* ---------- Análisis automático de capturas (para el administrador) ---------- */
+const HDR='🤖 ANÁLISIS AUTOMÁTICO CON IA (lectura de texto / OCR)';
+async function aHash(blob){
+  const bm=await createImageBitmap(blob),c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d',{willReadFrequently:true});
+  x.drawImage(bm,0,0,8,8);const d=x.getImageData(0,0,8,8).data,g=[];let t=0;
+  for(let i=0;i<64;i++){const v=d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11;g.push(v);t+=v}
+  const m=t/64;let h='';for(let i=0;i<64;i+=4)h+=(((g[i]>m)<<3)|((g[i+1]>m)<<2)|((g[i+2]>m)<<1)|(g[i+3]>m)).toString(16);return h}
+const hamm=(a,b)=>{let n=0;for(let i=0;i<16;i++){let v=parseInt(a[i],16)^parseInt(b[i],16);while(v){n+=v&1;v>>=1}}return n};
+function numsFrom(t){const out=[];(String(t).match(/\d[\d.,\s]*\d|\d/g)||[]).forEach(r=>{r=r.replace(/\s+/g,'');
+  const lc=r.lastIndexOf(','),ld=r.lastIndexOf('.'),sep=Math.max(lc,ld);let v;
+  if(sep<0)v=r;else{const dec=r.length-sep-1;if(lc>=0&&ld>=0||dec===1||dec===2)v=r.slice(0,sep).replace(/[.,]/g,'')+'.'+r.slice(sep+1);else v=r.replace(/[.,]/g,'')}
+  const f=parseFloat(v);if(isFinite(f))out.push(f)});return out}
+const digitRuns=t=>(String(t).match(/\d[\d\s]{3,}\d/g)||[]).map(r=>r.replace(/\s+/g,''));
+const hasAmount=(t,v)=>numsFrom(t).some(x=>Math.abs(x-v)<0.011);
+const hasRef=(t,ref)=>!!ref&&digitRuns(t).some(r=>r.includes(ref));
+const hasTail=(t,tail)=>!!tail&&(digitRuns(t).some(r=>r.includes(tail))||String(t).includes(tail));
+let _tess=null;
+function loadTess(){return _tess||(_tess=new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  sc.onload=()=>window.Tesseract?ok(window.Tesseract):no(new Error('ocr'));sc.onerror=()=>{_tess=null;no(new Error('ocr'))};document.head.appendChild(sc);setTimeout(()=>no(new Error('ocr')),25000)}))}
+async function ocrBlob(blob){const T=await loadTess();return Promise.race([T.recognize(blob,'eng').then(r=>r.data.text||''),new Promise((_,j)=>setTimeout(()=>j(new Error('ocr')),60000))])}
+async function getProof(path){const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');return r.blob()}
+async function analyzeProofs(o,cur){
+  const L=[],W=[];const ok=t=>L.push('✅ '+t),bad=t=>{L.push('⚠️ '+t);W.push(t)},na=t=>L.push('➖ '+t);
+  const exp=due(o,cur),ref=o.mediation_ref||'',tail=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-4);
+  const prs=[['buyer',o.buyer_proof],['mediation',o.mediation_proof]].filter(x=>x[1]);
+  const txt={},hs={};
+  for(const[k,pa]of prs){let b=null;try{b=await getProof(pa)}catch(e){continue}
+    try{hs[k]=await aHash(b)}catch(e){}
+    try{txt[k]=await ocrBlob(b)}catch(e){}}
+  const all=Object.values(txt).join('\n');
+  if(!Object.keys(txt).length)na('No se pudo leer el texto de las capturas (el lector de texto no cargó). Revísalas a ojo.');
+  else{
+    if(txt.buyer!=null){hasAmount(txt.buyer,exp)?ok(`Monto: aparece ${mny(exp,cur)} ${cur} en la captura del pago.`):bad(`Monto: no se encontró ${mny(exp,cur)} ${cur} en la captura del pago.`)}
+    if(tail){hasTail(txt.buyer||all,tail)?ok(`Destino: aparecen los últimos dígitos (${tail}) de los datos de cobro.`):bad(`Destino: no se vieron los últimos dígitos (${tail}) de los datos de cobro (pueden estar ocultos).`)}
+    if(ref){hasRef(all,ref)?ok(`Referencia ${ref}: aparece en las capturas.`):bad(`Referencia ${ref}: no aparece en las capturas.`)}
+  }
+  try{const{data:hh}=await sb.from('proof_hashes').select('order_id,phash').neq('order_id',o.id).order('created_at',{ascending:false}).limit(1500);
+    const dup=new Set();(hh||[]).forEach(r=>Object.values(hs).forEach(h=>{if(r.phash&&hamm(h,r.phash)<=4)dup.add(r.order_id.slice(0,8))}));
+    if(dup.size)bad('Imagen repetida: se parece mucho a capturas de otra(s) operación(es): '+[...dup].slice(0,3).join(', ')+'.');else if(Object.keys(hs).length)ok('Imagen: no coincide con capturas de otras operaciones.')}catch(e){}
+  if(ref)try{const{data:rr}=await sb.from('orders').select('id').eq('mediation_ref',ref).neq('id',o.id).limit(3);
+    if(rr&&rr.length)bad('La misma referencia ya se usó en otra operación: '+rr.map(x=>x.id.slice(0,8)).join(', ')+'.');else ok('La referencia no se había usado antes.')}catch(e){}
+  const head=W.length?`Resultado: ${W.length} punto(s) a revisar.`:'Resultado: sin señales raras en lo que se pudo comprobar.';
+  return `${HDR}\n${head}\n\n${L.join('\n')}\n\nSolo es un análisis automático de IA, orientativo: NO demuestra si el pago es real o falso y puede equivocarse al leer capturas borrosas. La decisión la toma el administrador.`}
 
 /* ---------- Anuncio a pantalla completa ---------- */
 function showAnnFull(list,i=0,prev){
