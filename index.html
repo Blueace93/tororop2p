@@ -1033,16 +1033,46 @@ async function viewWallet(){
   const list=(t,a)=>`<div class="card"><h3>${t}</h3>`+((a||[]).length?a.map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-bottom:6px"><span class="mut">${n(x.amount,2)} USDT · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join(''):'<span class="mut">Sin movimientos.</span>')+'</div>';
   $('hist').innerHTML=list('Mis depósitos',d.data)+list('Mis retiros',w.data)+'<button class="b gh w" id="hfull" style="margin-bottom:12px">🧾 Ver historial completo</button>';$('hfull').onclick=()=>go('hist')}
 
-async function renderDepositCard(){
+/* ---------- Depósito automático (Trondealer) ---------- */
+const PAY_URL='https://tororo-pagos.lazaromichelfn.workers.dev';
+const payNet=g=>Math.round((g*0.996-(g<10?0.30:0))*1e4)/1e4;
+const payGross=N=>{let g=N/0.996;if(g<10)g=(N+0.30)/0.996;return Math.ceil(g*100)/100};
+function renderAutoDeposit(box){
+  box.innerHTML=`<h3>Depositar</h3><div class="seg" style="margin-top:0"><button type="button" id="dm">Manual (sin comisión)</button><button type="button" id="da" class="on">⚡ Automático</button></div>
+    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. La pasarela cobra <b>0,4 %</b> (más <b>0,30 USDT</b> si envías menos de 10).</p>
+    <label>¿Cuánto quieres recibir en tu saldo? (mínimo 5 USDT)</label><input id="dau" type="number" min="5" step="any" inputmode="decimal" placeholder="Ej: 20">
+    <div id="dac" class="warnbox" style="display:none"></div>
+    <button class="b w" id="dag" style="margin-top:8px">Ver mi dirección de depósito</button><div id="dab"></div>`;
+  $('dm').onclick=()=>renderDepositCard(true);
+  const calc=()=>{const N=+$('dau').value,c=$('dac');if(!(N>0)){c.style.display='none';return}
+    if(N<5){c.style.display='block';c.innerHTML='El mínimo es <b>5 USDT</b>.';return}
+    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión de la pasarela: ${n(g-N,2)} USDT · Si envías otro monto recibirás tu envío menos esa comisión.</span>`};
+  $('dau').oninput=calc;
+  $('dag').onclick=ev=>act(ev.target,async()=>{
+    const N=+$('dau').value;if(!(N>=5))throw new Error('Indica cuánto quieres recibir (mínimo 5 USDT)');
+    const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Vuelve a iniciar sesión');
+    let r,d;try{r=await Promise.race([fetch(PAY_URL+'/assign',{method:'POST',headers:{authorization:'Bearer '+session.access_token,'content-type':'application/json'},body:'{}'}),sleep(20000).then(()=>{throw new Error('t')})]);d=await r.json()}catch(e){throw new Error('No se pudo conectar con el servicio de pagos. Inténtalo de nuevo en un momento.')}
+    if(!r.ok||!d.address)throw new Error(d.error||'No se pudo generar tu dirección');
+    const g=payGross(N);
+    $('dab').innerHTML=`<div class="warnbox" style="margin-top:10px">Envía <b>${n(g,2)} USDT</b> por la red <b>BNB Smart Chain (BEP20)</b>. Otra red u otra moneda se pierde y no se puede recuperar.</div>
+      <div class="row"><span><span class="mut">Monto a enviar</span><br><b>${n(g,2)} USDT</b></span>${cpBtn(String(g.toFixed(2)))}</div>
+      <div class="row"><span><span class="mut">Tu dirección (BEP20)</span><br><code>${esc(d.address)}</code></span>${cpBtn(d.address)}</div>
+      <p class="mut">Recibirás <b>${n(payNet(g),2)} USDT</b> en tu saldo cuando se confirme la transacción (unos minutos). Esta pantalla se actualiza sola.</p>`;
+    bindCopy($('dab'));
+    const before=S.wallet?.available||0;let tries=0;clearInterval(S._payT);
+    S._payT=setInterval(async()=>{if(!$('dab')||++tries>120)return clearInterval(S._payT);if(document.hidden)return;await loadBal();if((S.wallet?.available||0)>before+1e-9){clearInterval(S._payT);toast('¡Depósito acreditado!','good');viewWallet()}},10000)})}
+async function renderDepositCard(manual){
   const box=$('depcard');if(!box)return;
   let it=null;try{it=await rpc('get_my_intent')}catch(e){}
   if(!$('depcard'))return;
+  if(!it&&!manual)return renderAutoDeposit(box);
   if(!it){
-    box.innerHTML=`<h3>Depositar</h3><label>Red y moneda</label>
+    box.innerHTML=`<h3>Depositar</h3><div class="seg" style="margin-top:0"><button type="button" id="dm" class="on">Manual (sin comisión)</button><button type="button" id="da">⚡ Automático</button></div><label>Red y moneda</label>
       <select id="dnet"><option value="BEP20|USDT">BNB Smart Chain (BEP20) · USDT</option><option value="ARBITRUM|USDT">Arbitrum One · USDT</option><option value="ARBITRUM|USDC">Arbitrum One · USDC</option></select>
       <label>¿Cuánto quieres depositar? (entero, mínimo 5)</label><input id="dbase" type="number" min="5" step="1" inputmode="numeric">
       <button class="b w" id="dnew">Generar instrucciones de depósito</button>
       <p class="mut">Te daremos un monto exacto con decimales para identificar tu pago automáticamente.</p>`;
+    $('da').onclick=()=>renderAutoDeposit(box);
     $('dnew').onclick=ev=>act(ev.target,async()=>{
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
