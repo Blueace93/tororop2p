@@ -423,10 +423,10 @@ const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="b
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 ${walletCard()}
 <div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios activos en la plataforma</span></span></div>
-<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
+<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b gh w" id="tLegal" style="margin:-4px 0 14px">📄 Términos y políticas</button>`;
 const setActU=()=>{const e=$('auC');if(!e||S.actU==null)return;e.style.display='flex';$('auN').textContent=n(S.actU,0)};
 const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}};
-const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
+const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -583,9 +583,11 @@ function renderAuth(mode='login'){
       <label>Contraseña</label><div class="fld">${_ic('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')}<input id="pw" type="password" autocomplete="${reg?'new-password':'current-password'}" placeholder="••••••••"><button type="button" class="eye" id="eye" aria-label="Mostrar u ocultar contraseña">${_eye}</button></div>
       <button class="b w" id="go" style="margin-top:6px;padding:14px;font-size:15px">${reg?'Crear mi cuenta':'Entrar'}</button>
       ${reg?'':'<p class="mut" style="text-align:center;margin:14px 0 0"><a href="#" id="fg">¿Olvidaste tu contraseña?</a></p>'}
+      <p class="mut" style="text-align:center;margin:12px 0 0;font-size:12.5px">${reg?'Al crear tu cuenta aceptas los <a href="#" data-lgl="terms">Términos y condiciones</a>, la <a href="#" data-lgl="privacy">Política de privacidad</a> y el <a href="#" data-lgl="disclaimer">Descargo de responsabilidad</a>.':'Consulta los <a href="#" data-lgl="terms">Términos y condiciones</a> y la <a href="#" data-lgl="privacy">Política de privacidad</a>.'}</p>
     </div>
     <div class="trust"><span>🔒 Fondos en custodia</span><span>✅ Revisión del administrador</span><span>⚡ Rápido y simple</span></div></div></div>`;
   $('tl').onclick=()=>{if(reg)renderAuth('login')};$('tr').onclick=()=>{if(!reg)renderAuth('register')};
+  document.querySelectorAll('[data-lgl]').forEach(a=>a.onclick=e=>{e.preventDefault();legalModal(a.dataset.lgl)});
   $('eye').onclick=()=>{const p=$('pw');p.type=p.type==='password'?'text':'password';p.focus()};
   if($('fg'))$('fg').onclick=e=>{e.preventDefault();const em=$('em').value.trim();if(!em)return toast('Escribe tu correo primero','err');
     sb.auth.resetPasswordForEmail(em,{redirectTo:location.href.split('#')[0]}).then(({error})=>error?toast(friendly(error),'err'):toast('Te enviamos un enlace al correo','good'))};
@@ -632,7 +634,7 @@ function go(v,orderId){
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,admin:viewAdmin}[v]||viewMarket)();
   {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
@@ -1152,7 +1154,7 @@ const TST={pending:['Esperando envío','warn'],review:['En revisión del admin',
 const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
 function viewMore(){S.bkTo=null;
-  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -1352,6 +1354,61 @@ function showTuto(i){
   m.querySelector('#t1').onclick=()=>{if(last)fin();else{m.remove();showTuto(i+1)}}}
 function maybeTuto(){if(S.user&&!S.profile?.is_admin&&!S.profile?.is_staff&&!lsGet('tuto_'+S.user.id))setTimeout(()=>showTuto(0),900)}
 
+
+
+/* ---------- Términos y políticas ---------- */
+const LEGAL_NAME=APP_NAME;
+const LEGAL=()=>{const tf=S.fees?.trade??1,wf=S.fees?.withdraw??3;return[
+ {id:'terms',ic:'📄',t:'Términos y condiciones',
+  pre:`Bienvenido a ${LEGAL_NAME}. Al usar nuestra plataforma para comprar, vender o depositar aceptas estas condiciones.`,
+  body:[
+   ['1. Aceptación',`Al crear una cuenta o usar ${LEGAL_NAME} aceptas estos términos. Si no estás de acuerdo, no uses la plataforma.`],
+   ['2. Qué es la plataforma',`${LEGAL_NAME} es un espacio donde los usuarios compran y venden USDT entre sí. Durante cada operación retenemos los fondos en custodia hasta que ambas partes cumplan. No somos un banco ni una casa de cambio.`],
+   ['3. Cuenta y verificación','Debes ser mayor de edad y tener una sola cuenta. Puede pedirse verificación de identidad (KYC) para comprar, vender o retirar. Los datos que des deben ser reales.'],
+   ['4. Depósitos','Puedes depositar de dos formas. «Gratis»: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual. «Depósito automático»: el saldo se acredita solo, con comisión. Solo se aceptan las redes y monedas indicadas en pantalla; un envío por otra red, otra moneda o con un monto distinto al pedido puede perderse y no se puede recuperar. Si tu wallet o exchange cobra comisión de envío, la pagas tú.'],
+   ['5. Retiros',`Los retiros pueden demorar desde minutos hasta 24 horas, según el tráfico de la red. Se cobra una comisión del ${wf}%. Verifica la dirección: los envíos a una dirección o red equivocada no se recuperan.`],
+   ['6. Comisiones',`Cada operación en el Mercado paga ${tf}% (la paga el vendedor). El depósito automático cobra 0,4 % más 0,10 USDT (y 0,30 USDT si envías menos de 10). Las comisiones vigentes se muestran siempre antes de confirmar.`],
+   ['7. Operaciones y disputas','Sigue las instrucciones de cada operación y sube comprobantes reales. Si hay desacuerdo, puedes pedir mediación: el administrador revisa las pruebas de ambas partes y decide liberar o devolver los fondos. Su decisión es final dentro de la plataforma.'],
+   ['8. Conductas prohibidas','Están prohibidos: el fraude, las capturas falsas o alteradas, usar cuentas o medios de pago de terceros sin autorización, tener varias cuentas, el lavado de dinero y cualquier uso ilegal. Podemos suspender cuentas y retener fondos mientras se investiga.'],
+   ['9. Seguridad de tu cuenta','Cuida tu contraseña, tu PIN y tus accesos. No los compartas con nadie. Lo que se haga desde tu cuenta se considera hecho por ti.'],
+   ['10. Cambios','Podemos actualizar estos términos. Si los cambios son importantes, lo avisaremos en la app. Seguir usando la plataforma significa aceptarlos.']]},
+ {id:'privacy',ic:'🔒',t:'Política de privacidad',
+  pre:`En ${LEGAL_NAME} valoramos tu confianza y cuidamos tus datos. Aquí explicamos qué guardamos y para qué.`,
+  body:[
+   ['1. Qué datos guardamos','Tu usuario y correo, los datos de verificación de identidad que subas, tus operaciones, depósitos y retiros, las direcciones de wallet que uses y los comprobantes o capturas que adjuntes.'],
+   ['2. Para qué los usamos','Para operar tu cuenta, verificar tu identidad, procesar operaciones, resolver disputas, prevenir fraudes y cumplir la ley cuando corresponda.'],
+   ['3. Con quién los compartimos','No vendemos tus datos. En una operación, la otra parte ve solo lo necesario (tu usuario y los datos de pago que indiques). Podemos compartir información con proveedores de infraestructura y pagos solo en lo necesario para operar, o con autoridades si la ley lo exige.'],
+   ['4. Dónde y cuánto tiempo','Los datos se guardan en servicios de infraestructura en la nube. Los conservamos mientras tu cuenta esté activa y el tiempo necesario para resolver disputas o cumplir obligaciones.'],
+   ['5. Tus derechos','Puedes pedir que corrijamos o eliminemos tus datos, salvo los que debamos conservar por seguridad, disputas abiertas u obligaciones legales. Escríbenos por soporte.'],
+   ['6. Seguridad','Aplicamos medidas razonables para protegerlos, pero ningún sistema es 100 % seguro. Protege tu cuenta con un PIN y dos pasos.']]},
+ {id:'disclaimer',ic:'⚠️',t:'Descargo de responsabilidad',
+  pre:'La transparencia es el pilar de nuestra relación con los clientes. Para operar con tranquilidad, ten presente lo siguiente.',
+  body:[
+   ['1. Eres responsable de tus decisiones',`${LEGAL_NAME} no da asesoría financiera, legal ni fiscal. Cada usuario decide por su cuenta si compra, vende o deposita.`],
+   ['2. Riesgos de las criptomonedas','Las transacciones en blockchain son irreversibles. Un envío por una red equivocada, a una dirección errónea o por un monto incorrecto puede perderse sin posibilidad de recuperarlo. Verifica siempre los datos antes de enviar.'],
+   ['3. Operaciones entre usuarios','Los usuarios operan entre sí. Nos esforzamos por proteger cada operación con custodia y mediación, pero no garantizamos la conducta de terceros ni el resultado de cada operación.'],
+   ['4. Servicios de terceros','Dependemos de redes blockchain, proveedores de pagos e infraestructura en la nube. Retrasos, caídas o cambios en ellos pueden afectar depósitos, retiros o acreditaciones.'],
+   ['5. Disponibilidad','El servicio puede interrumpirse por mantenimiento, fallas o causas fuera de nuestro control. No garantizamos que esté disponible sin interrupciones.'],
+   ['6. Límite de responsabilidad','En la medida que permita la ley, no respondemos por pérdidas causadas por errores del usuario, fallas de terceros, redes blockchain o causas fuera de nuestro control.']]}]};
+const legalListHtml=()=>`<p class="mut">Las condiciones bajo las que funciona ${LEGAL_NAME}. Te recomendamos leerlas antes de operar.</p>`+
+  LEGAL().map(x=>`<div class="card" style="cursor:pointer" data-lg="${x.id}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px;align-items:flex-start"><span style="font-size:26px">${x.ic}</span><div><b>${esc(x.t)}</b><div class="mut" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(x.pre)}</div></div></div></div>`).join('');
+const legalDocHtml=d=>`<p class="mut">${esc(d.pre)}</p>`+d.body.map(([h,t])=>`<div class="card"><b>${esc(h)}</b><p style="margin:6px 0 0;line-height:1.55">${esc(t)}</p></div>`).join('')+`<p class="mut" style="font-size:12px">Última actualización: noviembre de 2026.</p>`;
+function viewLegal(id){
+  const d=LEGAL().find(x=>x.id===id);
+  if(!d){
+    main().innerHTML=hd('Términos y políticas')+legalListHtml();
+    bk();main().querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{viewLegal(c.dataset.lg);window.scrollTo({top:0,behavior:'instant'})});return}
+  main().innerHTML=hd(d.t)+legalDocHtml(d);
+  const b=$('back');if(b)b.onclick=e=>{e.preventDefault();viewLegal();window.scrollTo({top:0,behavior:'instant'})}}
+/* Misma pantalla en ventana, para verla sin haber iniciado sesión */
+function legalModal(id){
+  const m=modal('');const box=m.querySelector('.md');box.style.maxHeight='85vh';box.style.overflowY='auto';
+  const draw=did=>{const d=LEGAL().find(x=>x.id===did);
+    box.innerHTML=(d?`<p><a href="#" id="lgb">← Volver</a></p><h3>${esc(d.t)}</h3>${legalDocHtml(d)}`:`<h3>Términos y políticas</h3>${legalListHtml()}`)+`<button class="b gh w" id="lgx" style="margin-top:10px">Cerrar</button>`;
+    box.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{draw(c.dataset.lg);box.scrollTop=0});
+    const bb=box.querySelector('#lgb');if(bb)bb.onclick=e=>{e.preventDefault();draw();box.scrollTop=0};
+    box.querySelector('#lgx').onclick=()=>m.remove()};
+  draw(id)}
 
 /* ---------- Información y Anuncios (usuarios) ---------- */
 async function viewInfo(){
