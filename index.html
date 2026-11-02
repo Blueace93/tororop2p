@@ -1035,7 +1035,7 @@ async function viewWallet(){
 
 /* ---------- Depósito automático ---------- */
 const PAY_URL='https://tororo-pagos.lazaromichelfn.workers.dev';
-const payNet=g=>Math.round((g*0.996-(g<10?0.30:0)-0.10)*1e4)/1e4;
+const payNet=g=>Math.floor((g*0.996-(g<10?0.30:0)-0.10)*100+1e-9)/100;
 const payGross=N=>{let g=(N+0.10)/0.996;if(g<10)g=(N+0.40)/0.996;return Math.ceil(g*100)/100};
 function renderAutoDeposit(box){
   box.innerHTML=`<h3>Depositar</h3>${depTabs('auto')}
@@ -1046,7 +1046,7 @@ function renderAutoDeposit(box){
   bindDepTabs();
   const calc=()=>{const N=+$('dau').value,c=$('dac');if(!(N>0)){c.style.display='none';return}
     if(N<5){c.style.display='block';c.innerHTML='El mínimo es <b>5 USDT</b>.';return}
-    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión del depósito automático: ${n(g-N,2)} USDT · Si envías otro monto recibirás tu envío menos esa comisión.</span>`};
+    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión del depósito automático: ${n(g-N,2)} USDT (incluye el redondeo) · Si envías otro monto recibirás tu envío menos la comisión.</span>`};
   $('dau').oninput=calc;
   $('dag').onclick=ev=>act(ev.target,async()=>{
     const N=+$('dau').value;if(!(N>=5))throw new Error('Indica cuánto quieres recibir (mínimo 5 USDT)');
@@ -1064,7 +1064,7 @@ function renderAutoDeposit(box){
     $('dab').innerHTML=`<div class="warnbox" style="margin-top:10px">Envía <b>${n(g,2)} USDT</b> por la red <b>BNB Smart Chain (BEP20)</b>. Otra red u otra moneda se pierde y no se puede recuperar.</div>
       <div class="row"><span><span class="mut">Monto a enviar</span><br><b>${n(g,2)} USDT</b></span>${cpBtn(String(g.toFixed(2)))}</div>
       <div class="row"><span><span class="mut">Tu dirección (BEP20)</span><br><code>${esc(d.address)}</code></span>${cpBtn(d.address)}</div>
-      <p class="mut">Recibirás <b>${n(payNet(g),2)} USDT</b> en tu saldo cuando se confirme la transacción (unos minutos). Esta pantalla se actualiza sola.</p>`;
+      <p class="mut">Recibirás <b>${n(N,2)} USDT</b> en tu saldo cuando se confirme la transacción (unos minutos). Esta pantalla se actualiza sola.</p>`;
     bindCopy($('dab'));
     const before=S.wallet?.available||0;let tries=0;clearInterval(S._payT);
     S._payT=setInterval(async()=>{if(!$('dab')||++tries>120)return clearInterval(S._payT);if(document.hidden)return;await loadBal();if((S.wallet?.available||0)>before+1e-9){clearInterval(S._payT);toast('¡Depósito acreditado!','good');viewWallet()}},10000)})}
