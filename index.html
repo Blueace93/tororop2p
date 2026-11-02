@@ -1033,20 +1033,20 @@ async function viewWallet(){
   const list=(t,a)=>`<div class="card"><h3>${t}</h3>`+((a||[]).length?a.map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-bottom:6px"><span class="mut">${n(x.amount,2)} USDT · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join(''):'<span class="mut">Sin movimientos.</span>')+'</div>';
   $('hist').innerHTML=list('Mis depósitos',d.data)+list('Mis retiros',w.data)+'<button class="b gh w" id="hfull" style="margin-bottom:12px">🧾 Ver historial completo</button>';$('hfull').onclick=()=>go('hist')}
 
-/* ---------- Depósito automático (Trondealer) ---------- */
+/* ---------- Depósito automático ---------- */
 const PAY_URL='https://tororo-pagos.lazaromichelfn.workers.dev';
-const payNet=g=>Math.round((g*0.996-(g<10?0.30:0))*1e4)/1e4;
-const payGross=N=>{let g=N/0.996;if(g<10)g=(N+0.30)/0.996;return Math.ceil(g*100)/100};
+const payNet=g=>Math.round((g*0.996-(g<10?0.30:0)-0.10)*1e4)/1e4;
+const payGross=N=>{let g=(N+0.10)/0.996;if(g<10)g=(N+0.40)/0.996;return Math.ceil(g*100)/100};
 function renderAutoDeposit(box){
   box.innerHTML=`<h3>Depositar</h3>${depTabs('auto')}
-    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. <b>Trondealer</b> cobra <b>0,4 %</b> (más <b>0,30 USDT</b> si envías menos de 10). Si prefieres no pagar comisión, usa la opción <b>Gratis</b>.</p>
+    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. El depósito automático cobra <b>0,4 %</b> más <b>0,10 USDT</b> (y otros <b>0,30 USDT</b> si envías menos de 10). Si prefieres no pagar comisión, usa la opción <b>Gratis</b> (esperar acreditación manual).</p>
     <label>¿Cuánto quieres recibir en tu saldo? (mínimo 5 USDT)</label><input id="dau" type="number" min="5" step="any" inputmode="decimal" placeholder="Ej: 20">
     <div id="dac" class="warnbox" style="display:none"></div>
     <button class="b w" id="dag" style="margin-top:8px">Ver mi dirección de depósito</button><div id="dab"></div>`;
   bindDepTabs();
   const calc=()=>{const N=+$('dau').value,c=$('dac');if(!(N>0)){c.style.display='none';return}
     if(N<5){c.style.display='block';c.innerHTML='El mínimo es <b>5 USDT</b>.';return}
-    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión de la pasarela: ${n(g-N,2)} USDT · Si envías otro monto recibirás tu envío menos esa comisión.</span>`};
+    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión del depósito automático: ${n(g-N,2)} USDT · Si envías otro monto recibirás tu envío menos esa comisión.</span>`};
   $('dau').oninput=calc;
   $('dag').onclick=ev=>act(ev.target,async()=>{
     const N=+$('dau').value;if(!(N>=5))throw new Error('Indica cuánto quieres recibir (mínimo 5 USDT)');
@@ -1068,7 +1068,7 @@ function renderAutoDeposit(box){
     bindCopy($('dab'));
     const before=S.wallet?.available||0;let tries=0;clearInterval(S._payT);
     S._payT=setInterval(async()=>{if(!$('dab')||++tries>120)return clearInterval(S._payT);if(document.hidden)return;await loadBal();if((S.wallet?.available||0)>before+1e-9){clearInterval(S._payT);toast('¡Depósito acreditado!','good');viewWallet()}},10000)})}
-const depTabs=m=>`<div class="seg" style="margin-top:0"><button type="button" id="dtf" class="${m==='free'?'on':''}">🆓 Gratis</button><button type="button" id="dta" class="${m==='auto'?'on':''}">⚡ Trondealer</button></div>`;
+const depTabs=m=>`<div class="seg" style="margin-top:0"><button type="button" id="dtf" class="${m==='free'?'on':''}">🆓 Gratis<br><small>(esperar acreditación manual)</small></button><button type="button" id="dta" class="${m==='auto'?'on':''}">⚡ Depósito automático</button></div>`;
 const bindDepTabs=()=>{const f=$('dtf'),a=$('dta');if(f)f.onclick=()=>{if(S.depMode==='free')return;S.depMode='free';renderDepositCard()};if(a)a.onclick=()=>{if(S.depMode==='auto')return;S.depMode='auto';renderDepositCard()}};
 async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
@@ -1303,7 +1303,7 @@ const FAQ=()=>[
  ['¿Y si el vendedor no confirma mi pago?','Si ya pagaste y el vendedor marca “No he recibido” o no responde en 15 minutos, toca “Solicitar mediación”: sube una captura de tus últimas operaciones y el número de referencia del pago. El administrador lo revisa y decide.'],
  ['¿Qué pasa si no pago a tiempo?','Tienes 30 minutos para pagar y subir la captura. Si no, la operación se cancela sola y la oferta vuelve al mercado.'],
  ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
- ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos y pegas el TxID) o «Trondealer» (automático, sin TxID, con una comisión de 0,4 %). Si algo falla, usa el depósito manual y avisa con el TxID.'],
+ ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual) o «Depósito automático» (sin TxID, con una comisión de 0,4 % + 0,10 USDT). Si algo falla, usa el depósito manual y avisa con el TxID.'],
  ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
  ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+S.fees.withdraw+'%.'],
  ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
@@ -1662,7 +1662,7 @@ async function viewAdmin(){
   {const ids=[...new Set([...TM.flatMap(t=>[t.buyer_id,t.seller_id]),...(fl.data||[]).slice(0,30).map(fuid)].filter(Boolean))];
    if(ids.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',ids);(pp||[]).forEach(p=>{tn[p.id]=p.username;un[p.id]=p.username})}}
   const movilHtml=`<h3 id="s-movil">Saldo móvil por revisar</h3>`+(TM.length?TM.map(t=>`<div class="card ${t.status==='review'?'hl':''}"><div class="row"><b>${n(t.amount,2)} saldo móvil · ${n(t.total,qd(t.quote))} ${esc(t.quote)}</b><span class="tag warn">${t.status==='review'?'Mediación pedida':'Esperando fotos'}</span></div><div class="mut">Envía: @${esc(tn[t.seller_id])} → Recibe: @${esc(tn[t.buyer_id])} · Número: <code>${esc(t.phone)}</code></div><div class="mut">Retenido: ${n(t.escrow,qd(t.quote))} ${esc(t.quote)} · Comisión: ${n(t.fee,qd(t.fee_cur))} ${esc(t.fee_cur)} (se descuenta al vendedor)</div><div class="grid2" style="margin-top:8px"><button class="b gh sm" data-tp="${t.id}|s">${t.sender_proof?'Ver foto del envío':'Sin foto del envío'}</button><button class="b gh sm" data-tp="${t.id}|b">${t.receiver_proof?'Ver foto de recepción':'Sin foto de recepción'}</button></div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-tl="${t.id}">Aprobar y liberar</button><button class="b bad sm" data-tf="${t.id}">Rechazar y devolver</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
-  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
+  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',deposito_auto:'Depósito automático',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
   const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)});
   const feeOk=!ft.error&&Array.isArray(ft.data);
   if(!feeOk){const{data:fa}=await sb.from('fee_ledger').select('amount,currency').limit(1000);Object.keys(ftot).forEach(k=>delete ftot[k]);(fa||[]).forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)})}
