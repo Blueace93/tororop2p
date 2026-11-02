@@ -1813,6 +1813,8 @@ async function adminStats(mm,my){
     const dd=x=>x.slice(8)+'/'+x.slice(5,7);
     b.innerHTML=`<h4 style="margin:6px 0">Visitas</h4>
     <div class="grid2" style="margin-bottom:12px">${t('Hoy',n(v.hoy_unicos,0),'dispositivos distintos · '+n(v.hoy_aperturas,0)+' aperturas')}${t('Últimos 7 días',n(v.sem_unicos,0),'dispositivos distintos')}</div>
+    <h4 style="margin:6px 0">Mejores horas para publicar</h4>
+    <div id="stH" style="margin-bottom:12px">${skel(1)}</div>
     <h4 style="margin:6px 0">Usuarios</h4>
     <div class="grid2" style="margin-bottom:12px">${t('Sin verificar',n(k.sin_verificar,0),'no han enviado su KYC',k.sin_verificar?'warn':'')}${t('En revisión',n(k.en_revision,0),'KYC pendiente de aprobar')}${t('Verificados',n(k.verificados,0),'KYC aprobado','ok')}${t('Rechazados',n(k.rechazados,0),'KYC rechazado')}${t('Nuevos hoy',n(u.hoy,0),'')}${t('Nuevos 7 días',n(u.sem,0),'Total: '+n(k.total,0)+' usuarios')}</div>
     <h4 style="margin:6px 0">Operaciones completadas</h4>
@@ -1826,6 +1828,19 @@ async function adminStats(mm,my){
     ${errs.length?`<p class="mut" style="font-size:12px">Secciones no disponibles: ${esc(errs.map(x=>x.replace('_error','')+' ('+data[x]+')').join(' · '))}</p>`:''}
     <button class="b gh w" id="stR" style="margin-top:10px">Actualizar</button>`;
     document.getElementById('stR').onclick=()=>{b.innerHTML=skel(2);load()};
+    loadHours();
+  };
+  const loadHours=async()=>{
+    const h=await sb.rpc('admin_stats_hours');
+    if(my!==NAV)return;const bx=document.getElementById('stH');if(!bx)return;
+    if(h.error||!h.data){bx.innerHTML='<div class="card mut" style="margin:0">'+(/could not find the function/i.test((h.error&&h.error.message)||'')?'Falta pegar en Supabase el SQL de las horas.':esc((h.error&&h.error.message)||'Sin datos'))+'</div>';return}
+    const hs=h.data.horas||[],tot=hs.reduce((a,x)=>a+x.v,0),mx=Math.max(1,...hs.map(x=>x.v));
+    if(!tot){bx.innerHTML='<div class="card mut" style="margin:0">Aún no hay datos por hora. Se irán llenando con las visitas nuevas.</div>';return}
+    const top=hs.slice().sort((a,b)=>b.v-a.v).slice(0,3).filter(x=>x.v>0),hh=x=>String(x).padStart(2,'0')+':00';
+    bx.innerHTML=`<div class="card" style="margin:0"><div class="mut">Horas con más visitas · hora de Cuba · últimos 14 días (${n(h.data.dias,0)} con datos)</div>
+    <div class="big" style="font-size:20px;margin:4px 0">${top.map(x=>hh(x.h)).join(' · ')}</div>
+    <div style="display:flex;align-items:flex-end;gap:2px;height:90px;margin-top:10px">${hs.map(x=>`<div title="${hh(x.h)}: ${x.v} visitas" style="flex:1;height:${Math.max(3,Math.round(x.v/mx*100))}%;background:${top.some(q=>q.h===x.h)?'var(--ok)':'var(--acc)'};opacity:${x.v?1:.25};border-radius:3px 3px 0 0"></div>`).join('')}</div>
+    <div class="mut" style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div></div>`;
   };
   load();
 }
