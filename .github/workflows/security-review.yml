@@ -1,0 +1,98 @@
+name: Security Review
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: always
+
+  eslint-security:
+    name: ESLint Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Ejecutar ESLint con reglas de seguridad
+        run: |
+          npx eslint . --ext .js,.ts,.mjs,.cjs --max-warnings 0 --format json --output-file eslint-report.json || echo "ESLint encontró problemas"
+      - name: Subir reporte de ESLint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-security-report
+          path: eslint-report.json
+          retention-days: 14
+
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [dependency-review, eslint-security, secret-scan]
+    if: always() && (needs.dependency-review.result == 'failure' || needs.eslint-security.result == 'failure' || needs.secret-scan.result == 'failure')
+    steps:
+      - name: Crear GitHub Issue de notificación
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failed = [];
+            for (const [job, result] of Object.entries(needs)) {
+              if (result.result === 'failure') failed.push(`- ❌ **${job}**`);
+            }
+            const body = [
+              `### 🔒 Security Review falló en el workflow \`${context.workflow}\``,
+              ``,
+              `**Commit:** ${context.sha}`,
+              `**Rama:** ${context.ref}`,
+              `**Autor:** ${context.actor}`,
+              `**Ejecución:** ${context.payload.repository.html_url}/actions/runs/${context.runId}`,
+              ``,
+              `**Jobs con errores:**`,
+              ...failed,
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔒 Security Review falló: ${context.workflow}`,
+              body,
+              labels: ['security', 'automated']
+            });
