@@ -1088,12 +1088,12 @@ async function renderDepositCard(){
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
     return}
-  const netName=it.network==='BEP20'?'BNB Smart Chain (BEP20)':'Arbitrum One',amt=Number(it.amount).toFixed(4);
+  const netName=it.network==='BEP20'?'BNB Smart Chain (BEP20)':'Arbitrum One',amt=(Math.round(Number(it.amount)*100)/100===Number(it.amount))?Number(it.amount).toFixed(2):Number(it.amount).toFixed(4);
   box.innerHTML=`<h3>Depósito en curso</h3>${depTabs('free')}
-    <div class="warnbox">Envía <b>EXACTAMENTE ${amt} ${esc(it.symbol)}</b> por la red <b>${esc(netName)}</b>. Otro monto, red o moneda no se reconocerá y podrías perder los fondos.</div>
+    <div class="warnbox">Debe <b>LLEGAR exactamente ${amt} ${esc(it.symbol)}</b> por la red <b>${esc(netName)}</b>. Si tu wallet o exchange cobra comisión de envío, <b>la pagas tú</b>: súmala para que lleguen justo ${amt}. Otro monto, red o moneda no se reconocerá y podrías perder los fondos.</div>
     <div class="row"><span class="mut">Monto exacto</span>${cpBtn(amt)}</div>
     <div class="row"><span><span class="mut">Dirección</span><br><code>${esc(it.address)}</code></span>${cpBtn(it.address)}</div>
-    <p class="mut">Válido hasta ${when(it.expires_at)}. Si envías desde un exchange, comprueba que el monto que LLEGA sea exacto: algunos descuentan la comisión.</p>
+    <p class="mut">Válido hasta ${when(it.expires_at)}. Si envías desde un exchange, agrega su comisión de retiro al monto que envías, porque lo que LLEGA debe ser exacto.</p>
     <label>Cuando lo envíes, pega el ID de la transacción (TxID)</label><input id="dtx" placeholder="0x...">
     <button class="b ok w" id="dver">Verificar y acreditar</button>
     <button class="b gh sm" id="dcan" style="margin-top:8px">Cancelar solicitud</button>`;
