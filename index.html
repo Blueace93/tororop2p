@@ -1020,8 +1020,9 @@ async function viewWallet(){
       if(m){m.remove();await pinGate();ready=true}
     }catch(e){toast(friendly(e),'err')}finally{bt.dataset.ask=''}
     if(!ready)return;
-    act(bt,async()=>{await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:net});
-      S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW()},'Retiro solicitado')};
+    act(bt,async()=>{const wid=await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:net});
+      S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW();
+      try{sb.functions.invoke('pay-withdrawal',{body:{id:wid}}).then(()=>{},()=>{})}catch(e){}},'Retiro solicitado')};
   (async()=>{try{const[,fl]=await Promise.all([loadMe(),sb.from('site_flags').select('key,blocked')]);if(my!==NAV)return;
     const B={};(fl.data||[]).forEach(x=>B[x.key]=x.blocked);S._bf=B;
     const w=document.querySelector('main .wal');if(w)w.outerHTML=walletCard(true);const bb=$('blkb');if(bb)bb.innerHTML=blk(B);
@@ -1203,7 +1204,7 @@ async function viewHist(){
     L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} ${A}`,sub:`${n(x.total,qd(x.quote))} ${x.quote}`,s,k,rows:[['Tipo',`${buy?'Compra':'Venta'} · ${A}`],['Cantidad',`${n(x.amount,4)} ${A}`],['Precio por unidad',`${n(x.price,x.price<1?4:2)} ${x.quote}`],['Total',`${n(x.total,qd(x.quote))} ${x.quote}`],...(x.fee>0?[['Comisión',`${n(x.fee,qd(x.fee_cur))} ${x.fee_cur||''}`]]:[])]})});
   (dp.data||[]).forEach(x=>{const[s,k]=st(PST,x.status);L.push({g:'dep',id:x.id,at:x.created_at,t:`Depósito de ${n(x.amount,2)} USDT`,sub:'USDT',s,k,rows:[['Tipo','Depósito USDT'],['Monto',`${n(x.amount,4)} USDT`],...(x.txid?[['TxID',x.txid]]:[])]})});
   (wd.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),net=x.net_amount!=null?Number(x.net_amount):null;
-    L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,2)} USDT`,sub:x.network||'USDT',s,k,rows:[['Tipo','Retiro USDT'],['Monto solicitado',`${n(x.amount,4)} USDT`],...(net!=null?[['Recibes',`${n(net,4)} USDT`]]:[]),...(x.network?[['Red',x.network]]:[]),...(x.address?[['Dirección',x.address]]:[])]})});
+    L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,2)} USDT`,sub:x.network||'USDT',s,k,rows:[['Tipo','Retiro USDT'],['Monto solicitado',`${n(x.amount,4)} USDT`],...(net!=null?[['Recibes',`${n(net,4)} USDT`]]:[]),...(x.network?[['Red',x.network]]:[]),...(x.address?[['Dirección',x.address]]:[]),...(x.tx_hash?[['TxID',x.tx_hash]]:[])]})});
   (ft.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),d=dcur(x.currency);L.push({g:'top',id:x.id,at:x.created_at,t:`Recarga de ${n(x.amount,d)} ${x.currency}`,sub:'Saldo',s,k,rows:[['Tipo','Recarga de saldo'],['Monto',`${n(x.amount,d)} ${x.currency}`]]})});
   (fw.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),d=dcur(x.currency);L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,d)} ${x.currency}`,sub:'Saldo',s,k,rows:[['Tipo','Retiro de saldo'],['Monto solicitado',`${n(x.amount,d)} ${x.currency}`]]})});
   L.sort((a,b)=>new Date(b.at)-new Date(a.at));
