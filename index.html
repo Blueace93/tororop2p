@@ -287,7 +287,7 @@ html.lite .gd>*,html.lite .gd-hero i,html.lite .gd-hero .gd-ic{animation:none!im
 .atabs{display:flex!important;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;margin:4px 0 14px;scrollbar-width:none}.atabs::-webkit-scrollbar{display:none}.atabs .chip{flex:none;white-space:nowrap}
 main.adm>*{animation:none!important}
 main.adm .card:not(.hl){content-visibility:auto;contain-intrinsic-size:auto 120px}
-main[data-atab="pend"]>[data-tab]:not([data-tab="pend"]):not([data-tab="all"]),main[data-atab="usr"]>[data-tab]:not([data-tab="usr"]):not([data-tab="all"]),main[data-atab="mny"]>[data-tab]:not([data-tab="mny"]):not([data-tab="all"]),main[data-atab="cfg"]>[data-tab]:not([data-tab="cfg"]):not([data-tab="all"]){display:none!important}
+main[data-atab="pend"]>[data-tab]:not([data-tab="pend"]):not([data-tab="all"]),main[data-atab="usr"]>[data-tab]:not([data-tab="usr"]):not([data-tab="all"]),main[data-atab="mny"]>[data-tab]:not([data-tab="mny"]):not([data-tab="all"]),main[data-atab="cfg"]>[data-tab]:not([data-tab="cfg"]):not([data-tab="all"]),main[data-atab="sta"]>[data-tab]:not([data-tab="sta"]):not([data-tab="all"]){display:none!important}
 /* Pulido visual del inicio: solo estilos estáticos (sin desenfoques ni animaciones nuevas, para no gastar rendimiento) */
 .hi{font-size:20px;font-weight:500;margin:4px 2px 14px;letter-spacing:-.2px}
 .hi b{font-weight:800;color:#c9c3ff}
@@ -423,10 +423,10 @@ const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="b
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 ${walletCard()}
 <div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios activos en la plataforma</span></span></div>
-<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div>`;
+<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b gh w" id="tLegal" style="margin:-4px 0 14px">📄 Términos y políticas</button>`;
 const setActU=()=>{const e=$('auC');if(!e||S.actU==null)return;e.style.display='flex';$('auN').textContent=n(S.actU,0)};
 const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}};
-const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
+const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -583,9 +583,11 @@ function renderAuth(mode='login'){
       <label>Contraseña</label><div class="fld">${_ic('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')}<input id="pw" type="password" autocomplete="${reg?'new-password':'current-password'}" placeholder="••••••••"><button type="button" class="eye" id="eye" aria-label="Mostrar u ocultar contraseña">${_eye}</button></div>
       <button class="b w" id="go" style="margin-top:6px;padding:14px;font-size:15px">${reg?'Crear mi cuenta':'Entrar'}</button>
       ${reg?'':'<p class="mut" style="text-align:center;margin:14px 0 0"><a href="#" id="fg">¿Olvidaste tu contraseña?</a></p>'}
+      <p class="mut" style="text-align:center;margin:12px 0 0;font-size:12.5px">${reg?'Al crear tu cuenta aceptas los <a href="#" data-lgl="terms">Términos y condiciones</a>, la <a href="#" data-lgl="privacy">Política de privacidad</a> y el <a href="#" data-lgl="disclaimer">Descargo de responsabilidad</a>.':'Consulta los <a href="#" data-lgl="terms">Términos y condiciones</a> y la <a href="#" data-lgl="privacy">Política de privacidad</a>.'}</p>
     </div>
     <div class="trust"><span>🔒 Fondos en custodia</span><span>✅ Revisión del administrador</span><span>⚡ Rápido y simple</span></div></div></div>`;
   $('tl').onclick=()=>{if(reg)renderAuth('login')};$('tr').onclick=()=>{if(!reg)renderAuth('register')};
+  document.querySelectorAll('[data-lgl]').forEach(a=>a.onclick=e=>{e.preventDefault();legalModal(a.dataset.lgl)});
   $('eye').onclick=()=>{const p=$('pw');p.type=p.type==='password'?'text':'password';p.focus()};
   if($('fg'))$('fg').onclick=e=>{e.preventDefault();const em=$('em').value.trim();if(!em)return toast('Escribe tu correo primero','err');
     sb.auth.resetPasswordForEmail(em,{redirectTo:location.href.split('#')[0]}).then(({error})=>error?toast(friendly(error),'err'):toast('Te enviamos un enlace al correo','good'))};
@@ -632,7 +634,7 @@ function go(v,orderId){
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,admin:viewAdmin}[v]||viewMarket)();
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,admin:viewAdmin}[v]||viewMarket)();
   {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
@@ -1018,8 +1020,9 @@ async function viewWallet(){
       if(m){m.remove();await pinGate();ready=true}
     }catch(e){toast(friendly(e),'err')}finally{bt.dataset.ask=''}
     if(!ready)return;
-    act(bt,async()=>{await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:net});
-      S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW()},'Retiro solicitado')};
+    act(bt,async()=>{const wid=await rpc('request_withdrawal',{p_amount:a,p_address:ad,p_network:net});
+      S.wallet.available=Math.max(0,Number(S.wallet.available)-a);refreshW();
+      try{sb.functions.invoke('pay-withdrawal',{body:{id:wid}}).then(()=>{},()=>{})}catch(e){}},'Retiro solicitado')};
   (async()=>{try{const[,fl]=await Promise.all([loadMe(),sb.from('site_flags').select('key,blocked')]);if(my!==NAV)return;
     const B={};(fl.data||[]).forEach(x=>B[x.key]=x.blocked);S._bf=B;
     const w=document.querySelector('main .wal');if(w)w.outerHTML=walletCard(true);const bb=$('blkb');if(bb)bb.innerHTML=blk(B);
@@ -1033,65 +1036,86 @@ async function viewWallet(){
   const list=(t,a)=>`<div class="card"><h3>${t}</h3>`+((a||[]).length?a.map(x=>{const[s,k]=ST[x.status]||[x.status,''];return`<div class="row" style="margin-bottom:6px"><span class="mut">${n(x.amount,2)} USDT · ${when(x.created_at)}</span><span class="tag ${k}">${s}</span></div>`}).join(''):'<span class="mut">Sin movimientos.</span>')+'</div>';
   $('hist').innerHTML=list('Mis depósitos',d.data)+list('Mis retiros',w.data)+'<button class="b gh w" id="hfull" style="margin-bottom:12px">🧾 Ver historial completo</button>';$('hfull').onclick=()=>go('hist')}
 
-/* ---------- Depósito automático (Trondealer) ---------- */
+/* ---------- Depósito automático ---------- */
 const PAY_URL='https://tororo-pagos.lazaromichelfn.workers.dev';
-const payNet=g=>Math.round((g*0.996-(g<10?0.30:0))*1e4)/1e4;
-const payGross=N=>{let g=N/0.996;if(g<10)g=(N+0.30)/0.996;return Math.ceil(g*100)/100};
+const payNet=g=>Math.floor((g*0.996-(g<10?0.30:0)-0.10)*100+1e-9)/100;
+const payGross=N=>{let g=(N+0.10)/0.996;if(g<10)g=(N+0.40)/0.996;return Math.ceil(g*100)/100};
 function renderAutoDeposit(box){
-  box.innerHTML=`<h3>Depositar</h3><div class="seg" style="margin-top:0"><button type="button" id="dm">Manual (sin comisión)</button><button type="button" id="da" class="on">⚡ Automático</button></div>
-    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. La pasarela cobra <b>0,4 %</b> (más <b>0,30 USDT</b> si envías menos de 10).</p>
+  box.innerHTML=`<h3>Depositar</h3>${depTabs('auto')}
+    <p class="mut">Tu dirección es personal. Envías USDT por <b>BNB Smart Chain (BEP20)</b> y el saldo se acredita solo, sin pegar TxID. El depósito automático cobra <b>0,4 %</b> más <b>0,10 USDT</b> (y otros <b>0,30 USDT</b> si envías menos de 10). Si prefieres no pagar comisión, usa la opción <b>Gratis</b> (esperar acreditación manual).</p>
     <label>¿Cuánto quieres recibir en tu saldo? (mínimo 5 USDT)</label><input id="dau" type="number" min="5" step="any" inputmode="decimal" placeholder="Ej: 20">
     <div id="dac" class="warnbox" style="display:none"></div>
     <button class="b w" id="dag" style="margin-top:8px">Ver mi dirección de depósito</button><div id="dab"></div>`;
-  $('dm').onclick=()=>renderDepositCard(true);
+  bindDepTabs();
   const calc=()=>{const N=+$('dau').value,c=$('dac');if(!(N>0)){c.style.display='none';return}
     if(N<5){c.style.display='block';c.innerHTML='El mínimo es <b>5 USDT</b>.';return}
-    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión de la pasarela: ${n(g-N,2)} USDT · Si envías otro monto recibirás tu envío menos esa comisión.</span>`};
+    const g=payGross(N);c.style.display='block';c.innerHTML=`Para recibir <b>${n(N,2)} USDT</b> debes enviar <b>${n(g,2)} USDT</b><br><span class="mut">Comisión del depósito automático: ${n(g-N,2)} USDT (incluye el redondeo) · Si envías otro monto recibirás tu envío menos la comisión.</span>`};
   $('dau').oninput=calc;
   $('dag').onclick=ev=>act(ev.target,async()=>{
     const N=+$('dau').value;if(!(N>=5))throw new Error('Indica cuánto quieres recibir (mínimo 5 USDT)');
     const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Vuelve a iniciar sesión');
-    let r,d;try{r=await Promise.race([fetch(PAY_URL+'/assign',{method:'POST',headers:{authorization:'Bearer '+session.access_token,'content-type':'application/json'},body:'{}'}),sleep(20000).then(()=>{throw new Error('t')})]);d=await r.json()}catch(e){throw new Error('No se pudo conectar con el servicio de pagos. Inténtalo de nuevo en un momento.')}
-    if(!r.ok||!d.address)throw new Error(d.error||'No se pudo generar tu dirección');
+    /* Primero pide la dirección por Supabase (td_assign), que se conecta sin VPN; si esa función aún no existe, usa el camino anterior. */
+    const adm=!!S.profile?.is_admin;let d=null,viaDb=true,dbErr='';
+    try{const{data,error}=await sb.rpc('td_assign');
+      if(error){if(error.code==='PGRST202'||/could not find the function/i.test(error.message||''))viaDb=false;else dbErr=error.message||'error'}
+      else d=data}catch(e){dbErr=(e&&e.message)||'error'}
+    if(viaDb){
+      if(!d||!d.address){const net=!dbErr||/failed to fetch|networkerror|load failed/i.test(dbErr);
+        throw new Error(net?'No se pudo conectar con el servicio de pagos. Si no conecta, sal de la app, conecta un VPN y vuelve a intentarlo.':dbErr)}
+    }else{
+    /* Sin reintentos automáticos: pedir dos veces podría crear dos direcciones. Al administrador se le muestra la causa técnica. */
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),20000);let r,why='';
+    try{r=await fetch(PAY_URL+'/assign',{method:'POST',headers:{authorization:'Bearer '+session.access_token,'content-type':'application/json'},body:'{}',signal:ctl.signal});
+      try{d=JSON.parse(await r.text())}catch(e){}}
+    catch(e){why=e&&e.name==='AbortError'?'tiempo agotado (20 s)':'sin respuesta';
+      if(adm&&why==='sin respuesta'){try{await Promise.race([fetch(PAY_URL,{mode:'no-cors',cache:'no-store'}),sleep(6000).then(()=>{throw 0})]);why='el servicio responde pero bloquea a la página (CORS): el worker debe contestar OPTIONS y enviar access-control-allow-origin'}catch(x){why='el servicio no es alcanzable: worker sin publicar, URL incorrecta o dominio workers.dev bloqueado en tu red'}}}
+    finally{clearTimeout(to)}
+    if(!r)throw new Error('No se pudo conectar con el servicio de pagos. Si no conecta, sal de la app, conecta un VPN y vuelve a intentarlo.'+(adm?' ['+why+']':''));
+    if(!r.ok||!d||!d.address)throw new Error((d&&d.error)||('El servicio de pagos respondió con un error'+(adm?' (HTTP '+r.status+(d?'':', respuesta no válida')+')':'. Inténtalo de nuevo en un momento.')));
+    }
     const g=payGross(N);
     $('dab').innerHTML=`<div class="warnbox" style="margin-top:10px">Envía <b>${n(g,2)} USDT</b> por la red <b>BNB Smart Chain (BEP20)</b>. Otra red u otra moneda se pierde y no se puede recuperar.</div>
       <div class="row"><span><span class="mut">Monto a enviar</span><br><b>${n(g,2)} USDT</b></span>${cpBtn(String(g.toFixed(2)))}</div>
       <div class="row"><span><span class="mut">Tu dirección (BEP20)</span><br><code>${esc(d.address)}</code></span>${cpBtn(d.address)}</div>
-      <p class="mut">Recibirás <b>${n(payNet(g),2)} USDT</b> en tu saldo cuando se confirme la transacción (unos minutos). Esta pantalla se actualiza sola.</p>`;
+      <p class="mut">Recibirás <b>${n(N,2)} USDT</b> en tu saldo cuando se confirme la transacción (unos minutos). Esta pantalla se actualiza sola.</p>`;
     bindCopy($('dab'));
     const before=S.wallet?.available||0;let tries=0;clearInterval(S._payT);
     S._payT=setInterval(async()=>{if(!$('dab')||++tries>120)return clearInterval(S._payT);if(document.hidden)return;await loadBal();if((S.wallet?.available||0)>before+1e-9){clearInterval(S._payT);toast('¡Depósito acreditado!','good');viewWallet()}},10000)})}
-async function renderDepositCard(manual){
+const depTabs=m=>`<div class="seg" style="margin-top:0"><button type="button" id="dtf" class="${m==='free'?'on':''}">🆓 Gratis<br><small>(esperar acreditación manual)</small></button><button type="button" id="dta" class="${m==='auto'?'on':''}">⚡ Depósito automático</button></div>`;
+const bindDepTabs=()=>{const f=$('dtf'),a=$('dta');if(f)f.onclick=()=>{if(S.depMode==='free')return;S.depMode='free';renderDepositCard()};if(a)a.onclick=()=>{if(S.depMode==='auto')return;S.depMode='auto';renderDepositCard()}};
+async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
+  if(!S.depMode)S.depMode='free';
+  if(S.depMode==='auto')return renderAutoDeposit(box);
   let it=null;try{it=await rpc('get_my_intent')}catch(e){}
-  if(!$('depcard'))return;
-  if(!it&&!manual)return renderAutoDeposit(box);
+  if(!$('depcard')||S.depMode!=='free')return;
   if(!it){
-    box.innerHTML=`<h3>Depositar</h3><div class="seg" style="margin-top:0"><button type="button" id="dm" class="on">Manual (sin comisión)</button><button type="button" id="da">⚡ Automático</button></div><label>Red y moneda</label>
+    box.innerHTML=`<h3>Depositar</h3>${depTabs('free')}
+      <p class="mut">Sin comisión. Te damos un monto exacto con decimales para reconocer tu pago y luego pegas el ID de la transacción (TxID).</p>
+      <label>Red y moneda</label>
       <select id="dnet"><option value="BEP20|USDT">BNB Smart Chain (BEP20) · USDT</option><option value="ARBITRUM|USDT">Arbitrum One · USDT</option><option value="ARBITRUM|USDC">Arbitrum One · USDC</option></select>
       <label>¿Cuánto quieres depositar? (entero, mínimo 5)</label><input id="dbase" type="number" min="5" step="1" inputmode="numeric">
-      <button class="b w" id="dnew">Generar instrucciones de depósito</button>
-      <p class="mut">Te daremos un monto exacto con decimales para identificar tu pago automáticamente.</p>`;
-    $('da').onclick=()=>renderAutoDeposit(box);
+      <button class="b w" id="dnew">Generar instrucciones de depósito</button>`;
+    bindDepTabs();
     $('dnew').onclick=ev=>act(ev.target,async()=>{
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
     return}
-  const netName=it.network==='BEP20'?'BNB Smart Chain (BEP20)':'Arbitrum One',amt=Number(it.amount).toFixed(4);
-  box.innerHTML=`<h3>Depósito en curso</h3><div class="seg" style="margin-top:0"><button type="button" id="dm" class="on">Manual (sin comisión)</button><button type="button" id="da">⚡ Automático</button></div>
-    <div class="warnbox">Envía <b>EXACTAMENTE ${amt} ${esc(it.symbol)}</b> por la red <b>${esc(netName)}</b>. Otro monto, red o moneda no se reconocerá y podrías perder los fondos.</div>
+  const netName=it.network==='BEP20'?'BNB Smart Chain (BEP20)':'Arbitrum One',amt=(Math.round(Number(it.amount)*100)/100===Number(it.amount))?Number(it.amount).toFixed(2):Number(it.amount).toFixed(4);
+  box.innerHTML=`<h3>Depósito en curso</h3>${depTabs('free')}
+    <div class="warnbox">Debe <b>LLEGAR exactamente ${amt} ${esc(it.symbol)}</b> por la red <b>${esc(netName)}</b>. Si tu wallet o exchange cobra comisión de envío, <b>la pagas tú</b>: súmala para que lleguen justo ${amt}. Otro monto, red o moneda no se reconocerá y podrías perder los fondos.</div>
     <div class="row"><span class="mut">Monto exacto</span>${cpBtn(amt)}</div>
     <div class="row"><span><span class="mut">Dirección</span><br><code>${esc(it.address)}</code></span>${cpBtn(it.address)}</div>
-    <p class="mut">Válido hasta ${when(it.expires_at)}. Si envías desde un exchange, comprueba que el monto que LLEGA sea exacto: algunos descuentan la comisión.</p>
+    <p class="mut">Válido hasta ${when(it.expires_at)}. Si envías desde un exchange, agrega su comisión de retiro al monto que envías, porque lo que LLEGA debe ser exacto.</p>
     <label>Cuando lo envíes, pega el ID de la transacción (TxID)</label><input id="dtx" placeholder="0x...">
     <button class="b ok w" id="dver">Verificar y acreditar</button>
     <button class="b gh sm" id="dcan" style="margin-top:8px">Cancelar solicitud</button>`;
-  bindCopy(box);
-  $('da').onclick=()=>renderAutoDeposit(box);
+  bindDepTabs();bindCopy(box);
   $('dver').onclick=ev=>act(ev.target,async()=>{
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dtx').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
     await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadBal();viewWallet()},'¡Depósito acreditado!');
-  $('dcan').onclick=ev=>act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}
+  $('dcan').onclick=async ev=>{const m=await ask('Cancelar solicitud','<p>Si <b>ya enviaste</b> los USDT, no canceles: pega el TxID y pulsa «Verificar y acreditar». Cancela solo si todavía no enviaste nada.</p>','Cancelar solicitud','bad');if(!m)return;m.remove();
+    act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}}
 
 async function viewProfile(){
   const P=S.profile,st=P.kyc_status||'none';
@@ -1141,7 +1165,7 @@ const TST={pending:['Esperando envío','warn'],review:['En revisión del admin',
 const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
 function viewMore(){S.bkTo=null;
-  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -1180,7 +1204,7 @@ async function viewHist(){
     L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} ${A}`,sub:`${n(x.total,qd(x.quote))} ${x.quote}`,s,k,rows:[['Tipo',`${buy?'Compra':'Venta'} · ${A}`],['Cantidad',`${n(x.amount,4)} ${A}`],['Precio por unidad',`${n(x.price,x.price<1?4:2)} ${x.quote}`],['Total',`${n(x.total,qd(x.quote))} ${x.quote}`],...(x.fee>0?[['Comisión',`${n(x.fee,qd(x.fee_cur))} ${x.fee_cur||''}`]]:[])]})});
   (dp.data||[]).forEach(x=>{const[s,k]=st(PST,x.status);L.push({g:'dep',id:x.id,at:x.created_at,t:`Depósito de ${n(x.amount,2)} USDT`,sub:'USDT',s,k,rows:[['Tipo','Depósito USDT'],['Monto',`${n(x.amount,4)} USDT`],...(x.txid?[['TxID',x.txid]]:[])]})});
   (wd.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),net=x.net_amount!=null?Number(x.net_amount):null;
-    L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,2)} USDT`,sub:x.network||'USDT',s,k,rows:[['Tipo','Retiro USDT'],['Monto solicitado',`${n(x.amount,4)} USDT`],...(net!=null?[['Recibes',`${n(net,4)} USDT`]]:[]),...(x.network?[['Red',x.network]]:[]),...(x.address?[['Dirección',x.address]]:[])]})});
+    L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,2)} USDT`,sub:x.network||'USDT',s,k,rows:[['Tipo','Retiro USDT'],['Monto solicitado',`${n(x.amount,4)} USDT`],...(net!=null?[['Recibes',`${n(net,4)} USDT`]]:[]),...(x.network?[['Red',x.network]]:[]),...(x.address?[['Dirección',x.address]]:[]),...(x.tx_hash?[['TxID',x.tx_hash]]:[])]})});
   (ft.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),d=dcur(x.currency);L.push({g:'top',id:x.id,at:x.created_at,t:`Recarga de ${n(x.amount,d)} ${x.currency}`,sub:'Saldo',s,k,rows:[['Tipo','Recarga de saldo'],['Monto',`${n(x.amount,d)} ${x.currency}`]]})});
   (fw.data||[]).forEach(x=>{const[s,k]=st(PST,x.status),d=dcur(x.currency);L.push({g:'wd',id:x.id,at:x.created_at,t:`Retiro de ${n(x.amount,d)} ${x.currency}`,sub:'Saldo',s,k,rows:[['Tipo','Retiro de saldo'],['Monto solicitado',`${n(x.amount,d)} ${x.currency}`]]})});
   L.sort((a,b)=>new Date(b.at)-new Date(a.at));
@@ -1292,7 +1316,7 @@ const FAQ=()=>[
  ['¿Y si el vendedor no confirma mi pago?','Si ya pagaste y el vendedor marca “No he recibido” o no responde en 15 minutos, toca “Solicitar mediación”: sube una captura de tus últimas operaciones y el número de referencia del pago. El administrador lo revisa y decide.'],
  ['¿Qué pasa si no pago a tiempo?','Tienes 30 minutos para pagar y subir la captura. Si no, la operación se cancela sola y la oferta vuelve al mercado.'],
  ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
- ['¿Cómo deposito USDT?','En Billetera, sección “Depositar USDT”, sigue las indicaciones. Si el depósito automático falla, usa el depósito manual y avisa con el TxID.'],
+ ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual) o «Depósito automático» (sin TxID, con una comisión de 0,4 % + 0,10 USDT). Si algo falla, usa el depósito manual y avisa con el TxID.'],
  ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
  ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+S.fees.withdraw+'%.'],
  ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
@@ -1341,6 +1365,61 @@ function showTuto(i){
   m.querySelector('#t1').onclick=()=>{if(last)fin();else{m.remove();showTuto(i+1)}}}
 function maybeTuto(){if(S.user&&!S.profile?.is_admin&&!S.profile?.is_staff&&!lsGet('tuto_'+S.user.id))setTimeout(()=>showTuto(0),900)}
 
+
+
+/* ---------- Términos y políticas ---------- */
+const LEGAL_NAME=APP_NAME;
+const LEGAL=()=>{const tf=S.fees?.trade??1,wf=S.fees?.withdraw??3;return[
+ {id:'terms',ic:'📄',t:'Términos y condiciones',
+  pre:`Bienvenido a ${LEGAL_NAME}. Al usar nuestra plataforma para comprar, vender o depositar aceptas estas condiciones.`,
+  body:[
+   ['1. Aceptación',`Al crear una cuenta o usar ${LEGAL_NAME} aceptas estos términos. Si no estás de acuerdo, no uses la plataforma.`],
+   ['2. Qué es la plataforma',`${LEGAL_NAME} es un espacio donde los usuarios compran y venden USDT entre sí. Durante cada operación retenemos los fondos en custodia hasta que ambas partes cumplan. No somos un banco ni una casa de cambio.`],
+   ['3. Cuenta y verificación','Debes ser mayor de edad y tener una sola cuenta. Puede pedirse verificación de identidad (KYC) para comprar, vender o retirar. Los datos que des deben ser reales.'],
+   ['4. Depósitos','Puedes depositar de dos formas. «Gratis»: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual. «Depósito automático»: el saldo se acredita solo, con comisión. Solo se aceptan las redes y monedas indicadas en pantalla; un envío por otra red, otra moneda o con un monto distinto al pedido puede perderse y no se puede recuperar. Si tu wallet o exchange cobra comisión de envío, la pagas tú.'],
+   ['5. Retiros',`Los retiros pueden demorar desde minutos hasta 24 horas, según el tráfico de la red. Se cobra una comisión del ${wf}%. Verifica la dirección: los envíos a una dirección o red equivocada no se recuperan.`],
+   ['6. Comisiones',`Cada operación en el Mercado paga ${tf}% (la paga el vendedor). El depósito automático cobra 0,4 % más 0,10 USDT (y 0,30 USDT si envías menos de 10). Las comisiones vigentes se muestran siempre antes de confirmar.`],
+   ['7. Operaciones y disputas','Sigue las instrucciones de cada operación y sube comprobantes reales. Si hay desacuerdo, puedes pedir mediación: el administrador revisa las pruebas de ambas partes y decide liberar o devolver los fondos. Su decisión es final dentro de la plataforma.'],
+   ['8. Conductas prohibidas','Están prohibidos: el fraude, las capturas falsas o alteradas, usar cuentas o medios de pago de terceros sin autorización, tener varias cuentas, el lavado de dinero y cualquier uso ilegal. Podemos suspender cuentas y retener fondos mientras se investiga.'],
+   ['9. Seguridad de tu cuenta','Cuida tu contraseña, tu PIN y tus accesos. No los compartas con nadie. Lo que se haga desde tu cuenta se considera hecho por ti.'],
+   ['10. Cambios','Podemos actualizar estos términos. Si los cambios son importantes, lo avisaremos en la app. Seguir usando la plataforma significa aceptarlos.']]},
+ {id:'privacy',ic:'🔒',t:'Política de privacidad',
+  pre:`En ${LEGAL_NAME} valoramos tu confianza y cuidamos tus datos. Aquí explicamos qué guardamos y para qué.`,
+  body:[
+   ['1. Qué datos guardamos','Tu usuario y correo, los datos de verificación de identidad que subas, tus operaciones, depósitos y retiros, las direcciones de wallet que uses y los comprobantes o capturas que adjuntes.'],
+   ['2. Para qué los usamos','Para operar tu cuenta, verificar tu identidad, procesar operaciones, resolver disputas, prevenir fraudes y cumplir la ley cuando corresponda.'],
+   ['3. Con quién los compartimos','No vendemos tus datos. En una operación, la otra parte ve solo lo necesario (tu usuario y los datos de pago que indiques). Podemos compartir información con proveedores de infraestructura y pagos solo en lo necesario para operar, o con autoridades si la ley lo exige.'],
+   ['4. Dónde y cuánto tiempo','Los datos se guardan en servicios de infraestructura en la nube. Los conservamos mientras tu cuenta esté activa y el tiempo necesario para resolver disputas o cumplir obligaciones.'],
+   ['5. Tus derechos','Puedes pedir que corrijamos o eliminemos tus datos, salvo los que debamos conservar por seguridad, disputas abiertas u obligaciones legales. Escríbenos por soporte.'],
+   ['6. Seguridad','Aplicamos medidas razonables para protegerlos, pero ningún sistema es 100 % seguro. Protege tu cuenta con un PIN y dos pasos.']]},
+ {id:'disclaimer',ic:'⚠️',t:'Descargo de responsabilidad',
+  pre:'La transparencia es el pilar de nuestra relación con los clientes. Para operar con tranquilidad, ten presente lo siguiente.',
+  body:[
+   ['1. Eres responsable de tus decisiones',`${LEGAL_NAME} no da asesoría financiera, legal ni fiscal. Cada usuario decide por su cuenta si compra, vende o deposita.`],
+   ['2. Riesgos de las criptomonedas','Las transacciones en blockchain son irreversibles. Un envío por una red equivocada, a una dirección errónea o por un monto incorrecto puede perderse sin posibilidad de recuperarlo. Verifica siempre los datos antes de enviar.'],
+   ['3. Operaciones entre usuarios','Los usuarios operan entre sí. Nos esforzamos por proteger cada operación con custodia y mediación, pero no garantizamos la conducta de terceros ni el resultado de cada operación.'],
+   ['4. Servicios de terceros','Dependemos de redes blockchain, proveedores de pagos e infraestructura en la nube. Retrasos, caídas o cambios en ellos pueden afectar depósitos, retiros o acreditaciones.'],
+   ['5. Disponibilidad','El servicio puede interrumpirse por mantenimiento, fallas o causas fuera de nuestro control. No garantizamos que esté disponible sin interrupciones.'],
+   ['6. Límite de responsabilidad','En la medida que permita la ley, no respondemos por pérdidas causadas por errores del usuario, fallas de terceros, redes blockchain o causas fuera de nuestro control.']]}]};
+const legalListHtml=()=>`<p class="mut">Las condiciones bajo las que funciona ${LEGAL_NAME}. Te recomendamos leerlas antes de operar.</p>`+
+  LEGAL().map(x=>`<div class="card" style="cursor:pointer" data-lg="${x.id}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px;align-items:flex-start"><span style="font-size:26px">${x.ic}</span><div><b>${esc(x.t)}</b><div class="mut" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(x.pre)}</div></div></div></div>`).join('');
+const legalDocHtml=d=>`<p class="mut">${esc(d.pre)}</p>`+d.body.map(([h,t])=>`<div class="card"><b>${esc(h)}</b><p style="margin:6px 0 0;line-height:1.55">${esc(t)}</p></div>`).join('')+`<p class="mut" style="font-size:12px">Última actualización: noviembre de 2026.</p>`;
+function viewLegal(id){
+  const d=LEGAL().find(x=>x.id===id);
+  if(!d){
+    main().innerHTML=hd('Términos y políticas')+legalListHtml();
+    bk();main().querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{viewLegal(c.dataset.lg);window.scrollTo({top:0,behavior:'instant'})});return}
+  main().innerHTML=hd(d.t)+legalDocHtml(d);
+  const b=$('back');if(b)b.onclick=e=>{e.preventDefault();viewLegal();window.scrollTo({top:0,behavior:'instant'})}}
+/* Misma pantalla en ventana, para verla sin haber iniciado sesión */
+function legalModal(id){
+  const m=modal('');const box=m.querySelector('.md');box.style.maxHeight='85vh';box.style.overflowY='auto';
+  const draw=did=>{const d=LEGAL().find(x=>x.id===did);
+    box.innerHTML=(d?`<p><a href="#" id="lgb">← Volver</a></p><h3>${esc(d.t)}</h3>${legalDocHtml(d)}`:`<h3>Términos y políticas</h3>${legalListHtml()}`)+`<button class="b gh w" id="lgx" style="margin-top:10px">Cerrar</button>`;
+    box.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{draw(c.dataset.lg);box.scrollTop=0});
+    const bb=box.querySelector('#lgb');if(bb)bb.onclick=e=>{e.preventDefault();draw();box.scrollTop=0};
+    box.querySelector('#lgx').onclick=()=>m.remove()};
+  draw(id)}
 
 /* ---------- Información y Anuncios (usuarios) ---------- */
 async function viewInfo(){
@@ -1676,7 +1755,7 @@ async function viewAdmin(){
   {const ids=[...new Set([...TM.flatMap(t=>[t.buyer_id,t.seller_id]),...(fl.data||[]).slice(0,30).map(fuid)].filter(Boolean))];
    if(ids.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',ids);(pp||[]).forEach(p=>{tn[p.id]=p.username;un[p.id]=p.username})}}
   const movilHtml=`<h3 id="s-movil">Saldo móvil por revisar</h3>`+(TM.length?TM.map(t=>`<div class="card ${t.status==='review'?'hl':''}"><div class="row"><b>${n(t.amount,2)} saldo móvil · ${n(t.total,qd(t.quote))} ${esc(t.quote)}</b><span class="tag warn">${t.status==='review'?'Mediación pedida':'Esperando fotos'}</span></div><div class="mut">Envía: @${esc(tn[t.seller_id])} → Recibe: @${esc(tn[t.buyer_id])} · Número: <code>${esc(t.phone)}</code></div><div class="mut">Retenido: ${n(t.escrow,qd(t.quote))} ${esc(t.quote)} · Comisión: ${n(t.fee,qd(t.fee_cur))} ${esc(t.fee_cur)} (se descuenta al vendedor)</div><div class="grid2" style="margin-top:8px"><button class="b gh sm" data-tp="${t.id}|s">${t.sender_proof?'Ver foto del envío':'Sin foto del envío'}</button><button class="b gh sm" data-tp="${t.id}|b">${t.receiver_proof?'Ver foto de recepción':'Sin foto de recepción'}</button></div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-tl="${t.id}">Aprobar y liberar</button><button class="b bad sm" data-tf="${t.id}">Rechazar y devolver</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
-  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
+  const KL={cambio_usd:'Cambio USD ⇄ CUP',retiro_usdt:'Retiro de USDT',retiro_cup:'Retiro de saldo CUP',retiro_usd:'Retiro de Saldo Clásica',compra_usdt:'Compra de USDT',deposito_auto:'Depósito automático',mercado_usdt:'Mercado · USDT',mercado_usd:'Mercado · USD Clásica',mercado_movil:'Mercado · Saldo móvil'};
   const FL=fl.data||[],ftot={};FL.forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)});
   const feeOk=!ft.error&&Array.isArray(ft.data);
   if(!feeOk){const{data:fa}=await sb.from('fee_ledger').select('amount,currency').limit(1000);Object.keys(ftot).forEach(k=>delete ftot[k]);(fa||[]).forEach(x=>{ftot[x.currency]=(ftot[x.currency]||0)+Number(x.amount)});(rr.data||[]).forEach(x=>{if(x.currency&&x.reward>0)ftot[x.currency]=(ftot[x.currency]||0)-Number(x.reward)})}
@@ -1691,7 +1770,7 @@ async function viewAdmin(){
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
   const tiles=`<div class="tiles" data-tab="pend">${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
   const npend=TM.length+orders.length+(d.data||[]).length+(w.data||[]).length+(ct.data||[]).length+(cw.data||[]).length,AT=S.atab||'pend';
-  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','🪪 Usuarios',ks.count||0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
+  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','🪪 Usuarios',ks.count||0],['sta','📊 Estadísticas',0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
@@ -1730,11 +1809,12 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
+    sta:()=>adminStats(mm,my),
     usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt();adminDuty(my);adminAuditShell()},
     cfg:async()=>{adminBlocks();adminMaint();adminPayout();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
@@ -1743,6 +1823,53 @@ async function viewAdmin(){
   mm.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openTab(TABOF[b.dataset.go]||'pend',b.dataset.go));
   openTab(AT)}
 
+
+/* ---------- Estadísticas del administrador ---------- */
+async function adminStats(mm,my){
+  mm.insertAdjacentHTML('beforeend','<h3 id="s-stats">Estadísticas</h3><div id="statbox">'+skel(2)+'</div>');
+  const fdc=c=>c==='CUP'?0:c==='USD'?2:4;
+  const t=(l,v,sub,c)=>`<div class="card" style="margin:0"><div class="mut">${l}</div><div class="big"${c?` style="color:var(--${c})"`:''}>${v}</div>${sub?`<div class="mut" style="font-size:12px">${sub}</div>`:''}</div>`;
+  const load=async()=>{
+    const{data,error}=await sb.rpc('admin_stats');
+    if(my!==NAV)return;const b=document.getElementById('statbox');if(!b)return;
+    if(error||!data){b.innerHTML='<div class="card dg">'+(/could not find the function/i.test((error&&error.message)||'')?'Falta crear la función <b>admin_stats</b> en Supabase (pega el SQL de estadísticas).':esc((error&&error.message)||'Sin datos'))+'</div>';return}
+    const k=data.kyc||{},v=data.visitas||{},u=data.nuevos||{},o=data.ops||{},f=data.comisiones||{},ser=data.serie||[],od={};
+    (data.ops_dias||[]).forEach(x=>od[x.day]=x);
+    const errs=Object.keys(data).filter(x=>x.endsWith('_error'));
+    const dd=x=>x.slice(8)+'/'+x.slice(5,7);
+    b.innerHTML=`<h4 style="margin:6px 0">Visitas</h4>
+    <div class="grid2" style="margin-bottom:12px">${t('Hoy',n(v.hoy_unicos,0),'dispositivos distintos · '+n(v.hoy_aperturas,0)+' aperturas')}${t('Últimos 7 días',n(v.sem_unicos,0),'dispositivos distintos')}</div>
+    <h4 style="margin:6px 0">Mejores horas para publicar</h4>
+    <div id="stH" style="margin-bottom:12px">${skel(1)}</div>
+    <h4 style="margin:6px 0">Usuarios</h4>
+    <div class="grid2" style="margin-bottom:12px">${t('Sin verificar',n(k.sin_verificar,0),'no han enviado su KYC',k.sin_verificar?'warn':'')}${t('En revisión',n(k.en_revision,0),'KYC pendiente de aprobar')}${t('Verificados',n(k.verificados,0),'KYC aprobado','ok')}${t('Rechazados',n(k.rechazados,0),'KYC rechazado')}${t('Nuevos hoy',n(u.hoy,0),'')}${t('Nuevos 7 días',n(u.sem,0),'Total: '+n(k.total,0)+' usuarios')}</div>
+    <h4 style="margin:6px 0">Operaciones completadas</h4>
+    <div class="grid2" style="margin-bottom:12px">${t('Hoy',n(o.hoy_n,0),n(o.hoy_usdt,2)+' USDT')}${t('7 días',n(o.sem_n,0),n(o.sem_usdt,2)+' USDT')}</div>
+    <h4 style="margin:6px 0">Comisiones registradas</h4>
+    <div class="grid2" style="margin-bottom:6px">${Object.keys(f).length?Object.entries(f).map(([c,x])=>t(esc(c)+' hoy',n(x.hoy,fdc(c)),'7 días: '+n(x.sem,fdc(c))+' · total: '+n(x.total,fdc(c)))).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>
+    <p class="mut" style="font-size:12px;margin:0 0 12px">Son las comisiones cobradas, sin descontar lo pagado a referidos.</p>
+    <h4 style="margin:6px 0">Últimos 7 días</h4>
+    <div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left">Día</th><th>Visitas</th><th>Nuevos</th><th>Ops</th><th>USDT</th></tr>
+    ${ser.slice().reverse().map(x=>{const q=od[x.day]||{};return`<tr style="text-align:right"><td style="text-align:left">${dd(x.day)}</td><td>${n(x.visitas,0)}</td><td>${n(x.nuevos,0)}</td><td>${n(q.ops,0)}</td><td>${n(q.usdt,2)}</td></tr>`}).join('')}</table></div>
+    ${errs.length?`<p class="mut" style="font-size:12px">Secciones no disponibles: ${esc(errs.map(x=>x.replace('_error','')+' ('+data[x]+')').join(' · '))}</p>`:''}
+    <button class="b gh w" id="stR" style="margin-top:10px">Actualizar</button>`;
+    document.getElementById('stR').onclick=()=>{b.innerHTML=skel(2);load()};
+    loadHours();
+  };
+  const loadHours=async()=>{
+    const h=await sb.rpc('admin_stats_hours');
+    if(my!==NAV)return;const bx=document.getElementById('stH');if(!bx)return;
+    if(h.error||!h.data){bx.innerHTML='<div class="card mut" style="margin:0">'+(/could not find the function/i.test((h.error&&h.error.message)||'')?'Falta pegar en Supabase el SQL de las horas.':esc((h.error&&h.error.message)||'Sin datos'))+'</div>';return}
+    const hs=h.data.horas||[],tot=hs.reduce((a,x)=>a+x.v,0),mx=Math.max(1,...hs.map(x=>x.v));
+    if(!tot){bx.innerHTML='<div class="card mut" style="margin:0">Aún no hay datos por hora. Se irán llenando con las visitas nuevas.</div>';return}
+    const top=hs.slice().sort((a,b)=>b.v-a.v).slice(0,3).filter(x=>x.v>0),hh=x=>String(x).padStart(2,'0')+':00';
+    bx.innerHTML=`<div class="card" style="margin:0"><div class="mut">Horas con más visitas · hora de Cuba · últimos 14 días (${n(h.data.dias,0)} con datos)</div>
+    <div class="big" style="font-size:20px;margin:4px 0">${top.map(x=>hh(x.h)).join(' · ')}</div>
+    <div style="display:flex;align-items:flex-end;gap:2px;height:90px;margin-top:10px">${hs.map(x=>`<div title="${hh(x.h)}: ${x.v} visitas" style="flex:1;height:${Math.max(3,Math.round(x.v/mx*100))}%;background:${top.some(q=>q.h===x.h)?'var(--ok)':'var(--acc)'};opacity:${x.v?1:.25};border-radius:3px 3px 0 0"></div>`).join('')}</div>
+    <div class="mut" style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div></div>`;
+  };
+  load();
+}
 
 /* ---------- Administradores adicionales: panel limitado ---------- */
 async function viewStaff(){
@@ -1979,6 +2106,8 @@ async function staffMed(D,my){
     dec(m.querySelector('#mrl'),'release','Liberar USDT al comprador','Confirmas que el pago del comprador es real. No se puede deshacer.');
     dec(m.querySelector('#mrf'),'refund','Devolver USDT al vendedor','Confirmas que el pago del comprador no es real. La orden se cancela.')}))}
 
+/* Visitas: una llamada por sesión, con un identificador anónimo por dispositivo */
+(()=>{try{if(sessionStorage.getItem('_tv'))return;sessionStorage.setItem('_tv','1');let v=localStorage.getItem('_vid');if(!v){v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,'');localStorage.setItem('_vid',v)}sb.rpc('track_visit',{p_vid:v}).then(()=>{},()=>{})}catch(e){}})();
 boot();
 </script>
 </body>
