@@ -1,74 +1,20 @@
-// Service worker de Tororo: notificaciones push con la app cerrada + abrir la página sin internet
-const CACHE = 'tororo-v2';
-const SHELL = ['./', 'manifest.webmanifest', 'icon-192.png'];
+// Service worker de Tororo: recibe notificaciones push con la app cerrada y las muestra con sonido/vibración
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
-      .then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
-});
-
-// Página: siempre la versión nueva si hay internet. La copia guardada solo se usa sin conexión o si la red tarda más de 8 s.
-async function pageFirst(req) {
-  const cache = await caches.open(CACHE);
-  const net = fetch(req).then(res => { if (res.ok) cache.put('./', res.clone()); return res; });
-  net.catch(() => {});
-  try {
-    return await Promise.race([net, new Promise((_, rej) => setTimeout(() => rej(new Error('lento')), 8000))]);
-  } catch (_) {
-    const hit = await cache.match('./', { ignoreSearch: true });
-    return hit || net;
-  }
-}
-
-// Librería de Supabase (versión fija): primero la copia guardada
-async function libFirst(req) {
-  const cache = await caches.open(CACHE);
-  const hit = await cache.match(req);
-  if (hit) return hit;
-  const res = await fetch(req);
-  if (res.ok || res.type === 'opaque') cache.put(req, res.clone());
-  return res;
-}
-
-// Iconos y manifest: copia guardada y se actualiza en segundo plano
-async function iconsFirst(req) {
-  const cache = await caches.open(CACHE);
-  const hit = await cache.match(req);
-  const net = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; }).catch(() => hit);
-  return hit || (await net) || Response.error();
-}
-
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  const u = new URL(req.url);
-  if (req.mode === 'navigate') return e.respondWith(pageFirst(req));
-  if (u.hostname === 'cdn.jsdelivr.net') return e.respondWith(libFirst(req));
-  if (u.origin === location.origin) return e.respondWith(iconsFirst(req));
-  // Supabase (datos, saldos, fotos) y todo lo demás: nunca se guarda ni se toca
-});
+const IOS = /iPhone|iPad|iPod/i.test(self.navigator.userAgent || '');
 
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
   e.waitUntil((async () => {
     const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    // Si la app está abierta y visible, ella misma muestra el aviso (evita duplicados)
-    if (list.some(c => c.visibilityState === 'visible')) {
-      list.forEach(c => c.postMessage({ type: 'push' }));
-      return;
-    }
+    // Avisa a la app para que revise sus notificaciones al instante
+    list.forEach(c => c.postMessage({ type: 'push' }));
+    const visible = list.some(c => c.visibilityState === 'visible');
+    // Si la app está abierta y visible, ella misma muestra el aviso y suena (evita duplicados).
+    // En Chrome/Android no hace falta mostrar nada; iOS exige mostrar una por cada push o cancela la suscripción.
+    if (visible && !IOS) return;
     await self.registration.showNotification(d.title || 'Tororo', {
       body: d.body || '',
       icon: 'icon-192.png',
@@ -76,9 +22,15 @@ self.addEventListener('push', e => {
       vibrate: [200, 100, 200],
       tag: d.tag || 'tororo',
       renotify: true,
+      silent: visible,
       data: { url: d.url || './' }
     });
-    list.forEach(c => c.postMessage({ type: 'push' }));
+    if (visible) {
+      // iOS con la app abierta: se muestra y se cierra enseguida para cumplir la regla sin molestar
+      await new Promise(r => setTimeout(r, 1500));
+      const n = await self.registration.getNotifications({ tag: d.tag || 'tororo' });
+      n.forEach(x => x.close());
+    }
   })());
 });
 

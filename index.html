@@ -360,6 +360,17 @@ body:has(.auth){padding-bottom:0!important}
 nav button{min-width:0;white-space:nowrap;font-size:11px;padding:9px 1px}
 nav:has(button:nth-child(6)) button{font-size:10px}
 body[data-view="chat"] .wa,body[data-view="chat"] .up{display:none!important}
+
+/* ---- Insignia del chat, aviso de notificaciones y rendimiento ---- */
+@keyframes bdpop{0%{transform:scale(.3)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+nav .bd{animation:bdpop .3s ease-out;line-height:16px;text-align:center;font-style:normal;font-weight:700;pointer-events:none}
+#cbd{background:#ff3b5c}
+nav button:active{transform:scale(.94)}
+nav,.ov,#toast,.fab-bg{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+button,.chip,.tile,.qb,.ib,.pill,[data-o],[data-mv]{transition-duration:.1s!important}
+button.b:before{display:none!important}
+#nbn{position:fixed;left:10px;right:10px;bottom:calc(86px + env(safe-area-inset-bottom));max-width:540px;margin:0 auto;z-index:40;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#1b1d2e;border:1px solid var(--acc);border-radius:16px;padding:10px 12px;font-size:13px;box-shadow:0 14px 40px -12px #000}
+#nbn span{flex:1 1 100%}
 </style>
 </head>
 <body>
@@ -413,8 +424,12 @@ document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest
 document.addEventListener('input',e=>{if(e.target.id!=='aq'&&e.target.id!=='ap'&&e.target.id!=='aq2')return;const m=e.target.closest('.md'),el=m&&m.querySelector('#aunit');if(!el)return;
   const q=+m.querySelector('#aq').value,t=+m.querySelector('#ap').value,c=m.querySelector('#aq2').value;
   el.textContent=q>0&&t>0?`Equivale a ${n(t/q,t/q<1?4:2)} ${c} por unidad`:''});
-const updBell=()=>$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);
+const updTitle=()=>{const t=(S.unread||0)+(S.chatUnread||0);
+  try{if(!window._ttl)window._ttl=document.title.replace(/^\(\d+\)\s*/,'');document.title=(t?'('+t+') ':'')+window._ttl;
+    if(navigator.setAppBadge){t?navigator.setAppBadge(t).catch(()=>{}):navigator.clearAppBadge&&navigator.clearAppBadge().catch(()=>{})}}catch(e){}};
+const updBell=()=>{$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);updTitle()};
 const updAnn=()=>$('tAnn')?.classList.toggle('dot',!!S.annNew);
+const withTO=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),ms||9000))]);
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -493,7 +508,7 @@ async function act(btn,fn,okMsg,q){
   const free=()=>{clearTimeout(wd);clearTimeout(hint);if(btn){btn.dataset.busy='';if(btn.isConnected){btn.disabled=false;if(orig!==null)btn.innerHTML=orig}}};
   if(btn){if(btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;
     if(btn.classList&&btn.classList.contains('b')){orig=btn.innerHTML;btn.textContent='Enviando…'}
-    wd=setTimeout(free,60000);hint=setTimeout(()=>toast('Sigue enviando… con internet lento puede tardar. No repitas la operación.'),8000)}
+    wd=setTimeout(free,45000);hint=setTimeout(()=>toast('Sigue enviando… con internet lento puede tardar. No repitas la operación.'),8000)}
   try{
     if(S.user&&maintOn()&&!isAdm())throw new Error('La plataforma está en mantenimiento. Vuelve más tarde.');
     if(!q&&!navigator.onLine){await Promise.race([new Promise(r=>addEventListener('online',r,{once:true})),sleep(4000)]);
@@ -630,13 +645,14 @@ function render(){
   bindFab();
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('notifs');
   $('av').onclick=e=>{e.preventDefault();go('profile')};
-  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const t=Date.now();if(b.dataset.v===S.view&&t-(S._nt||0)<500)return;S._nt=t;go(b.dataset.v)});
   go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs();startLive()}
 async function refreshBadge(){
   const{count}=await sb.from('orders').select('id',{count:'exact',head:true})
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
   {let b=document.getElementById('ldbar');if(!b){b=document.createElement('div');b.id='ldbar';document.body.appendChild(b)}b.classList.remove('on');void b.offsetWidth;b.classList.add('on')}
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
@@ -774,12 +790,32 @@ function watchLoad(){clearTimeout(S.wd);S.wd=setTimeout(showRetry,12000)}
 
 /* ---------- Sonido de alertas ---------- */
 let AC=null;
-function unlockAudio(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
-['touchstart','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
+/* Desbloquea el audio en cualquier toque (iOS/Android lo exigen) y lo reactiva si el sistema lo suspende */
+function unlockAudio(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+  if(AC.state!=='running'&&AC.resume)AC.resume().catch(()=>{});
+  if(!AC._k){AC._k=1;const b=AC.createBuffer(1,1,22050),sr=AC.createBufferSource();sr.buffer=b;sr.connect(AC.destination);sr.start(0)}}catch(e){}}
+['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true,capture:true}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)unlockAudio()});
+/* Respaldo: si el AudioContext está bloqueado, suena un WAV generado en el momento */
+const _wav={};
+function wavURL(key,seq){if(_wav[key])return _wav[key];
+  const sr=22050,tot=seq.reduce((m,[f,d,l])=>Math.max(m,d+l),0),N=Math.ceil(sr*tot),buf=new ArrayBuffer(44+N*2),v=new DataView(buf);
+  const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+N*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,N*2,true);
+  const pcm=new Float32Array(N);
+  seq.forEach(([f,d,l])=>{const s0=Math.floor(d*sr),n=Math.floor(l*sr);for(let i=0;i<n&&s0+i<N;i++){const t=i/sr;pcm[s0+i]+=Math.sin(2*Math.PI*f*t)*Math.min(1,i/(sr*.015))*Math.exp(-4*t/l)*.6}});
+  for(let i=0;i<N;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,pcm[i]))*32000,true);
+  return _wav[key]=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))}
+function playTone(key,seq,type,gain){
+  try{unlockAudio();
+    if(AC&&AC.state==='running'){const t=AC.currentTime;
+      seq.forEach(([f,d,l])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(AC.destination);
+        g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(gain,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+l);o.start(t+d);o.stop(t+d+l+.05)})}
+    else{const a=new Audio(wavURL(key,seq));a.volume=1;const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{})}}catch(e){}}
+const DING_SEQ=[[880,0,.4],[1175,.17,.4],[1568,.34,.45]],CHAT_SEQ=[[740,0,.25],[988,.13,.28]];
 function ding(){if(lsGet('snd')==='0')return;
-  try{unlockAudio();if(AC&&AC.state==='running'){const t=AC.currentTime;[[880,0],[1175,.17],[1568,.34]].forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(AC.destination);
-    g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(.3,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+.4);o.start(t+d);o.stop(t+d+.45)})}
-    if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}}
+  playTone('ding',DING_SEQ,'sine',.5);
+  try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}}
 
 /* ---------- Notificaciones push (con la app cerrada) ---------- */
 const VAPID_PUBLIC="BO3SR_RLF_CVtEuG8Yte_wnQEK8_kLNcLF3cXvjEy_QG8PDg6-prrkudCOdj5Xs8dwWuCeM4DzZ4GKxWYejD_lc";
@@ -803,11 +839,12 @@ async function sysNotify(title,body){
     if(reg)await reg.showNotification(title,{body,icon:'icon-192.png',vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
 let NPB=false;
 async function pollNotifs(){
-  if(!S.user||NPB||document.hidden||!navigator.onLine)return;
+  if(!S.user||document.hidden||!navigator.onLine)return;
+  if(NPB){S.pollAgain=true;return}
   NPB=true;S.pollN=(S.pollN||0)+1;
   getMaint().then(m=>{if(m){S.maint=m;drawMaint()}});
   try{
-    const{data}=await sb.from('notifications').select('id,title,body').eq('read',false).order('created_at',{ascending:false}).limit(30);
+    const{data}=await withTO(sb.from('notifications').select('id,title,body').eq('read',false).order('created_at',{ascending:false}).limit(30),10000);
     const rows=data||[];S.unread=rows.length;
     const fresh=rows.filter(r=>!S.seen.has(r.id));rows.forEach(r=>S.seen.add(r.id));
     if(!S.np0)fresh.slice(0,3).forEach(r=>sysNotify(r.title,r.body));
@@ -820,17 +857,27 @@ async function pollNotifs(){
       const bd=$('adbd');if(bd){bd.textContent=tot;bd.style.display=tot?'block':'none'}}
     if(S.pollN%4===1)try{const{data:la}=await sb.from('announcements').select('id,title,created_at').order('created_at',{ascending:false}).limit(1);const l=la&&la[0];
       if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
-    S.np0=false;updBell()}catch(e){}finally{NPB=false}}
+    S.np0=false;updBell()}catch(e){}finally{NPB=false;if(S.pollAgain){S.pollAgain=false;setTimeout(pollNotifs,300)}}}
 function startNotifs(){
-  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,30000);
+  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,12000);
+  try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>pollNotifs()).subscribe()}catch(e){}
+  setTimeout(askNotifBanner,2500);
   if('serviceWorker' in navigator&&'Notification' in window&&Notification.permission==='granted')navigator.serviceWorker.register('sw.js').then(()=>pushSubscribe()).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)pollNotifs()});
-async function enableNotifs(){
+function askNotifBanner(){
+  if(!S.user||!('Notification' in window)||Notification.permission!=='default'||$('nbn'))return;
+  const t=+(lsGet('nbn_t')||0);if(Date.now()-t<3*864e5)return;
+  const d=document.createElement('div');d.id='nbn';
+  d.innerHTML='<span>🔔 Activa las notificaciones para enterarte al instante de pagos y mensajes</span><button class="b sm" id="nbY">Activar</button><button class="b gh sm" id="nbN">Ahora no</button>';
+  document.body.appendChild(d);
+  $('nbY').onclick=()=>{lsSet('nbn_t',String(Date.now()));enableNotifs(true)};
+  $('nbN').onclick=()=>{lsSet('nbn_t',String(Date.now()));d.remove()}}
+async function enableNotifs(stay){
   if(!('Notification' in window))return toast('Este navegador no admite notificaciones','err');
   const p=await Notification.requestPermission();
   if(p!=='granted')return toast('No se activaron: permite las notificaciones del sitio en el navegador','err');
   try{await pushSubscribe()}catch(e){}
-  ding();toast('Notificaciones activadas','good');viewNotifs()}
+  ding();toast('Notificaciones activadas','good');const nb=$('nbn');if(nb)nb.remove();if(stay!==true&&S.view==='notifs')viewNotifs()}
 async function viewNotifs(){
   const my=NAV;main().innerHTML='<h2>Notificaciones</h2>'+skel(3);
   const{data,error}=await sb.from('notifications').select('id,title,body,read,created_at').order('created_at',{ascending:false}).limit(40);
@@ -842,7 +889,7 @@ async function viewNotifs(){
    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="sndT" style="width:auto;margin:0" ${lsGet('snd')==='0'?'':'checked'}> Sonido y vibración</label>
    <button class="b gh sm" id="sndP" style="margin-top:8px">🔊 Probar sonido</button></div>
   ${error?'<div class="card mut">Falta ejecutar notificaciones.sql en Supabase.</div>':(data||[]).length?data.map(x=>`<div class="card nt ${x.read?'':'un'}"><b>${esc(x.title)}</b><div class="mut">${esc(x.body||'')}</div><div class="mut" style="font-size:12px">${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">Todavía no tienes notificaciones.</div>'}`;
-  if($('en'))$('en').onclick=enableNotifs;
+  if($('en'))$('en').onclick=()=>enableNotifs();
   $('sndT').onchange=e=>lsSet('snd',e.target.checked?'1':'0');$('sndP').onclick=()=>{unlockAudio();ding();toast('Así sonarán tus alertas')};
   if(!error&&(data||[]).some(x=>!x.read)){await sb.rpc('mark_notifs_read');S.unread=0;updBell()}}
 
@@ -1467,30 +1514,40 @@ let LT=null,LTB=false;
 const chatSnd=()=>lsGet('chat_snd')!=='0';
 function chatDing(){
   if(!chatSnd())return;
-  try{unlockAudio();
-    if(AC&&AC.state==='running'){const t=AC.currentTime;
-      [[740,0],[988,.13]].forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;o.connect(g);g.connect(AC.destination);
-        g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(.25,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+.25);o.start(t+d);o.stop(t+d+.3)})}
-    if(navigator.vibrate)navigator.vibrate(90)}catch(e){}}
-const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=S.chatUnread||0;b.textContent=c>9?'9+':c;b.style.display=c?'block':'none'};
+  playTone('chat',CHAT_SEQ,'triangle',.45);
+  try{if(navigator.vibrate)navigator.vibrate(90)}catch(e){}}
+const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=S.chatUnread||0;b.textContent=c>9?'9+':c;b.style.display=c?'block':'none';updTitle()};
+/* Último mensaje visto, guardado por usuario: así el contador sobrevive a cerrar la app */
+const seenKey=()=>'chat_seen_'+(S.user?S.user.id:'');
+const getSeen=()=>+(lsGet(seenKey())||0);
+const setSeen=v=>{v=Number(v)||0;if(v>getSeen())lsSet(seenKey(),String(v))};
+async function countChatUnread(last,lu){
+  const seen=getSeen(),me=S.user.id;
+  try{const d=await withTO(rpc('chat_recent',{p_limit:80,p_mark:false}),10000);
+    S.chatUnread=Math.min(99,(d||[]).filter(x=>Number(x.id)>seen&&x.user_id!==me).length)}
+  catch(e){S.chatUnread=(lu&&lu!==me&&last>seen)?Math.max(S.chatUnread||0,1):(S.chatUnread||0)}
+  updChatBd()}
 /* Mensajes nuevos cuando el usuario NO está en el chat: suena la alarma y marca la pestaña */
 const tickChat=(last,lu)=>{
-  if(last==null||S.view==='chat')return;
-  if(S.chatMax==null){S.chatMax=last;return}
-  if(last>S.chatMax){const d=last-S.chatMax;S.chatMax=last;
-    if(lu&&lu!==S.user.id){S.chatUnread=Math.min(99,(S.chatUnread||0)+d);updChatBd();chatDing();if(chatSnd())toast('💬 Nuevo mensaje en el chat')}}};
+  if(last==null)return;
+  if(S.view==='chat'){setSeen(last);S.chatMax=last;S.chatCnt=last;if(S.chatUnread){S.chatUnread=0;updChatBd()}return}
+  if(getSeen()===0){setSeen(last)}
+  const first=S.chatMax==null;
+  if(!first&&last>S.chatMax&&lu&&lu!==S.user.id){chatDing();if(chatSnd())toast('💬 Nuevo mensaje en el chat')}
+  S.chatMax=last;
+  if(last!==S.chatCnt||first){S.chatCnt=last;countChatUnread(last,lu)}};
 async function liveTick(){
   if(!S.user||LTB||document.hidden||!navigator.onLine||(maintOn()&&!isAdm()))return;
   LTB=true;
-  try{const r=await sb.rpc('live_ping');if(r.error||!r.data)return;const x=r.data;
+  try{const r=await withTO(sb.rpc('live_ping'),9000);if(r.error||!r.data)return;const x=r.data;
     S.onl=Number(x.online)||0;setActU();tickChat(x.chat_last==null?null:Number(x.chat_last),x.chat_last_user)}
   catch(e){}finally{LTB=false}}
-function startLive(){clearInterval(LT);S.chatMax=null;S.chatUnread=0;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,15000)}
+function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,8000)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
 async function viewChat(){
   const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='';
-  S.chatUnread=0;updChatBd();
+  S.chatUnread=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
   main().innerHTML=`<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Chat general</h2><button class="b gh sm" id="csn"></button></div>
   <div class="warnbox">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
   <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
@@ -1505,6 +1562,7 @@ async function viewChat(){
     if(my!==NAV||!$('cl'))return;
     const L=(d||[]).slice().reverse(),mx=L.length?Math.max(...L.map(x=>Number(x.id))):0;
     /* alarma: mensajes nuevos de otras personas mientras tienes el chat abierto */
+    setSeen(mx);S.chatCnt=Math.max(S.chatCnt||0,mx);
     if(S.chatMax==null)S.chatMax=mx;
     else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
     const key=L.map(x=>x.id+'.'+(x.views||0)).join(',');
