@@ -357,6 +357,9 @@ body:has(.auth){padding-bottom:0!important}
 #ldbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:99;background:linear-gradient(90deg,var(--acc),#4fc3f7);transform:scaleX(0);transform-origin:left;pointer-events:none;opacity:0}
 #ldbar.on{opacity:1;animation:ldb 1.4s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes ldb{0%{transform:scaleX(0)}70%{transform:scaleX(.85)}100%{transform:scaleX(1);opacity:0}}
+nav button{min-width:0;white-space:nowrap;font-size:11px;padding:9px 1px}
+nav:has(button:nth-child(6)) button{font-size:10px}
+body[data-view="chat"] .wa,body[data-view="chat"] .up{display:none!important}
 </style>
 </head>
 <body>
@@ -415,7 +418,7 @@ const updAnn=()=>$('tAnn')?.classList.toggle('dot',!!S.annNew);
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>')};
+const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${S.fees.withdraw}%: ${n(a*S.fees.withdraw/100,d)} ${u} · Recibirás: ${n(a-a*S.fees.withdraw/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-S.fees.withdraw/100);
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
@@ -424,8 +427,9 @@ const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b>
 ${walletCard()}
 <div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios verificados en la plataforma</span></span></div>
 <div id="auU" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:99px;background:rgba(245,185,74,.08);border:1px solid rgba(245,185,74,.3)"><span style="font-size:18px">🕒</span><span><b id="auUN" style="font-size:17px">0</b> <span class="mut">usuarios sin verificar en la plataforma</span></span></div>
-<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b w" id="tChat" style="margin:-4px 0 8px">💬 Chat general</button><button class="b gh w" id="tLegal" style="margin:0 0 14px">📄 Términos y políticas</button>`;
-const setActU=()=>{const e=$('auC');if(e&&S.actU!=null){e.style.display='flex';$('auN').textContent=n(S.actU,0)}const u=$('auU');if(u&&S.unvU!=null){u.style.display='flex';$('auUN').textContent=n(S.unvU,0)}};
+<div id="auO" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:99px;background:rgba(61,220,151,.08);border:1px solid rgba(61,220,151,.3)"><span style="flex:none;width:9px;height:9px;margin:0 4.5px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.22)"></span><span><b id="auON" style="font-size:17px">0</b> <span class="mut">usuarios en línea ahora</span></span></div>
+<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b gh w" id="tLegal" style="margin:-4px 0 14px">📄 Términos y políticas</button>`;
+const setActU=()=>{const e=$('auC');if(e&&S.actU!=null){e.style.display='flex';$('auN').textContent=n(S.actU,0)}const u=$('auU');if(u&&S.unvU!=null){u.style.display='flex';$('auUN').textContent=n(S.unvU,0)}const o=$('auO');if(o&&S.onl!=null){o.style.display='flex';$('auON').textContent=n(S.onl,0)}};
 const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}
   try{S.unvU=Number(await rpc('public_unverified_users'))||0;setActU()}catch(x){}};
 const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');if($('tChat'))$('tChat').onclick=()=>{S.bkTo='market';go('chat')};if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
@@ -541,7 +545,7 @@ async function loadMe(){
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
   S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
-  if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);renderAuth()}
+  if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);clearInterval(LT);renderAuth()}
   if(ev==='PASSWORD_RECOVERY')renderReset()});
 
 /* ---- Logos de moneda y tarjeta de billetera ---- */
@@ -618,6 +622,7 @@ function render(){
     <main id="main"></main>${(S.settings.whatsapp||CFG.whatsapp)?`<a class="wa" aria-label="Soporte por WhatsApp" href="https://wa.me/${esc(S.settings.whatsapp||CFG.whatsapp)}" target="_blank" rel="noopener">💬 Soporte</a>`:''}
     <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><div class="fab-items"><button data-fa="pub"><span>Publicar anuncio</span><i>📣</i></button><button data-fa="dep"><span>Depositar</span><i>⬇️</i></button><button data-fa="wit"><span>Retirar</span><i>⬆️</i></button></div><button class="fab-m" id="fabm" aria-label="Acciones rápidas">+</button></div><button class="up" id="up" aria-label="Subir">↑</button>
     <nav><button data-v="market">${IC.market}Mercado</button>
+    <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
     <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
     <button data-v="profile">${IC.profile}Perfil</button>
@@ -626,7 +631,7 @@ function render(){
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('notifs');
   $('av').onclick=e=>{e.preventDefault();go('profile')};
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
-  go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs()}
+  go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs();startLive()}
 async function refreshBadge(){
   const{count}=await sb.from('orders').select('id',{count:'exact',head:true})
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
@@ -1179,7 +1184,7 @@ const TST={pending:['Esperando envío','warn'],review:['En revisión del admin',
 const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
 function viewMore(){S.bkTo=null;
-  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['chat','💬','Chat general','Habla con otros usuarios'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -1457,21 +1462,55 @@ const chatBad=t=>{const s=String(t);
   if(/whats\s*app|wasap|watsap|telegram|instagram|facebook|messenger|\bwsp\b/i.test(s))return'No se permiten datos de contacto de otras apps';
   if(/\d{8,}/.test(s.replace(/(\d)[\s.()+_,-]+(?=\d)/g,'$1')))return'No se permiten números de teléfono';
   return''};
+/* ---------- Presencia en línea y alarma del chat ---------- */
+let LT=null,LTB=false;
+const chatSnd=()=>lsGet('chat_snd')!=='0';
+function chatDing(){
+  if(!chatSnd())return;
+  try{unlockAudio();
+    if(AC&&AC.state==='running'){const t=AC.currentTime;
+      [[740,0],[988,.13]].forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;o.connect(g);g.connect(AC.destination);
+        g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(.25,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+.25);o.start(t+d);o.stop(t+d+.3)})}
+    if(navigator.vibrate)navigator.vibrate(90)}catch(e){}}
+const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=S.chatUnread||0;b.textContent=c>9?'9+':c;b.style.display=c?'block':'none'};
+/* Mensajes nuevos cuando el usuario NO está en el chat: suena la alarma y marca la pestaña */
+const tickChat=(last,lu)=>{
+  if(last==null||S.view==='chat')return;
+  if(S.chatMax==null){S.chatMax=last;return}
+  if(last>S.chatMax){const d=last-S.chatMax;S.chatMax=last;
+    if(lu&&lu!==S.user.id){S.chatUnread=Math.min(99,(S.chatUnread||0)+d);updChatBd();chatDing();if(chatSnd())toast('💬 Nuevo mensaje en el chat')}}};
+async function liveTick(){
+  if(!S.user||LTB||document.hidden||!navigator.onLine||(maintOn()&&!isAdm()))return;
+  LTB=true;
+  try{const r=await sb.rpc('live_ping');if(r.error||!r.data)return;const x=r.data;
+    S.onl=Number(x.online)||0;setActU();tickChat(x.chat_last==null?null:Number(x.chat_last),x.chat_last_user)}
+  catch(e){}finally{LTB=false}}
+function startLive(){clearInterval(LT);S.chatMax=null;S.chatUnread=0;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,15000)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
+
 async function viewChat(){
   const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='';
-  main().innerHTML=hd('Chat general')+`<div class="warnbox">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
+  S.chatUnread=0;updChatBd();
+  main().innerHTML=`<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Chat general</h2><button class="b gh sm" id="csn"></button></div>
+  <div class="warnbox">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
   <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
   <div class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="cm" maxlength="300" placeholder="Escribe un mensaje…" style="margin:0" autocomplete="off"><button class="b" id="cs">Enviar</button></div></div>`;
-  bk();
+  const setSnd=()=>{$('csn').textContent=chatSnd()?'🔔 Alarma: encendida':'🔕 Alarma: apagada'};setSnd();
+  $('csn').onclick=()=>{lsSet('chat_snd',chatSnd()?'0':'1');setSnd();if(chatSnd()){unlockAudio();chatDing();toast('Alarma del chat encendida','good')}else toast('Alarma del chat apagada')};
+  const getMsgs=async()=>{try{return await rpc('chat_recent',{p_limit:80,p_mark:true})}catch(e){return await rpc('chat_recent',{p_limit:80})}};
   const draw=async force=>{
     let d;
-    try{d=await rpc('chat_recent',{p_limit:80})}
+    try{d=await getMsgs()}
     catch(e){if(force&&my===NAV&&$('cl'))$('cl').innerHTML=`<div class="warnbox bad">El chat todavía no está activado${isAdm()?'. Ejecuta <code>'+NEWSQL+'</code> en Supabase.':'.'}</div>`;return}
     if(my!==NAV||!$('cl'))return;
-    const L=(d||[]).slice().reverse(),key=(L.length?L[L.length-1].id:0)+':'+L.length;
+    const L=(d||[]).slice().reverse(),mx=L.length?Math.max(...L.map(x=>Number(x.id))):0;
+    /* alarma: mensajes nuevos de otras personas mientras tienes el chat abierto */
+    if(S.chatMax==null)S.chatMax=mx;
+    else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
+    const key=L.map(x=>x.id+'.'+(x.views||0)).join(',');
     if(!force&&key===lastKey)return;lastKey=key;
     const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80;
-    cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} @${esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} @${esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     if(atEnd||force)cl.scrollTop=cl.scrollHeight};
   $('cl').onclick=e=>{const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
   const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';await draw(true)},null,true);
