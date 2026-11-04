@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#090a10">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -377,7 +377,6 @@ button.b:before{display:none!important}
 .cmp .b{flex:none;align-self:flex-end}
 body.kb nav,body.kb .wa,body.kb .up,body.kb #nbn,body.kb .fab,body.kb .fab-bg{display:none!important}
 body.kb{padding-bottom:var(--kbh,16px)!important}
-body.kb #cl{max-height:30vh!important;min-height:110px!important}
 /* ---- Chat privado ---- */
 .pcs{display:flex;gap:8px;margin-bottom:12px}.pcs .b{flex:1}
 .bd2{display:inline-block;background:var(--bad);color:#fff;border-radius:99px;font-size:11px;padding:0 6px;min-width:18px;text-align:center;line-height:18px}
@@ -389,6 +388,12 @@ body.kb #cl{max-height:30vh!important;min-height:110px!important}
 .pcrow .pa{display:flex;gap:6px;flex:none;align-items:center}
 .msg a.pu{color:inherit;text-decoration:underline dotted;text-underline-offset:2px}
 body[data-view="pchat"] .wa,body[data-view="pchat"] .up,body[data-view="pcon"] .wa,body[data-view="pcon"] .up{display:none!important}
+/* ---- Chat a pantalla fija: solo se desplaza la lista de mensajes ---- */
+body[data-view="chat"],body[data-view="pcon"],body[data-view="chat"].kb,body[data-view="pcon"].kb{overflow:hidden;padding-bottom:0!important}
+.cwrap{display:flex;flex-direction:column;overflow:hidden;margin-bottom:0;height:60vh}
+.cwrap #cl{flex:1 1 auto;min-height:0;max-height:none!important;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.cwrap .cmp{flex:none}
+body.kb .pc-hide{display:none!important}
 </style>
 </head>
 <body>
@@ -1532,6 +1537,16 @@ const chatBad=t=>{const s=String(t);
   if(/whats\s*app|wasap|watsap|telegram|instagram|facebook|messenger|\bwsp\b/i.test(s))return'No se permiten datos de contacto de otras apps';
   if(/\d{8,}/.test(s.replace(/(\d)[\s.()+_,-]+(?=\d)/g,'$1')))return'No se permiten números de teléfono';
   return''};
+/* Ajusta el chat al alto visible de la pantalla (sin que la página suba y baje) */
+function fitChat(){
+  const w=document.getElementById('cwrap');if(!w)return;
+  const v=window.visualViewport,vh=v?v.height:innerHeight,off=v?v.offsetTop:0,kb=document.body.classList.contains('kb');
+  const nv=document.querySelector('nav'),res=kb||!nv?8:Math.max(8,Math.round(innerHeight-nv.getBoundingClientRect().top+8));
+  const top=w.getBoundingClientRect().top-off;
+  w.style.height=Math.max(180,Math.floor(vh-top-res))+'px';
+  const cl=document.getElementById('cl');if(cl&&kb)cl.scrollTop=cl.scrollHeight}
+addEventListener('resize',()=>fitChat());
+if(window.visualViewport)visualViewport.addEventListener('resize',()=>fitChat());
 /* Caja de escribir del chat: crece hacia abajo y sube sobre el teclado */
 const KB=(()=>{
   const coarse=matchMedia('(pointer:coarse)').matches;
@@ -1541,11 +1556,11 @@ const KB=(()=>{
     const c=t.closest('.cmp'),v=window.visualViewport,vb=v?v.offsetTop+v.height:innerHeight,r=c.getBoundingClientRect();
     if(r.bottom>vb-8)scrollBy(0,Math.ceil(r.bottom-vb+8));
     const cl=$('cl');if(cl)cl.scrollTop=cl.scrollHeight};
-  let T;const later=(ms=120)=>{clearTimeout(T);T=setTimeout(()=>{upd();show()},ms)};
+  let T;const later=(ms=120)=>{clearTimeout(T);T=setTimeout(()=>{upd();show();fitChat()},ms)};
   document.addEventListener('focusin',e=>{if(!e.target.matches||!e.target.matches('.cmp textarea'))return;
     document.body.classList.add('kb');upd();fit(e.target);later(80);later(350)});
   document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;
-    if(!a||!a.matches||!a.matches('.cmp textarea')){document.body.classList.remove('kb');document.body.style.removeProperty('--kbh')}},150));
+    if(!a||!a.matches||!a.matches('.cmp textarea')){document.body.classList.remove('kb');document.body.style.removeProperty('--kbh');fitChat()}},150));
   document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('.cmp textarea')){fit(e.target);later(0)}});
   /* tocar Enviar no cierra el teclado (si no, el botón se mueve y el toque se pierde) */
   document.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.cmp .b'))e.preventDefault()});
@@ -1592,10 +1607,10 @@ async function viewChat(){
   const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='';
   S.chatUnread=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
   main().innerHTML=`${pcTabs('g')}<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Chat general</h2><button class="b gh sm" id="csn"></button></div>
-  <div class="warnbox">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
-  <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
+  <div class="warnbox pc-hide">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
+  <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
   <div class="cmp"><textarea id="cm" rows="1" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
-  bindPcTabs();
+  bindPcTabs();fitChat();setTimeout(fitChat,450);
   const setSnd=()=>{$('csn').textContent=chatSnd()?'🔔 Alarma: encendida':'🔕 Alarma: apagada'};setSnd();
   $('csn').onclick=()=>{lsSet('chat_snd',chatSnd()?'0':'1');setSnd();if(chatSnd()){unlockAudio();chatDing();toast('Alarma del chat encendida','good')}else toast('Alarma del chat apagada')};
   const getMsgs=async()=>{try{return await rpc('chat_recent',{p_limit:80,p_mark:true})}catch(e){return await rpc('chat_recent',{p_limit:80})}};
@@ -1611,9 +1626,9 @@ async function viewChat(){
     else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
     const key=L.map(x=>x.id+'.'+(x.views||0)).join(',');
     if(!force&&key===lastKey)return;lastKey=key;
-    const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80;
+    const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;
     cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} ${x.user_id!==S.user.id?`<a href="#" class="pu" data-pu="${x.user_id}" data-pn="${esc(x.username)}" title="Invitar a chat privado">@${esc(x.username)}</a>`:'@'+esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
-    if(atEnd||force)cl.scrollTop=cl.scrollHeight};
+    if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   $('cl').onclick=e=>{const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
   const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';KB.fit($('cm'));await draw(true)},null,true);
   $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
@@ -1685,9 +1700,9 @@ async function viewPcon(){
   if(!id)return go('pchat');
   const who=S.pcName||'Usuario';
   main().innerHTML=`<div class="row" style="margin-bottom:10px;flex-wrap:nowrap"><a href="#" id="pcb">← Chats</a><b style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
-  <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
+  <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
   <div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
-  $('pcb').onclick=e=>{e.preventDefault();go('pchat')};
+  $('pcb').onclick=e=>{e.preventDefault();go('pchat')};fitChat();setTimeout(fitChat,450);
   const row=x=>`<div class="msg ${x.msender===me?'me':''}"><small>${x.msender===me?'Tú':'@'+esc(who)} · ${when(x.mat)}</small>${esc(x.mbody)}</div>`;
   const draw=async force=>{
     let d;
