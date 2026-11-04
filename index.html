@@ -394,6 +394,21 @@ body[data-view="chat"],body[data-view="pcon"],body[data-view="chat"].kb,body[dat
 .cwrap #cl{flex:1 1 auto;min-height:0;max-height:none!important;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .cwrap .cmp{flex:none}
 body.kb .pc-hide{display:none!important}
+
+/* ---- Mercado: atajos compactos, botones de acción y pestañas de ofertas ---- */
+.tiles.mini{display:flex;gap:8px;overflow-x:auto;margin:0 -2px 12px;padding:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tiles.mini::-webkit-scrollbar{display:none}
+.tiles.mini .tile{flex:0 0 auto;flex-direction:row;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;font-size:13px;white-space:nowrap;min-width:0}
+.tiles.mini .tile .tc{min-width:0!important;height:auto!important;padding:0!important;margin:0!important;border-radius:0!important;background:none!important;font-size:16px!important}
+.mkact{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.mkact .b{padding:13px 6px;font-size:14px;margin:0}
+#mkT{margin:4px 0 12px}
+#mkT button{font-size:13px;padding:11px 4px}
+#mkT button span{opacity:.85;font-weight:600}
+.comm>div{border-radius:18px!important;padding:18px 16px!important;margin:0 0 12px!important}
+.comm b{font-size:30px!important}
+.comm>div>span:nth-child(2){display:flex;flex-direction:column;line-height:1.25}
+.pcs .b{white-space:nowrap;padding-left:6px;padding-right:6px;font-size:13px}.pcs .bd2{position:static!important;display:inline-block;margin-left:3px;transform:none!important}.pcs .b{padding-left:4px;padding-right:4px}
 </style>
 </head>
 <body>
@@ -461,16 +476,17 @@ const wfeeTxt=(a,u,d)=>a>0?`Comisión ${S.fees.withdraw}%: ${n(a*S.fees.withdraw
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-S.fees.withdraw/100);
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
-const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
-${walletCard()}
-<div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios verificados en la plataforma</span></span></div>
+const statsHtml=()=>`<div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios verificados en la plataforma</span></span></div>
 <div id="auU" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:99px;background:rgba(245,185,74,.08);border:1px solid rgba(245,185,74,.3)"><span style="font-size:18px">🕒</span><span><b id="auUN" style="font-size:17px">0</b> <span class="mut">usuarios sin verificar en la plataforma</span></span></div>
 <div id="auO" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:99px;background:rgba(61,220,151,.08);border:1px solid rgba(61,220,151,.3)"><span style="flex:none;width:9px;height:9px;margin:0 4.5px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.22)"></span><span><b id="auON" style="font-size:17px">0</b> <span class="mut">usuarios en línea ahora</span></span></div>
-<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b gh w" id="tLegal" style="margin:-4px 0 14px">📄 Términos y políticas</button>`;
+`;
+const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
+${walletCard()}
+<div class="tiles mini"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button><button class="tile" id="tLegal"><span class="tc" style="font-size:22px">📄</span>Términos</button></div>`;
 const setActU=()=>{const e=$('auC');if(e&&S.actU!=null){e.style.display='flex';$('auN').textContent=n(S.actU,0)}const u=$('auU');if(u&&S.unvU!=null){u.style.display='flex';$('auUN').textContent=n(S.unvU,0)}const o=$('auO');if(o&&S.onl!=null){o.style.display='flex';$('auON').textContent=n(S.onl,0)}};
 const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}
   try{S.unvU=Number(await rpc('public_unverified_users'))||0;setActU()}catch(x){}};
-const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');if($('tChat'))$('tChat').onclick=()=>{S.bkTo='market';go('chat')};if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
+const bindTop=()=>{$('tMore').onclick=()=>go('more');if($('tChat'))$('tChat').onclick=()=>{S.bkTo='market';go('chat')};if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -675,12 +691,12 @@ async function refreshBadge(){
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'?'chat':v)));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'||v==='comm'?'chat':v)));
   {let b=document.getElementById('ldbar');if(!b){b=document.createElement('div');b.id='ldbar';document.body.appendChild(b)}b.classList.remove('on');void b.offsetWidth;b.classList.add('on')}
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'?'chat':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,pchat:viewPchat,pcon:viewPcon,admin:viewAdmin}[v]||viewMarket)();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'||v==='comm'?'chat':v)));
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,pchat:viewPchat,pcon:viewPcon,comm:viewComm,admin:viewAdmin}[v]||viewMarket)();
   {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
@@ -690,9 +706,8 @@ const chipsHtml=(sel,id)=>`<div class="chips" id="${id}">${METHODS.map(m=>`<butt
 async function viewMarket(){
   const my=NAV,F=S.f;
   main().innerHTML=`${topHtml()}
-  <div class="card"><div class="row"><div><b>Vender USDT</b><div class="mut">Disponible: ${n(S.wallet?.available,2)} USDT</div></div>
-    <button class="b sm" id="tg">+ Vender USDT</button></div>
-    <div id="sell" class="hide" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+  <div class="mkact"><button class="b" id="tg">💰 Vender USDT</button><button class="b gh" id="tb">🙋 Quiero comprar</button></div>
+  <div id="sell" class="card hide" style="display:none"><b>Vender USDT</b><div class="mut">Disponible: ${n(S.wallet?.available,2)} USDT</div>
       <label>Cantidad de USDT <button class="b gh sm" id="omax" type="button">Máx</button></label><input id="oa" type="number" min="1" step="any" inputmode="decimal">
       <label>Moneda que quieres recibir</label><select id="oc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
       <label id="opl">Precio por 1 USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
@@ -703,25 +718,25 @@ async function viewMarket(){
       <div id="odcw"><input id="odc" inputmode="numeric" placeholder="Número de tarjeta" autocomplete="off"></div>
       <input id="odp" inputmode="tel" placeholder="Número de teléfono (para confirmar)" autocomplete="off">
       <p class="mut">Al publicar, queda bloqueado el monto <b>más la comisión</b> de la plataforma (la paga el vendedor desde su saldo). Si no te alcanza para el %, publica un poco menos: por ejemplo, 99 en vez de 100.</p>
-      <button class="b w" id="mk">Publicar oferta</button></div></div>
-  <div class="card"><div class="row"><div><b>Comprar USDT</b><div class="mut">Publica cuántos USDT quieres y con qué moneda pagarás</div></div>
-    <button class="b sm" id="tb">🙋 Quiero comprar USDT</button></div>
-    <div id="buy" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+      <button class="b w" id="mk">Publicar oferta</button></div>
+  <div id="buy" class="card" style="display:none"><b>Comprar USDT</b><div class="mut">Publica cuántos USDT quieres y con qué moneda pagarás</div>
       <label>Cantidad de USDT que quieres comprar</label><input id="ba" type="number" min="1" step="any" inputmode="decimal">
       <label>Moneda con la que pagarás</label><select id="bc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
       <p class="mut">Tu solicitud la verán todos los usuarios con tu etiqueta (verificado o sin verificar). Dura 48 horas y puedes cancelarla cuando quieras.</p>
-      <button class="b w" id="bk">Publicar solicitud</button></div></div>
-  <h3>Usuarios solicitando USDT</h3><div id="breqs">${skel(1)}</div>
-  <div class="card"><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
+      <button class="b w" id="bk">Publicar solicitud</button></div>
+  <div class="seg" id="mkT"><button data-mt="s">🟢 Ofertas de venta <span id="cS"></span></button><button data-mt="b">🙋 Quieren comprar <span id="cB"></span></button></div>
+  <div id="pnS"><details class="card" style="padding:12px 14px"${F.q||F.m||F.mine?' open':''}><summary style="cursor:pointer;font-weight:700">🔎 Buscar y filtrar</summary><div style="height:10px"></div><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
     <div class="row"><select id="srt" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
     <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="mine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div>
-    <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></details></div>
-  <h3>Ofertas disponibles</h3><div id="offers">${skel(3)}</div>`;
+    <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></details></details><div id="offers">${skel(3)}</div></div>
+  <div id="pnB" style="display:none"><div id="breqs">${skel(1)}</div></div>`;
   $('srt').value=F.sort;bindTop();
-  $('tg').onclick=()=>{if(gate())return;const s=$('sell');s.style.display=s.style.display==='none'?'block':'none'};
-  $('tb').onclick=()=>{const s=$('buy');s.style.display=s.style.display==='none'?'block':'none'};
+  $('tg').onclick=()=>{if(gate())return;const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
+  $('tb').onclick=()=>{const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
+  const setMt=t=>{S.mt=t;$('pnS').style.display=t==='s'?'':'none';$('pnB').style.display=t==='b'?'':'none';$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t))};
+  $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'s');
   $('bk').onclick=ev=>act(ev.target,async()=>{const a=+$('ba').value,c=$('bc').value;if(!(a>0))throw new Error('Indica cuántos USDT quieres comprar');
-    await rpc('buy_req_create',{p_amount:a,p_currency:c});$('ba').value='';$('buy').style.display='none';await loadBuyReqs(my)},'Solicitud publicada');
+    await rpc('buy_req_create',{p_amount:a,p_currency:c});$('ba').value='';$('buy').style.display='none';setMt('b');await loadBuyReqs(my)},'Solicitud publicada');
   loadBuyReqs(my);
   if(S.openSell){S.openSell=0;if(!gate())$('sell').style.display='block'}
   $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)/(1+FPO()/100)*100)/100;calc()};
@@ -738,7 +753,7 @@ async function viewMarket(){
     if(!ph)throw new Error('Indica tu número de teléfono');
     if(!d)throw new Error('Indica los datos donde recibirás el pago');
     await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c+(c!=='Saldo Móvil'&&bank?BSEP+bank:''),p_details:d});
-    await loadBal();viewMarket()},'Oferta publicada');
+    S.mt='s';await loadBal();viewMarket()},'Oferta publicada');
   const rf=()=>drawOffers();
   $('q').oninput=e=>{F.q=e.target.value;rf()};$('srt').onchange=e=>{F.sort=e.target.value;rf()};
   $('mine').onchange=e=>{F.mine=e.target.checked;rf()};
@@ -746,7 +761,7 @@ async function viewMarket(){
   const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username)').eq('status','open').order('created_at',{ascending:false}).limit(300);
   if(my!==NAV)return;
   if(error){$('offers').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
-  S.offers=data||[];drawOffers();loadStats(S.offers.map(o=>o.seller_id)).then(c=>{if(c&&my===NAV)drawOffers()})}
+  S.offers=data||[];{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();loadStats(S.offers.map(o=>o.seller_id)).then(c=>{if(c&&my===NAV)drawOffers()})}
 function drawOffers(){
   const box=$('offers');if(!box)return;const F=S.f,q=F.q.toLowerCase();
   let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
@@ -1572,7 +1587,7 @@ async function loadBuyReqs(my){
   try{d=await rpc('buy_req_list')}
   catch(e){if(my===NAV&&$('breqs'))$('breqs').innerHTML=`<div class="card mut">Esta sección todavía no está activada.${isAdm()?' Ejecuta <code>'+NEWSQL+'</code> en Supabase.':''}</div>`;return}
   if(my!==NAV||!$('breqs'))return;
-  d=d||[];
+  d=d||[];{const c=$('cB');if(c)c.textContent='('+d.length+')'}
   $('breqs').innerHTML=d.length?d.map(x=>{const mine=x.user_id===S.user.id;
     return`<div class="card"><div class="row"><b style="font-size:18px">${n(x.amount,2)} USDT</b><span class="tag ok">Pagará con: ${esc(x.currency)}</span></div>
     <div class="mut" style="margin:4px 0">@${esc(x.username)}${mine?' (tú)':''} · ${when(x.created_at)}</div>${userTag(x.role,x.kyc_status)}
@@ -1694,8 +1709,8 @@ async function viewChat(){
   POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw(false)},5000)}
 
 /* ---------- Chat privado entre dos usuarios ---------- */
-const pcTabs=a=>`<div class="pcs"><button class="b sm ${a==='g'?'':'gh'}" data-pt="g">💬 General</button><button class="b sm ${a==='p'?'':'gh'}" data-pt="p">🔒 Privados${S.pcUnread?` <span class="bd2">${S.pcUnread>9?'9+':S.pcUnread}</span>`:''}</button></div>`;
-const bindPcTabs=()=>document.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>go(b.dataset.pt==='g'?'chat':'pchat'));
+const pcTabs=a=>`<div class="pcs"><button class="b sm ${a==='g'?'':'gh'}" data-pt="g">💬 General</button><button class="b sm ${a==='p'?'':'gh'}" data-pt="p">🔒 Privados${S.pcUnread?` <span class="bd2">${S.pcUnread>9?'9+':S.pcUnread}</span>`:''}</button><button class="b sm ${a==='u'?'':'gh'}" data-pt="u">👥 Usuarios</button></div>`;
+const bindPcTabs=()=>document.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>go({g:'chat',p:'pchat',u:'comm'}[b.dataset.pt]));
 let PCB=false;
 async function pcSummary(){
   if(PCB||!S.user||S.pcOff)return;PCB=true;
@@ -1753,6 +1768,9 @@ async function viewPchat(){
         await act(c,async()=>{await rpc('pchat_report_close',{p_report:+c.dataset.rc,p_note:note});await drawRep()},'Reporte cerrado',true)})()}};
   await draw();drawRep();
   POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw();drawRep()},8000)}
+async function viewComm(){
+  main().innerHTML=`${pcTabs('u')}<h2 style="margin:0 0 4px">Comunidad</h2><p class="mut" style="margin:0 0 12px">Quiénes están en la plataforma ahora mismo.</p><div class="comm">${statsHtml()}</div><p class="mut" style="font-size:12px">Se actualiza solo cada pocos segundos.</p>`;
+  bindPcTabs();setActU();loadActU();liveTick()}
 async function viewPcon(){
   const my=NAV,me=S.user.id,id=S.pcRoom;let last=0;
   if(!id)return go('pchat');
