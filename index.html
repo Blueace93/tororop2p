@@ -422,11 +422,13 @@ document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('r
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
 const topHtml=()=>`<p class="hi">${saludo()}, <b>${esc(S.profile?.username)}</b></p>${kycBanner()}
 ${walletCard()}
-<div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios activos en la plataforma</span></span></div>
-<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b gh w" id="tLegal" style="margin:-4px 0 14px">📄 Términos y políticas</button>`;
-const setActU=()=>{const e=$('auC');if(!e||S.actU==null)return;e.style.display='flex';$('auN').textContent=n(S.actU,0)};
-const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}};
-const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
+<div id="auC" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(46,230,166,.08);border:1px solid rgba(46,230,166,.28)"><span style="font-size:18px">👥</span><span><b id="auN" style="font-size:17px">0</b> <span class="mut">usuarios verificados en la plataforma</span></span></div>
+<div id="auU" style="display:none;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:99px;background:rgba(245,185,74,.08);border:1px solid rgba(245,185,74,.3)"><span style="font-size:18px">🕒</span><span><b id="auUN" style="font-size:17px">0</b> <span class="mut">usuarios sin verificar en la plataforma</span></span></div>
+<div class="tiles"><button class="tile" id="tAnn"><span class="tc" style="font-size:22px">📢</span>Anuncios</button><button class="tile" id="tInfo"><span class="tc" style="font-size:22px">ℹ️</span>Información</button><button class="tile" id="tRef"><span class="tc" style="font-size:22px">🎁</span>Referidos</button><button class="tile" id="tSec"><span class="tc" style="font-size:22px">🛡️</span>Seguridad</button><button class="tile" id="tHelp"><span class="tc" style="font-size:22px">❓</span>Ayuda</button><button class="tile" id="tMore"><span class="tc" style="font-size:22px">⋯</span>Más</button></div><button class="b w" id="tChat" style="margin:-4px 0 8px">💬 Chat general</button><button class="b gh w" id="tLegal" style="margin:0 0 14px">📄 Términos y políticas</button>`;
+const setActU=()=>{const e=$('auC');if(e&&S.actU!=null){e.style.display='flex';$('auN').textContent=n(S.actU,0)}const u=$('auU');if(u&&S.unvU!=null){u.style.display='flex';$('auUN').textContent=n(S.unvU,0)}};
+const loadActU=async()=>{setActU();try{S.actU=Number(await rpc('public_active_users'))||0;setActU()}catch(x){}
+  try{S.unvU=Number(await rpc('public_unverified_users'))||0;setActU()}catch(x){}};
+const bindTop=()=>{loadActU();$('tMore').onclick=()=>go('more');if($('tChat'))$('tChat').onclick=()=>{S.bkTo='market';go('chat')};if($('tLegal'))$('tLegal').onclick=()=>{S.bkTo='market';go('legal')};[['tRef','refs'],['tSec','sec'],['tHelp','help']].forEach(([i,v])=>{$(i).onclick=()=>{S.bkTo='market';go(v)}});$('tAnn').onclick=()=>go('ann');$('tInfo').onclick=()=>go('info');updAnn();$('tw').onclick=e=>{e.preventDefault();go('wallet')};document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{S.mk=b.dataset.mk;goKeep('market')})};
 const saludo=()=>{const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches'};
 const mny=(v,c)=>n(v,c==='CUP'?0:2);
 const due=(o,c)=>c==='CUP'?Number(o.total_cup):Math.round(o.amount*o.price_cup*100)/100;
@@ -634,7 +636,7 @@ function go(v,orderId){
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,admin:viewAdmin}[v]||viewMarket)();
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,admin:viewAdmin}[v]||viewMarket)();
   {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
@@ -658,6 +660,14 @@ async function viewMarket(){
       <input id="odp" inputmode="tel" placeholder="Número de teléfono (para confirmar)" autocomplete="off">
       <p class="mut">Al publicar, queda bloqueado el monto <b>más la comisión</b> de la plataforma (la paga el vendedor desde su saldo). Si no te alcanza para el %, publica un poco menos: por ejemplo, 99 en vez de 100.</p>
       <button class="b w" id="mk">Publicar oferta</button></div></div>
+  <div class="card"><div class="row"><div><b>Comprar USDT</b><div class="mut">Publica cuántos USDT quieres y con qué moneda pagarás</div></div>
+    <button class="b sm" id="tb">🙋 Quiero comprar USDT</button></div>
+    <div id="buy" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+      <label>Cantidad de USDT que quieres comprar</label><input id="ba" type="number" min="1" step="any" inputmode="decimal">
+      <label>Moneda con la que pagarás</label><select id="bc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
+      <p class="mut">Tu solicitud la verán todos los usuarios con tu etiqueta (verificado o sin verificar). Dura 48 horas y puedes cancelarla cuando quieras.</p>
+      <button class="b w" id="bk">Publicar solicitud</button></div></div>
+  <h3>Usuarios solicitando USDT</h3><div id="breqs">${skel(1)}</div>
   <div class="card"><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
     <div class="row"><select id="srt" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
     <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="mine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div>
@@ -665,6 +675,10 @@ async function viewMarket(){
   <h3>Ofertas disponibles</h3><div id="offers">${skel(3)}</div>`;
   $('srt').value=F.sort;bindTop();
   $('tg').onclick=()=>{if(gate())return;const s=$('sell');s.style.display=s.style.display==='none'?'block':'none'};
+  $('tb').onclick=()=>{const s=$('buy');s.style.display=s.style.display==='none'?'block':'none'};
+  $('bk').onclick=ev=>act(ev.target,async()=>{const a=+$('ba').value,c=$('bc').value;if(!(a>0))throw new Error('Indica cuántos USDT quieres comprar');
+    await rpc('buy_req_create',{p_amount:a,p_currency:c});$('ba').value='';$('buy').style.display='none';await loadBuyReqs(my)},'Solicitud publicada');
+  loadBuyReqs(my);
   if(S.openSell){S.openSell=0;if(!gate())$('sell').style.display='block'}
   $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)/(1+FPO()/100)*100)/100;calc()};
   const calc=()=>{const c=$('oc').value;$('odcw').style.display=c==='Saldo Móvil'?'none':'block';$('obk').style.display=$('obk').previousElementSibling.style.display=c==='Saldo Móvil'?'none':'';$('opl').textContent=`Precio por 1 USDT (en ${c})`;const t=+$('oa').value*+$('op').value;const a=+$('oa').value,f=FPO()?rnd(a*FPO()/100,4):0;$('otot').textContent=(t>0?`Recibirás en total: ${mny(t,c)} ${c}`:'')+(a>0&&f?` · Se retendrán ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%: ${n(f,4)})`:'')};
@@ -1165,7 +1179,7 @@ const TST={pending:['Esperando envío','warn'],review:['En revisión del admin',
 const dcur=c=>c==='CUP'?0:c==='USD'?2:4;
 
 function viewMore(){S.bkTo=null;
-  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['chat','💬','Chat general','Habla con otros usuarios'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -1420,6 +1434,50 @@ function legalModal(id){
     const bb=box.querySelector('#lgb');if(bb)bb.onclick=e=>{e.preventDefault();draw();box.scrollTop=0};
     box.querySelector('#lgx').onclick=()=>m.remove()};
   draw(id)}
+
+/* ---------- Solicitudes de compra de USDT y chat general ---------- */
+const userTag=(role,kyc)=>role==='owner'?'<span class="tag ok">👑 Creador Tororo</span>':role==='admin'?'<span class="tag warn">🛡️ Admin</span>':kyc==='approved'?'<span class="tag ok">✅ Verificado</span>':'<span class="tag">Sin verificar</span>';
+const NEWSQL='chat_y_compras.sql';
+async function loadBuyReqs(my){
+  if(!$('breqs'))return;
+  let d;
+  try{d=await rpc('buy_req_list')}
+  catch(e){if(my===NAV&&$('breqs'))$('breqs').innerHTML=`<div class="card mut">Esta sección todavía no está activada.${isAdm()?' Ejecuta <code>'+NEWSQL+'</code> en Supabase.':''}</div>`;return}
+  if(my!==NAV||!$('breqs'))return;
+  d=d||[];
+  $('breqs').innerHTML=d.length?d.map(x=>{const mine=x.user_id===S.user.id;
+    return`<div class="card"><div class="row"><b style="font-size:18px">${n(x.amount,2)} USDT</b><span class="tag ok">Pagará con: ${esc(x.currency)}</span></div>
+    <div class="mut" style="margin:4px 0">@${esc(x.username)}${mine?' (tú)':''} · ${when(x.created_at)}</div>${userTag(x.role,x.kyc_status)}
+    ${mine?`<div style="margin-top:8px"><button class="b gh sm" data-bcx="${x.id}">Cancelar mi solicitud</button></div>`:''}</div>`}).join(''):'<div class="card mut">Nadie está solicitando USDT ahora mismo.</div>';
+  $('breqs').querySelectorAll('[data-bcx]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('buy_req_cancel',{p_id:b.dataset.bcx});await loadBuyReqs(NAV)},'Solicitud cancelada'))}
+
+/* Filtro del chat: sin enlaces, correos, teléfonos ni datos de contacto (el servidor repite la misma revisión) */
+const chatBad=t=>{const s=String(t);
+  if(/(https?:|www\.|t\.me|wa\.me|bit\.ly)/i.test(s)||/[\w-]+\.(com|net|org|io|me|cu|app|xyz|info|ly|link|shop|site|online|club)\b/i.test(s)||/@\s*\w{3,}/.test(s))return'No se permiten enlaces ni correos en el chat';
+  if(/whats\s*app|wasap|watsap|telegram|instagram|facebook|messenger|\bwsp\b/i.test(s))return'No se permiten datos de contacto de otras apps';
+  if(/\d{8,}/.test(s.replace(/(\d)[\s.()+_,-]+(?=\d)/g,'$1')))return'No se permiten números de teléfono';
+  return''};
+async function viewChat(){
+  const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='';
+  main().innerHTML=hd('Chat general')+`<div class="warnbox">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
+  <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
+  <div class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="cm" maxlength="300" placeholder="Escribe un mensaje…" style="margin:0" autocomplete="off"><button class="b" id="cs">Enviar</button></div></div>`;
+  bk();
+  const draw=async force=>{
+    let d;
+    try{d=await rpc('chat_recent',{p_limit:80})}
+    catch(e){if(force&&my===NAV&&$('cl'))$('cl').innerHTML=`<div class="warnbox bad">El chat todavía no está activado${isAdm()?'. Ejecuta <code>'+NEWSQL+'</code> en Supabase.':'.'}</div>`;return}
+    if(my!==NAV||!$('cl'))return;
+    const L=(d||[]).slice().reverse(),key=(L.length?L[L.length-1].id:0)+':'+L.length;
+    if(!force&&key===lastKey)return;lastKey=key;
+    const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80;
+    cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} @${esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    if(atEnd||force)cl.scrollTop=cl.scrollHeight};
+  $('cl').onclick=e=>{const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
+  const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';await draw(true)},null,true);
+  $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter')send()};
+  await draw(true);
+  POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw(false)},5000)}
 
 /* ---------- Información y Anuncios (usuarios) ---------- */
 async function viewInfo(){
@@ -1699,6 +1757,25 @@ async function adminKycUsers(my){
   let qt;$('kuQ').oninput=e=>{Q=e.target.value;clearTimeout(qt);qt=setTimeout(paint,150)};
   sync();paint()}
 
+/* Usuarios dentro de la plataforma que aún no están verificados (se muestran debajo de la lista KYC) */
+async function adminUnverified(my){
+  const box=$('unvbox');if(!box)return;
+  const base=cols=>sb.from('profiles').select(cols).or('kyc_status.is.null,kyc_status.neq.approved').limit(500);
+  let r=await base('id,username,full_name,kyc_status,is_admin,is_staff,created_at').order('created_at',{ascending:false});
+  if(r.error)r=await base('id,username,full_name,kyc_status,is_admin,is_staff').order('username');
+  if(my!==NAV||!$('unvbox'))return;
+  if(r.error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los usuarios sin verificar: ${esc(r.error.message)}</div>`;return}
+  const L=(r.data||[]).filter(x=>!x.is_admin&&!x.is_staff);let Q='';
+  const UT={rejected:['Rechazado','bad'],pending:['En revisión','warn']};
+  const head=$('s-unv');if(head)head.textContent='Usuarios sin verificar · '+L.length;
+  box.innerHTML=`<input id="unQ" type="search" placeholder="Buscar por usuario o nombre" autocomplete="off"><div id="unL"></div>`;
+  const paint=()=>{
+    const q=Q.trim().toLowerCase(),vis=L.filter(x=>!q||[x.username,x.full_name].some(v=>String(v||'').toLowerCase().includes(q)));
+    $('unL').innerHTML=vis.length?vis.slice(0,40).map(x=>{const[t,c]=UT[x.kyc_status]||['Sin verificar',''];
+      return`<div class="card"><div class="row"><b>@${esc(x.username||'—')}</b><span class="tag ${c}">${t}</span></div>${x.full_name||x.created_at?`<div class="mut">${x.full_name?esc(x.full_name):''}${x.full_name&&x.created_at?' · ':''}${x.created_at?'Registrado: '+when(x.created_at):''}</div>`:''}</div>`}).join('')+(vis.length>40?`<p class="mut">Mostrando 40 de ${vis.length}. Usa el buscador para acotar.</p>`:''):'<div class="card mut">'+(L.length?'Sin resultados.':'No hay usuarios sin verificar.')+'</div>'};
+  let t;$('unQ').oninput=e=>{Q=e.target.value;clearTimeout(t);t=setTimeout(paint,150)};
+  paint()}
+
 const KREASONS=['La foto del carnet (frente) no se ve clara','Falta el reverso del carnet','La selfie no se ve clara o no sostienes el carnet','El carnet está vencido','El nombre no coincide con el documento','Los datos del documento no se pueden leer','Documento no válido'];
 async function askReject(){
   const m=await ask('Rechazar verificación',`<label>Motivo (el usuario lo verá)</label><select id="krs">${KREASONS.map(r=>`<option>${esc(r)}</option>`).join('')}<option value="">Otro motivo…</option></select><input id="kmo" placeholder="Detalle adicional (opcional)">`,'Rechazar','bad');
@@ -1809,13 +1886,13 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-staff':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-unv':'usr','s-staff':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
     sta:()=>adminStats(mm,my),
-    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div>');adminKycUsers(my);adminStaffMgmt();adminDuty(my);adminAuditShell()},
+    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my);adminStaffMgmt();adminDuty(my);adminAuditShell()},
     cfg:async()=>{adminBlocks();adminMaint();adminPayout();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
@@ -1846,7 +1923,7 @@ async function adminStats(mm,my){
     <h4 style="margin:6px 0">Operaciones completadas</h4>
     <div class="grid2" style="margin-bottom:12px">${t('Hoy',n(o.hoy_n,0),n(o.hoy_usdt,2)+' USDT')}${t('7 días',n(o.sem_n,0),n(o.sem_usdt,2)+' USDT')}</div>
     <h4 style="margin:6px 0">Comisiones registradas</h4>
-    <div class="grid2" style="margin-bottom:6px">${Object.keys(f).length?Object.entries(f).map(([c,x])=>t(esc(c)+' hoy',n(x.hoy,fdc(c)),'7 días: '+n(x.sem,fdc(c))+' · total: '+n(x.total,fdc(c)))).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>
+    <div class="grid2" style="margin-bottom:6px">${Object.keys(f).some(c=>c==='USDT')?Object.entries(f).filter(([c])=>c==='USDT').map(([c,x])=>t(esc(c)+' hoy',n(x.hoy,fdc(c)),'7 días: '+n(x.sem,fdc(c))+' · total: '+n(x.total,fdc(c)))).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>
     <p class="mut" style="font-size:12px;margin:0 0 12px">Son las comisiones cobradas, sin descontar lo pagado a referidos.</p>
     <h4 style="margin:6px 0">Últimos 7 días</h4>
     <div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left">Día</th><th>Visitas</th><th>Nuevos</th><th>Ops</th><th>USDT</th></tr>
