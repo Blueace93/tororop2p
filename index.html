@@ -2095,9 +2095,9 @@ async function askReject(){
   return r&&d?r+' — '+d:(r||d||'Documentos no válidos')}
 
 /* Registro de acciones de administradores (solo dueño; se carga al pulsar) */
-const AUD_T={kyc_submissions:'KYC',fiat_topups:'Recarga de saldo',fiat_withdrawals:'Retiro de saldo',withdrawals:'Retiro USDT',deposits:'Depósito USDT',announcements:'Anuncio',profiles:'Administrador',site_flags:'Bloqueo'};
-const AUD_A={approved:'aprobó',rejected:'rechazó',completed:'completó',credited:'acreditó',paid:'pagó',sent:'marcó enviado',insert:'publicó',delete:'eliminó',staff_on:'añadió',staff_off:'quitó',blocked:'bloqueó',unblocked:'desbloqueó'};
-const AUD_G={all:null,kyc:['kyc_submissions'],money:['fiat_topups','fiat_withdrawals','withdrawals','deposits'],other:['announcements','profiles','site_flags']};
+const AUD_T={kyc_submissions:'KYC',fiat_topups:'Recarga de saldo',fiat_withdrawals:'Retiro de saldo',withdrawals:'Retiro USDT',deposits:'Depósito USDT',announcements:'Anuncio',profiles:'Administrador',balance:'Saldo de administrador',site_flags:'Bloqueo'};
+const AUD_A={approved:'aprobó',rejected:'rechazó',completed:'completó',credited:'acreditó',paid:'pagó',sent:'marcó enviado',insert:'publicó',delete:'eliminó',debited:'descontó',staff_on:'añadió',staff_off:'quitó',blocked:'bloqueó',unblocked:'desbloqueó'};
+const AUD_G={all:null,kyc:['kyc_submissions'],money:['fiat_topups','fiat_withdrawals','withdrawals','deposits','balance'],other:['announcements','profiles','site_flags']};
 function adminAuditShell(){
   if($('s-audit'))return;
   main().insertAdjacentHTML('beforeend','<h3 id="s-audit">Registro de acciones</h3><div id="auditbox"><button class="b gh w" id="auditGo">Ver últimas acciones</button></div>');
@@ -2197,13 +2197,13 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-unv':'usr','s-staff':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-kyc':'usr','s-unv':'usr','s-staff':'usr','s-bal':'usr','s-duty':'usr','s-audit':'usr','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
     sta:()=>adminStats(mm,my),
-    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my);adminStaffMgmt();adminDuty(my);adminAuditShell()},
+    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my);adminStaffMgmt();adminBalances();adminDuty(my);adminAuditShell()},
     cfg:async()=>{adminBlocks();adminMaint();adminPayout();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
@@ -2363,6 +2363,30 @@ async function adminStaffMgmt(){
       const m=await ask('Hacer administrador',`<p>@${esc(b.dataset.un)} podrá aprobar o rechazar KYC, publicar anuncios, ver los usuarios activos y publicar sus datos en “Información”.</p>`,'Hacer administrador','ok');if(!m)return;m.remove();
       act(b,async()=>{await rpc('admin_set_staff',{p_user:b.dataset.sa,p_on:true});$('stQ').value='';R.innerHTML='';await loadL()},'Administrador añadido')})},300)};
   await loadL()}
+
+/* ---------- Dueño: poner o quitar saldo a administradores y a sí mismo ---------- */
+async function adminBalances(){
+  if($('s-bal-h'))return;
+  main().insertAdjacentHTML('beforeend',`<h3 id="s-bal">Saldo de administradores</h3><span id="s-bal-h"></span>
+   <div class="card"><p class="mut" style="margin-top:0">Pon saldo en la plataforma a ti y a tus administradores, o quítalo cuando ya no haga falta. Cada cambio queda registrado.</p><div id="balL">${skel(1)}</div></div>`);
+  const L=$('balL'),cu={USDT:4,CUP:0,USD:2},fmt=(v,c)=>n(v,cu[c]);
+  const load=async()=>{
+    const{data,error}=await sb.rpc('admin_balances_list');
+    if(!$('balL'))return;
+    if(error){L.innerHTML='<div class="warnbox bad">Falta ejecutar <code>saldo_administradores.sql</code> en Supabase.</div>';return}
+    L.innerHTML=(data||[]).map(u=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="row"><b>@${esc(u.username)}${u.id===S.user.id?' (tú)':''}</b><span class="mut">${u.role==='owner'?'dueño':'administrador'}</span></div>
+      <div class="mut" style="margin:4px 0">${['USDT','CUP','USD'].map(c=>fmt(u[c.toLowerCase()],c)+' '+c).join(' · ')}</div>
+      <div class="grid2"><button class="b ok sm" data-bs="1" data-bu="${u.id}" data-bn="${esc(u.username)}">＋ Poner saldo</button><button class="b bad sm" data-bs="-1" data-bu="${u.id}" data-bn="${esc(u.username)}">− Quitar saldo</button></div></div>`).join('')||'<p class="mut">No hay administradores.</p>';
+    L.querySelectorAll('[data-bs]').forEach(b=>b.onclick=async()=>{
+      const sign=Number(b.dataset.bs),add=sign>0,who=b.dataset.bn;
+      const m=await ask(add?'Poner saldo':'Quitar saldo',`<p class="mut" style="margin-top:0">${add?'Se sumará a':'Se descontará de'} <b>@${esc(who)}</b>.</p><label>Moneda</label><select id="bcu"><option>USDT</option><option>CUP</option><option>USD</option></select><label>Monto</label><input id="bam" inputmode="decimal" placeholder="Ej: 100" autocomplete="off"><label>Nota (opcional)</label><input id="bnt" maxlength="120" placeholder="Ej: recargas de la semana" autocomplete="off">`,add?'Poner saldo':'Quitar saldo',add?'ok':'bad');
+      if(!m)return;
+      const c=m.querySelector('#bcu').value,amt=Number(String(m.querySelector('#bam').value).replace(',','.')),note=m.querySelector('#bnt').value.trim();
+      if(!isFinite(amt)||amt<=0){toast('Escribe un monto mayor que 0','err');return}
+      m.remove();
+      act(b,async()=>{await rpc('admin_adjust_balance',{p_user:b.dataset.bu,p_currency:c,p_amount:sign*amt,p_note:note||null});
+        if(b.dataset.bu===S.user.id)await loadBal();await load()},add?'Saldo añadido':'Saldo descontado')})};
+  await load()}
 
 /* ---------- Tarjetas de administradores y comisiones ---------- */
 async function getMaint(){try{const{data,error}=await sb.rpc('get_maintenance');return error?null:(data||null)}catch(e){return null}}
