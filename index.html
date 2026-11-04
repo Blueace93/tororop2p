@@ -1550,6 +1550,7 @@ if(window.visualViewport)visualViewport.addEventListener('resize',()=>fitChat())
 /* Caja de escribir del chat: crece hacia abajo y sube sobre el teclado */
 const KB=(()=>{
   const coarse=matchMedia('(pointer:coarse)').matches;
+  const cur=()=>window.visualViewport?visualViewport.height:innerHeight;let base=cur(),seen=false;
   const fit=t=>{if(!t)return;t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'};
   const upd=()=>{const v=window.visualViewport;const h=v?Math.max(0,Math.round(innerHeight-v.height-v.offsetTop)):0;document.body.style.setProperty('--kbh',(h+16)+'px')};
   const show=()=>{const t=document.activeElement;if(!t||!t.matches||!t.matches('.cmp textarea'))return;
@@ -1558,13 +1559,22 @@ const KB=(()=>{
     const cl=$('cl');if(cl)cl.scrollTop=cl.scrollHeight};
   let T;const later=(ms=120)=>{clearTimeout(T);T=setTimeout(()=>{upd();show();fitChat()},ms)};
   document.addEventListener('focusin',e=>{if(!e.target.matches||!e.target.matches('.cmp textarea'))return;
-    document.body.classList.add('kb');upd();fit(e.target);later(80);later(350)});
+    if(coarse){base=Math.max(base,cur());seen=false;document.body.classList.add('kb')}upd();fit(e.target);later(80);later(350)});
   document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;
     if(!a||!a.matches||!a.matches('.cmp textarea')){document.body.classList.remove('kb');document.body.style.removeProperty('--kbh');fitChat()}},150));
   document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('.cmp textarea')){fit(e.target);later(0)}});
   /* tocar Enviar no cierra el teclado (si no, el botón se mueve y el toque se pierde) */
   document.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.cmp .b'))e.preventDefault()});
-  if(window.visualViewport){visualViewport.addEventListener('resize',()=>{if(document.body.classList.contains('kb'))later(30)})}
+  /* Si el teclado se cierra (gesto atrás) y la caja sigue enfocada, se quita el modo teclado para que vuelva la barra de abajo */
+  const onVV=()=>{const c=cur();
+    if(!document.body.classList.contains('kb')){base=c;return}
+    if(base-c>120){seen=true}
+    else if(seen){seen=false;const a=document.activeElement;if(a&&a.matches&&a.matches('.cmp textarea'))a.blur()}
+    later(30)};
+  if(window.visualViewport)visualViewport.addEventListener('resize',onVV);else addEventListener('resize',onVV);
+  /* tocar los mensajes cierra el teclado */
+  document.addEventListener('click',e=>{const a=document.activeElement;
+    if(a&&a.matches&&a.matches('.cmp textarea')&&e.target.closest&&e.target.closest('#cl')&&!e.target.closest('a,button'))a.blur()});
   return{coarse,fit}})();
 /* ---------- Presencia en línea y alarma del chat ---------- */
 let LT=null,LTB=false;
