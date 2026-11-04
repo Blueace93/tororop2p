@@ -371,6 +371,24 @@ button,.chip,.tile,.qb,.ib,.pill,[data-o],[data-mv]{transition-duration:.1s!impo
 button.b:before{display:none!important}
 #nbn{position:fixed;left:10px;right:10px;bottom:calc(86px + env(safe-area-inset-bottom));max-width:540px;margin:0 auto;z-index:40;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#1b1d2e;border:1px solid var(--acc);border-radius:16px;padding:10px 12px;font-size:13px;box-shadow:0 14px 40px -12px #000}
 #nbn span{flex:1 1 100%}
+/* ---- Chat: campo que crece hacia abajo y teclado del móvil ---- */
+.cmp{display:flex;gap:8px;align-items:flex-end;flex-wrap:nowrap;margin-top:8px}
+.cmp textarea{flex:1;min-width:0;margin:0;resize:none;overflow-y:auto;max-height:120px;min-height:42px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.cmp .b{flex:none;align-self:flex-end}
+body.kb nav,body.kb .wa,body.kb .up,body.kb #nbn,body.kb .fab,body.kb .fab-bg{display:none!important}
+body.kb{padding-bottom:var(--kbh,16px)!important}
+body.kb #cl{max-height:30vh!important;min-height:110px!important}
+/* ---- Chat privado ---- */
+.pcs{display:flex;gap:8px;margin-bottom:12px}.pcs .b{flex:1}
+.bd2{display:inline-block;background:var(--bad);color:#fff;border-radius:99px;font-size:11px;padding:0 6px;min-width:18px;text-align:center;line-height:18px}
+.pcrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.pcrow:last-child{border-bottom:0}
+.pcrow[data-po]{cursor:pointer}
+.pcrow .pm{min-width:0;flex:1}
+.pcrow .pv{color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcrow .pa{display:flex;gap:6px;flex:none;align-items:center}
+.msg a.pu{color:inherit;text-decoration:underline dotted;text-underline-offset:2px}
+body[data-view="pchat"] .wa,body[data-view="pchat"] .up,body[data-view="pcon"] .wa,body[data-view="pcon"] .up{display:none!important}
 </style>
 </head>
 <body>
@@ -424,7 +442,7 @@ document.addEventListener('input',e=>{const m=e.target.closest&&e.target.closest
 document.addEventListener('input',e=>{if(e.target.id!=='aq'&&e.target.id!=='ap'&&e.target.id!=='aq2')return;const m=e.target.closest('.md'),el=m&&m.querySelector('#aunit');if(!el)return;
   const q=+m.querySelector('#aq').value,t=+m.querySelector('#ap').value,c=m.querySelector('#aq2').value;
   el.textContent=q>0&&t>0?`Equivale a ${n(t/q,t/q<1?4:2)} ${c} por unidad`:''});
-const updTitle=()=>{const t=(S.unread||0)+(S.chatUnread||0);
+const updTitle=()=>{const t=(S.unread||0)+(S.chatUnread||0)+(S.pcUnread||0);
   try{if(!window._ttl)window._ttl=document.title.replace(/^\(\d+\)\s*/,'');document.title=(t?'('+t+') ':'')+window._ttl;
     if(navigator.setAppBadge){t?navigator.setAppBadge(t).catch(()=>{}):navigator.clearAppBadge&&navigator.clearAppBadge().catch(()=>{})}}catch(e){}};
 const updBell=()=>{$('bell')?.classList.toggle('dot',(S.unread||0)>0||(S.adminPend||0)>0);updTitle()};
@@ -652,12 +670,12 @@ async function refreshBadge(){
     .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']);
   S.active=count||0;updBell();const b=$('bdg');if(b){b.textContent=S.active;b.style.display=S.active?'block':'none'}}
 function go(v,orderId){
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'?'chat':v)));
   {let b=document.getElementById('ldbar');if(!b){b=document.createElement('div');b.id='ldbar';document.body.appendChild(b)}b.classList.remove('on');void b.offsetWidth;b.classList.add('on')}
   drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,admin:viewAdmin}[v]||viewMarket)();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'?'chat':v)));
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,pchat:viewPchat,pcon:viewPcon,admin:viewAdmin}[v]||viewMarket)();
   {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
@@ -1024,13 +1042,14 @@ async function viewOrder(){
     const box=$('chatbox');if(!box||my!==NAV)return;
     if(ce){box.innerHTML=med?`<div class="warnbox bad">El chat no está disponible: falta crear la tabla order_messages (ver archivo SQL).</div>`:'';return}
     if(!ms.length&&!med)return box.innerHTML='';
-    const open=med&&!fin_&&canChat,keep=box.querySelector('#cm')?.value||'';
+    const open=med&&!fin_&&canChat,keep=box.querySelector('#cm')?.value||'',wasF=document.activeElement?.id==='cm';
     box.innerHTML=`<div class="card"><h3>💬 Chat de mediación</h3>${med?`<p class="mut" style="font-size:12px;margin:-4px 0 8px">👥 Comprador ${name(o.buyer_id)} · Vendedor ${name(o.seller_id)} · 🛡️ Administrador${fin_?' · <b>Mediación cerrada</b>':''}</p>`:''}<div class="chat" id="cl">${ms.length?ms.map(x=>{const nm=x.sender_id===o.buyer_id||x.sender_id===o.seller_id?name(x.sender_id):'Administrador';
       return`<div class="msg ${x.sender_id===S.user.id?'me':''} ${nm==='Administrador'?'ad':''}"><small>${nm} · ${when(x.created_at)}</small>${esc(x.body)}</div>`}).join(''):'<span class="mut">Sin mensajes todavía.</span>'}</div>
-      ${open?`<div class="row" style="flex-wrap:nowrap"><input id="cm" placeholder="Escribe un mensaje…" style="margin:0" value="${esc(keep)}"><button class="b" id="cs">Enviar</button></div>`:''}</div>`;
+      ${open?`<div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…">${esc(keep)}</textarea><button class="b" id="cs">Enviar</button></div>`:''}</div>`;
     const cl=$('cl');cl.scrollTop=cl.scrollHeight;
-    if(open){const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat()},null,true);
-      $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter')go_()}}};
+    if(open){KB.fit($('cm'));if(wasF){const t=$('cm');t.focus();try{t.setSelectionRange(t.value.length,t.value.length)}catch(_){}}}
+    if(open){const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';KB.fit($('cm'));toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat()},null,true);
+      $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();go_()}}}};
   drawChat();
   if((admin||staff)&&med&&!fin_&&(o.buyer_proof||o.mediation_proof)){
     const runAna=async(force,btn)=>{if(S._ana===o.id)return;S._ana=o.id;
@@ -1513,6 +1532,25 @@ const chatBad=t=>{const s=String(t);
   if(/whats\s*app|wasap|watsap|telegram|instagram|facebook|messenger|\bwsp\b/i.test(s))return'No se permiten datos de contacto de otras apps';
   if(/\d{8,}/.test(s.replace(/(\d)[\s.()+_,-]+(?=\d)/g,'$1')))return'No se permiten números de teléfono';
   return''};
+/* Caja de escribir del chat: crece hacia abajo y sube sobre el teclado */
+const KB=(()=>{
+  const coarse=matchMedia('(pointer:coarse)').matches;
+  const fit=t=>{if(!t)return;t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'};
+  const upd=()=>{const v=window.visualViewport;const h=v?Math.max(0,Math.round(innerHeight-v.height-v.offsetTop)):0;document.body.style.setProperty('--kbh',(h+16)+'px')};
+  const show=()=>{const t=document.activeElement;if(!t||!t.matches||!t.matches('.cmp textarea'))return;
+    const c=t.closest('.cmp'),v=window.visualViewport,vb=v?v.offsetTop+v.height:innerHeight,r=c.getBoundingClientRect();
+    if(r.bottom>vb-8)scrollBy(0,Math.ceil(r.bottom-vb+8));
+    const cl=$('cl');if(cl)cl.scrollTop=cl.scrollHeight};
+  let T;const later=(ms=120)=>{clearTimeout(T);T=setTimeout(()=>{upd();show()},ms)};
+  document.addEventListener('focusin',e=>{if(!e.target.matches||!e.target.matches('.cmp textarea'))return;
+    document.body.classList.add('kb');upd();fit(e.target);later(80);later(350)});
+  document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;
+    if(!a||!a.matches||!a.matches('.cmp textarea')){document.body.classList.remove('kb');document.body.style.removeProperty('--kbh')}},150));
+  document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('.cmp textarea')){fit(e.target);later(0)}});
+  /* tocar Enviar no cierra el teclado (si no, el botón se mueve y el toque se pierde) */
+  document.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.cmp .b'))e.preventDefault()});
+  if(window.visualViewport){visualViewport.addEventListener('resize',()=>{if(document.body.classList.contains('kb'))later(30)})}
+  return{coarse,fit}})();
 /* ---------- Presencia en línea y alarma del chat ---------- */
 let LT=null,LTB=false;
 const chatSnd=()=>lsGet('chat_snd')!=='0';
@@ -1520,7 +1558,7 @@ function chatDing(){
   if(!chatSnd())return;
   playTone('chat',CHAT_SEQ,'triangle',.45);
   try{if(navigator.vibrate)navigator.vibrate(90)}catch(e){}}
-const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=S.chatUnread||0;b.textContent=c>9?'9+':c;b.style.display=c?'block':'none';updTitle()};
+const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=(S.chatUnread||0)+(S.pcUnread||0);b.textContent=c>9?'9+':c;b.style.display=c?'block':'none';updTitle()};
 /* Último mensaje visto, guardado por usuario: así el contador sobrevive a cerrar la app */
 const seenKey=()=>'chat_seen_'+(S.user?S.user.id:'');
 const getSeen=()=>+(lsGet(seenKey())||0);
@@ -1543,19 +1581,21 @@ const tickChat=(last,lu)=>{
 async function liveTick(){
   if(!S.user||LTB||document.hidden||!navigator.onLine||(maintOn()&&!isAdm()))return;
   LTB=true;
+  if(!S.pcOff&&((S.ltn=(S.ltn||0)+1)%3===1))pcSummary();
   try{const r=await withTO(sb.rpc('live_ping'),9000);if(r.error||!r.data)return;const x=r.data;
     S.onl=Number(x.online)||0;setActU();tickChat(x.chat_last==null?null:Number(x.chat_last),x.chat_last_user)}
   catch(e){}finally{LTB=false}}
-function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,8000)}
+function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,8000)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
 async function viewChat(){
   const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='';
   S.chatUnread=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
-  main().innerHTML=`<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Chat general</h2><button class="b gh sm" id="csn"></button></div>
+  main().innerHTML=`${pcTabs('g')}<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Chat general</h2><button class="b gh sm" id="csn"></button></div>
   <div class="warnbox">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
   <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
-  <div class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="cm" maxlength="300" placeholder="Escribe un mensaje…" style="margin:0" autocomplete="off"><button class="b" id="cs">Enviar</button></div></div>`;
+  <div class="cmp"><textarea id="cm" rows="1" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
+  bindPcTabs();
   const setSnd=()=>{$('csn').textContent=chatSnd()?'🔔 Alarma: encendida':'🔕 Alarma: apagada'};setSnd();
   $('csn').onclick=()=>{lsSet('chat_snd',chatSnd()?'0':'1');setSnd();if(chatSnd()){unlockAudio();chatDing();toast('Alarma del chat encendida','good')}else toast('Alarma del chat apagada')};
   const getMsgs=async()=>{try{return await rpc('chat_recent',{p_limit:80,p_mark:true})}catch(e){return await rpc('chat_recent',{p_limit:80})}};
@@ -1572,13 +1612,110 @@ async function viewChat(){
     const key=L.map(x=>x.id+'.'+(x.views||0)).join(',');
     if(!force&&key===lastKey)return;lastKey=key;
     const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80;
-    cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} @${esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} ${x.user_id!==S.user.id?`<a href="#" class="pu" data-pu="${x.user_id}" data-pn="${esc(x.username)}" title="Invitar a chat privado">@${esc(x.username)}</a>`:'@'+esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     if(atEnd||force)cl.scrollTop=cl.scrollHeight};
-  $('cl').onclick=e=>{const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
-  const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';await draw(true)},null,true);
-  $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter')send()};
+  $('cl').onclick=e=>{const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
+  const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';KB.fit($('cm'));await draw(true)},null,true);
+  $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
   await draw(true);
   POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw(false)},5000)}
+
+/* ---------- Chat privado entre dos usuarios ---------- */
+const pcTabs=a=>`<div class="pcs"><button class="b sm ${a==='g'?'':'gh'}" data-pt="g">💬 General</button><button class="b sm ${a==='p'?'':'gh'}" data-pt="p">🔒 Privados${S.pcUnread?` <span class="bd2">${S.pcUnread>9?'9+':S.pcUnread}</span>`:''}</button></div>`;
+const bindPcTabs=()=>document.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>go(b.dataset.pt==='g'?'chat':'pchat'));
+let PCB=false;
+async function pcSummary(){
+  if(PCB||!S.user||S.pcOff)return;PCB=true;
+  try{const r=await withTO(sb.rpc('pchat_unread'),9000);
+    if(r.error){S.pcOff=true;return}
+    const x=r.data||{},t=(Number(x.unread)||0)+(Number(x.invites)||0);
+    if(S.pcN!=null&&t>S.pcN&&S.view!=='pcon'){chatDing();toast('🔒 Tienes algo nuevo en tus chats privados')}
+    S.pcN=t;S.pcUnread=Math.min(99,t);updChatBd()}
+  catch(e){}finally{PCB=false}}
+async function pcInvite(uid,nm){
+  const m=await ask('💬 Chat privado',`<p>¿Invitar a <b>@${esc(nm)}</b> a hablar en privado?</p><p class="mut" style="font-size:13px">Recibirá una invitación y solo podrán escribirse si la acepta.</p>`,'Enviar invitación');
+  if(!m)return;m.remove();
+  await act(null,async()=>{
+    const r=await rpc('pchat_invite',{p_user:uid});
+    if(r&&r.status==='active'){S.pcRoom=r.id;S.pcName=nm;S.bkTo='chat';go('pcon');return false}
+    toast('Invitación enviada a @'+nm+'. Te avisaremos cuando responda','good');return false})}
+async function viewPchat(){
+  const my=NAV,adm=isAdm(),me=S.user.id;
+  main().innerHTML=`${pcTabs('p')}<h2 style="margin:0 0 10px">Chats privados</h2>
+  <div class="warnbox">🔒 Solo ustedes dos ven esta conversación. Los administradores únicamente pueden leerla si alguien la reporta. Sigue prohibido compartir teléfonos, enlaces o datos de otras apps. Para invitar a alguien, toca su nombre en el Chat general.</div>
+  <div class="card" id="pcbox">${skel(2)}</div>${adm?'<div id="pcrep"></div>':''}`;
+  bindPcTabs();
+  const draw=async()=>{
+    let d;
+    try{d=await rpc('pchat_rooms_list')}
+    catch(e){if(my===NAV&&$('pcbox'))$('pcbox').innerHTML=`<div class="warnbox bad">${/pchat_|does not exist|schema cache/i.test(e.message)?'El chat privado todavía no está activado'+(adm?'. Ejecuta <code>chat_privado.sql</code> en Supabase.':'.'):esc(e.message)}</div>`;return}
+    if(my!==NAV||!$('pcbox'))return;
+    const L=d||[];
+    $('pcbox').innerHTML=L.length?L.map(x=>{
+      const nm=`<span class="nm" style="font-weight:600">@${esc(x.uname)}</span> ${userTag(x.urole,x.ukyc)}`;
+      if(x.rstatus==='pending'&&x.rinit!==me)return`<div class="pcrow"><div class="pm">${nm}<div class="pv">te invita a un chat privado</div></div><div class="pa"><button class="b sm" data-pa="${x.rid}">Aceptar</button><button class="b gh sm" data-pr="${x.rid}">Rechazar</button></div></div>`;
+      if(x.rstatus==='pending')return`<div class="pcrow"><div class="pm">${nm}<div class="pv">Invitación enviada · esperando respuesta</div></div></div>`;
+      if(x.rstatus==='blocked')return`<div class="pcrow"><div class="pm">${nm}<div class="pv">🚫 Conversación bloqueada</div></div>${x.rblock===me?`<div class="pa"><button class="b gh sm" data-pub="${x.rid}">Desbloquear</button></div>`:''}</div>`;
+      return`<div class="pcrow" data-po="${x.rid}" data-pn="${esc(x.uname)}"><div class="pm">${nm}<div class="pv">${x.rbody?esc(x.rbody):'Sin mensajes todavía'}</div></div>${x.runread?`<div class="pa"><span class="bd2">${x.runread>9?'9+':x.runread}</span></div>`:''}</div>`}).join('')
+      :'<p class="mut" style="margin:0">Aún no tienes chats privados. Toca el nombre de alguien en el Chat general para invitarle.</p>';
+    pcSummary()};
+  $('pcbox').onclick=e=>{
+    const o=e.target.closest('[data-po]'),a=e.target.closest('[data-pa]'),r=e.target.closest('[data-pr]'),u=e.target.closest('[data-pub]');
+    if(a)return act(a,async()=>{await rpc('pchat_respond',{p_room:+a.dataset.pa,p_accept:true});await draw()},'Invitación aceptada',true);
+    if(r)return act(r,async()=>{await rpc('pchat_respond',{p_room:+r.dataset.pr,p_accept:false});await draw()},'Invitación rechazada',true);
+    if(u)return act(u,async()=>{await rpc('pchat_unblock',{p_room:+u.dataset.pub});await draw()},'Conversación desbloqueada',true);
+    if(o){S.pcRoom=+o.dataset.po;S.pcName=o.dataset.pn;go('pcon')}};
+  const drawRep=async()=>{
+    if(!adm||!$('pcrep'))return;
+    let d;try{d=await rpc('pchat_reports_list')}catch(e){return}
+    if(my!==NAV||!$('pcrep'))return;
+    $('pcrep').innerHTML=(d||[]).length?`<div class="card"><h3>🚩 Chats reportados (${d.length})</h3>${d.map(x=>`<div class="pcrow"><div class="pm"><b>@${esc(x.reporter)}</b> reportó a <b>@${esc(x.accused)}</b><div class="pv" style="white-space:normal">${esc(x.reason)} · ${when(x.created)}</div></div><div class="pa"><button class="b sm" data-rr="${x.repid}">Leer</button><button class="b gh sm" data-rc="${x.repid}">Cerrar</button></div></div>`).join('')}</div>`:'';
+    $('pcrep').onclick=e=>{
+      const l=e.target.closest('[data-rr]'),c=e.target.closest('[data-rc]');
+      if(l)return act(l,async()=>{const ms=await rpc('pchat_admin_read',{p_report:+l.dataset.rr});
+        const mm=modal(`<h3>🚩 Conversación reportada</h3><p class="mut" style="font-size:12px;margin:-4px 0 8px">Solo tú, como administrador, puedes verla por el reporte.</p><div class="chat" style="max-height:55vh">${(ms||[]).length?ms.slice().reverse().map(x=>`<div class="msg"><small>@${esc(x.uname||'?')} · ${when(x.mat)}</small>${esc(x.mbody)}</div>`).join(''):'<span class="mut">Sin mensajes.</span>'}</div><button class="b gh w" id="mx" style="margin-top:10px">Cerrar</button>`);
+        mm.querySelector('#mx').onclick=()=>mm.remove();return false},null,true);
+      if(c)return(async()=>{const q=await ask('Cerrar reporte','<p>¿Ya lo revisaste? Se quitará de la lista.</p><label>Nota (opcional)</label><textarea id="pcn" rows="2" maxlength="300" placeholder="Ej: sin infracción / advertencia enviada"></textarea>','Cerrar reporte');
+        if(!q)return;const note=q.querySelector('#pcn').value;q.remove();
+        await act(c,async()=>{await rpc('pchat_report_close',{p_report:+c.dataset.rc,p_note:note});await drawRep()},'Reporte cerrado',true)})()}};
+  await draw();drawRep();
+  POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw();drawRep()},8000)}
+async function viewPcon(){
+  const my=NAV,me=S.user.id,id=S.pcRoom;let last=0;
+  if(!id)return go('pchat');
+  const who=S.pcName||'Usuario';
+  main().innerHTML=`<div class="row" style="margin-bottom:10px;flex-wrap:nowrap"><a href="#" id="pcb">← Chats</a><b style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
+  <div class="card"><div class="chat" id="cl" style="max-height:55vh;min-height:200px">${skel(1)}</div>
+  <div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
+  $('pcb').onclick=e=>{e.preventDefault();go('pchat')};
+  const row=x=>`<div class="msg ${x.msender===me?'me':''}"><small>${x.msender===me?'Tú':'@'+esc(who)} · ${when(x.mat)}</small>${esc(x.mbody)}</div>`;
+  const draw=async force=>{
+    let d;
+    try{d=await rpc('pchat_msgs',{p_room:id,p_after:force?0:last,p_limit:80})}
+    catch(e){if(force&&my===NAV&&$('cl')){$('cl').innerHTML=`<div class="warnbox bad">${/pchat_|does not exist|schema cache/i.test(e.message)?'El chat privado todavía no está activado.':esc(e.message)}</div>`}return}
+    if(my!==NAV||!$('cl'))return;
+    const L=d||[],cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80;
+    if(force)cl.innerHTML=L.length?L.map(row).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    else if(L.length){if(cl.querySelector('.mut'))cl.innerHTML='';cl.insertAdjacentHTML('beforeend',L.map(row).join(''))}
+    if(L.length){last=Math.max(last,...L.map(x=>Number(x.mid)));if(!force&&L.some(x=>x.msender!==me))chatDing()}
+    if(force||(atEnd&&L.length))cl.scrollTop=cl.scrollHeight;
+    if(force)pcSummary()};
+  const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('pchat_send',{p_room:id,p_body:t});$('cm').value='';KB.fit($('cm'));await draw(false)},null,true);
+  $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
+  $('pcm').onclick=()=>{
+    const m=modal(`<h3>@${esc(who)}</h3><div style="display:grid;gap:8px"><button class="b gh" id="pr">🚩 Reportar conversación</button><button class="b gh" id="pbk">🚫 Bloquear</button><button class="b" id="px">Cerrar</button></div>`);
+    m.querySelector('#px').onclick=()=>m.remove();
+    m.querySelector('#pr').onclick=async()=>{m.remove();
+      const q=await ask('🚩 Reportar conversación','<p>Un administrador podrá leer esta conversación para revisarla.</p><label>Motivo</label><textarea id="pcr" rows="3" maxlength="300" placeholder="Ej: me pide dinero fuera de la plataforma"></textarea>','Reportar','bad');
+      if(!q)return;const r=q.querySelector('#pcr').value.trim();
+      if(r.length<3){toast('Escribe el motivo del reporte','err');return}
+      q.remove();await act(null,()=>rpc('pchat_report',{p_room:id,p_reason:r}),'Reporte enviado. Un administrador lo revisará',true)};
+    m.querySelector('#pbk').onclick=async()=>{m.remove();
+      const q=await ask('🚫 Bloquear','<p>Ya no podrán escribirse ni volver a invitarse. Puedes desbloquear después.</p>','Bloquear','bad');
+      if(!q)return;q.remove();
+      await act(null,async()=>{await rpc('pchat_block',{p_room:id});go('pchat')},'Conversación bloqueada',true)}};
+  await draw(true);
+  POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw(false)},4000)}
 
 /* ---------- Información y Anuncios (usuarios) ---------- */
 async function viewInfo(){
