@@ -814,9 +814,17 @@ function watchLoad(){clearTimeout(S.wd);S.wd=setTimeout(showRetry,12000)}
 /* ---------- Sonido de alertas ---------- */
 let AC=null;
 /* Desbloquea el audio en cualquier toque (iOS/Android lo exigen) y lo reactiva si el sistema lo suspende */
-function unlockAudio(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();
-  if(AC.state!=='running'&&AC.resume)AC.resume().catch(()=>{});
-  if(!AC._k){AC._k=1;const b=AC.createBuffer(1,1,22050),sr=AC.createBufferSource();sr.buffer=b;sr.connect(AC.destination);sr.start(0)}}catch(e){}}
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let _au=0;/* 0 = sin desbloquear, 1 = intentando, 2 = desbloqueado */
+function unlockAudio(){
+  try{const C=window.AudioContext||window.webkitAudioContext;
+    if(C){AC=AC||new C();
+      if(AC.state!=='running'&&AC.resume)AC.resume().catch(()=>{});
+      if(!AC._k){AC._k=1;const b=AC.createBuffer(1,1,22050),sr=AC.createBufferSource();sr.buffer=b;sr.connect(AC.destination);sr.start(0)}}}catch(e){}
+  /* El navegador solo deja sonar un <audio> si antes se le dio "play" durante un toque. Se hace en silencio. */
+  if(_au===0){_au=1;
+    try{[['ding',DING_SEQ],['chat',CHAT_SEQ]].forEach(([k,q])=>{const a=aEl(k,q);a.muted=true;
+      Promise.resolve(a.play()).then(()=>{_au=2;if(a.muted){a.pause();a.currentTime=0;a.muted=false}}).catch(()=>{a.muted=false;if(_au!==2)_au=0})})}catch(e){_au=0}}}
 ['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true,capture:true}));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)unlockAudio()});
 /* Respaldo: si el AudioContext está bloqueado, suena un WAV generado en el momento */
@@ -829,16 +837,27 @@ function wavURL(key,seq){if(_wav[key])return _wav[key];
   seq.forEach(([f,d,l])=>{const s0=Math.floor(d*sr),n=Math.floor(l*sr);for(let i=0;i<n&&s0+i<N;i++){const t=i/sr;pcm[s0+i]+=Math.sin(2*Math.PI*f*t)*Math.min(1,i/(sr*.015))*Math.exp(-4*t/l)*.6}});
   for(let i=0;i<N;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,pcm[i]))*32000,true);
   return _wav[key]=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))}
-function playTone(key,seq,type,gain){
+const _ael={};
+function aEl(key,seq){return _ael[key]||(_ael[key]=(()=>{const a=new Audio(wavURL(key,seq));a.preload='auto';a.volume=1;return a})())}
+function viaCtx(seq,type,gain){
   try{unlockAudio();
     if(AC&&AC.state==='running'){const t=AC.currentTime;
       seq.forEach(([f,d,l])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(AC.destination);
-        g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(gain,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+l);o.start(t+d);o.stop(t+d+l+.05)})}
-    else{const a=new Audio(wavURL(key,seq));a.volume=1;const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{})}}catch(e){}}
+        g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(gain,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+l);o.start(t+d);o.stop(t+d+l+.05)});
+      return true}}catch(e){}
+  return false}
+/* Devuelve una promesa: true si el teléfono aceptó reproducir el sonido, false si lo bloqueó */
+function playTone(key,seq,type,gain){
+  try{const a=aEl(key,seq);a.muted=false;a.volume=1;a.currentTime=0;
+    const p=a.play();
+    if(p&&p.then)return p.then(()=>{_au=2;return true}).catch(()=>viaCtx(seq,type,gain));
+    return Promise.resolve(true)}
+  catch(e){return Promise.resolve(viaCtx(seq,type,gain))}}
 const DING_SEQ=[[880,0,.4],[1175,.17,.4],[1568,.34,.45]],CHAT_SEQ=[[740,0,.25],[988,.13,.28]];
-function ding(){if(lsGet('snd')==='0')return;
-  playTone('ding',DING_SEQ,'sine',.5);
-  try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}}
+function ding(){
+  if(lsGet('snd')==='0')return Promise.resolve(false);
+  try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}
+  return playTone('ding',DING_SEQ,'sine',.5)}
 
 /* ---------- Notificaciones push (con la app cerrada) ---------- */
 const VAPID_PUBLIC="BGvt0VBixgBAiurvd12sT5uISp9Fb-FV6CtsORFilVceRrdTO5B57L0znfzBKalnfBamxN2Sd0JDsAWWwnJJWVk";
@@ -905,6 +924,26 @@ async function enableNotifs(stay){
   if(p!=='granted')return toast('No se activaron: permite las notificaciones del sitio en el navegador','err');
   try{await pushSubscribe()}catch(e){}
   ding();toast('Notificaciones activadas','good');const nb=$('nbn');if(nb)nb.remove();if(stay!==true&&S.view==='notifs')viewNotifs()}
+/* Revisa una por una las cosas que hacen falta para que suenen las alertas y dice cuál falla */
+async function soundDiag(){
+  const R=[],add=(good,t,fix)=>R.push({good,t,fix:fix||''});
+  const standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  const perm='Notification' in window?Notification.permission:'unsupported';
+  add(lsGet('snd')!=='0','Sonido y vibración activado en la app','Marca la casilla “Sonido y vibración” y vuelve a revisar.');
+  let ok=false;try{ok=await playTone('ding',DING_SEQ,'sine',.5)}catch(e){}
+  add(ok,'El teléfono dejó reproducir el sonido de la app (debiste oírlo ahora)','El navegador bloqueó el audio: toca la pantalla y vuelve a pulsar este botón. Si sigue igual, cierra la app del todo y ábrela de nuevo.');
+  if(IOS)add(standalone,'Abierta desde el icono de la pantalla de inicio','En iPhone los avisos con la app cerrada solo funcionan así: en Safari pulsa Compartir → Añadir a pantalla de inicio, y abre la plataforma desde ese icono (no desde Safari).');
+  add(perm==='granted','Permiso de notificaciones: '+({granted:'concedido',denied:'bloqueado',default:'sin decidir',unsupported:'no disponible'}[perm]||perm),
+    perm==='denied'?'Está bloqueado: ve a los ajustes del navegador o de la app → Notificaciones → Permitir, y vuelve a abrir la plataforma.':perm==='unsupported'?'Este navegador no las admite. Usa Chrome en Android o instala la plataforma desde Safari en iPhone.':'Pulsa “Activar notificaciones”.');
+  let reg=null,sub=null;
+  try{reg=await Promise.race([navigator.serviceWorker.getRegistration(),sleep(1500)]);sub=reg&&reg.pushManager?await reg.pushManager.getSubscription():null}catch(e){}
+  add(!!reg,'Archivo sw.js instalado en el teléfono','Sube sw.js a la misma carpeta que index.html y recarga la plataforma.');
+  add(!!sub,'Teléfono suscrito a los avisos con la app cerrada','Activa las notificaciones (permiso concedido) y recarga la plataforma para que se suscriba.');
+  if(reg&&perm==='granted'){
+    try{await reg.showNotification('🔔 Prueba de aviso',{body:'Si ves este aviso y suena, las notificaciones del teléfono funcionan.',icon:'icon-192.png',vibrate:[200,100,200],tag:'prueba',renotify:true,silent:false});
+      add(true,'Aviso de prueba enviado al teléfono (mira la barra de notificaciones)')}
+    catch(e){add(false,'No se pudo mostrar el aviso de prueba','Revisa el permiso de notificaciones del navegador.')}}
+  return R}
 async function viewNotifs(){
   const my=NAV;main().innerHTML='<h2>Notificaciones</h2>'+skel(3);
   const{data,error}=await sb.from('notifications').select('id,title,body,read,created_at').order('created_at',{ascending:false}).limit(40);
@@ -914,10 +953,14 @@ async function viewNotifs(){
   <div class="card">${perm==='granted'?'<span class="tag ok">🔔 Notificaciones activadas</span>':perm==='denied'?'<div class="warnbox bad">Bloqueaste las notificaciones. Actívalas en los ajustes del sitio de tu navegador.</div>':perm==='unsupported'?'<span class="mut">Este navegador no admite notificaciones.</span>':'<button class="b w" id="en">🔔 Activar notificaciones</button>'}
    <p class="mut" style="margin:8px 0 0">Te avisamos de cambios en tus operaciones, recargas, retiros y verificación, con sonido y vibración, incluso con la app cerrada. Aquí siempre queda el historial.</p>
    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="sndT" style="width:auto;margin:0" ${lsGet('snd')==='0'?'':'checked'}> Sonido y vibración</label>
-   <button class="b gh sm" id="sndP" style="margin-top:8px">🔊 Probar sonido</button></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="b gh sm" id="sndP">🔊 Probar sonido</button><button class="b gh sm" id="dgB">🔍 Revisar por qué no suenan</button></div><div id="dg"></div></div>
   ${error?'<div class="card mut">Falta ejecutar notificaciones.sql en Supabase.</div>':(data||[]).length?data.map(x=>`<div class="card nt ${x.read?'':'un'}"><b>${esc(x.title)}</b><div class="mut">${esc(x.body||'')}</div><div class="mut" style="font-size:12px">${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">Todavía no tienes notificaciones.</div>'}`;
   if($('en'))$('en').onclick=()=>enableNotifs();
-  $('sndT').onchange=e=>lsSet('snd',e.target.checked?'1':'0');$('sndP').onclick=()=>{unlockAudio();ding();toast('Así sonarán tus alertas')};
+  $('sndT').onchange=e=>lsSet('snd',e.target.checked?'1':'0');$('sndP').onclick=async()=>{if(lsGet('snd')==='0')return toast('Activa primero “Sonido y vibración”','err');
+    unlockAudio();const ok=await ding();ok?toast('Así sonarán tus alertas','good'):toast('El teléfono bloqueó el sonido. Toca “Revisar por qué no suenan”.','err')};
+  $('dgB').onclick=ev=>act(ev.target,async()=>{const R=await soundDiag();if(!$('dg'))return;
+    $('dg').innerHTML='<div style="margin-top:10px">'+R.map(r=>`<div style="margin:6px 0">${r.good?'✅':'❌'} ${esc(r.t)}${!r.good&&r.fix?`<div class="mut" style="margin-left:22px;font-size:13px">→ ${esc(r.fix)}</div>`:''}</div>`).join('')
+      +'<p class="mut" style="font-size:13px;margin-top:10px">Si todo sale ✅ y no oyes nada: dentro de la app el sonido usa el volumen de <b>multimedia</b> (no el del timbre); en iPhone hay que quitar el modo silencio con el interruptor lateral; y con la app cerrada suena el sonido de notificaciones del teléfono (Ajustes → Aplicaciones → tu navegador → Notificaciones → Sonido).</p></div>'},null,true);
   if(!error&&(data||[]).some(x=>!x.read)){await sb.rpc('mark_notifs_read');S.unread=0;updBell()}}
 
 /* ---------- Operaciones ---------- */
@@ -1580,9 +1623,9 @@ const KB=(()=>{
 let LT=null,LTB=false;
 const chatSnd=()=>lsGet('chat_snd')!=='0';
 function chatDing(){
-  if(!chatSnd())return;
-  playTone('chat',CHAT_SEQ,'triangle',.45);
-  try{if(navigator.vibrate)navigator.vibrate(90)}catch(e){}}
+  if(!chatSnd())return Promise.resolve(false);
+  try{if(navigator.vibrate)navigator.vibrate(90)}catch(e){}
+  return playTone('chat',CHAT_SEQ,'triangle',.45)}
 const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=(S.chatUnread||0)+(S.pcUnread||0);b.textContent=c>9?'9+':c;b.style.display=c?'block':'none';updTitle()};
 /* Último mensaje visto, guardado por usuario: así el contador sobrevive a cerrar la app */
 const seenKey=()=>'chat_seen_'+(S.user?S.user.id:'');
