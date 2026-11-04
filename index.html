@@ -860,7 +860,7 @@ function ding(){
   return playTone('ding',DING_SEQ,'sine',.5)}
 
 /* ---------- Notificaciones push (con la app cerrada) ---------- */
-const VAPID_PUBLIC="BGvt0VBixgBAiurvd12sT5uISp9Fb-FV6CtsORFilVceRrdTO5B57L0znfzBKalnfBamxN2Sd0JDsAWWwnJJWVk";
+const VAPID_PUBLIC="BOB6xzHtJ4pK7FwAIPrVXj044u_O_p82vHxQeXOnGXfc6GKj5biQj0zlWHyYUzUh3CAcNzTKgWjkc_LrfY2PaMI";
 const b64u=x=>{const p='='.repeat((4-x.length%4)%4),r=atob((x+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))};
 async function pushSubscribe(){
   if(!VAPID_PUBLIC||!('serviceWorker' in navigator)||!('PushManager' in window)||Notification.permission!=='granted')return false;
