@@ -818,13 +818,17 @@ function ding(){if(lsGet('snd')==='0')return;
   try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}}
 
 /* ---------- Notificaciones push (con la app cerrada) ---------- */
-const VAPID_PUBLIC="BO3SR_RLF_CVtEuG8Yte_wnQEK8_kLNcLF3cXvjEy_QG8PDg6-prrkudCOdj5Xs8dwWuCeM4DzZ4GKxWYejD_lc";
+const VAPID_PUBLIC="BGvt0VBixgBAiurvd12sT5uISp9Fb-FV6CtsORFilVceRrdTO5B57L0znfzBKalnfBamxN2Sd0JDsAWWwnJJWVk";
 const b64u=x=>{const p='='.repeat((4-x.length%4)%4),r=atob((x+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))};
 async function pushSubscribe(){
   if(!VAPID_PUBLIC||!('serviceWorker' in navigator)||!('PushManager' in window)||Notification.permission!=='granted')return false;
   const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+  const key=b64u(VAPID_PUBLIC);
   let sub=await reg.pushManager.getSubscription();
-  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUBLIC)});
+  /* Si la suscripción vieja se hizo con otra clave, se descarta y se crea una nueva */
+  if(sub&&sub.options&&sub.options.applicationServerKey){const cur=new Uint8Array(sub.options.applicationServerKey);
+    if(cur.length!==key.length||cur.some((v,i)=>v!==key[i])){try{await sub.unsubscribe()}catch(e){}sub=null}}
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
   const j=sub.toJSON();
   await rpc('save_push_sub',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_ua:navigator.userAgent.slice(0,150)});
   S.pushOn=true;return true}
