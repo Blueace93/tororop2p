@@ -1393,9 +1393,14 @@ async function afterLogin(){
   try{const pr=lsGet('pending_ref'),young=Date.now()-new Date(S.user.created_at)<7*864e5&&!lsGet('refchk_'+uid);
     if(pr||young){await sb.rpc('claim_referral',{p_code:pr||null});lsSet('refchk_'+uid,'1');try{localStorage.removeItem('pending_ref')}catch(e){}}}catch(e){}
   await loadPin();
-  try{if(!sessionStorage.getItem('lg_'+uid)){sessionStorage.setItem('lg_'+uid,'1');
-    let did=lsGet('dev_id');if(!did){did=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Math.random()).slice(2)+Date.now();lsSet('dev_id',did)}
+  try{const ck=k=>{try{const m=document.cookie.match(new RegExp('(?:^|; )'+k+'=([^;]*)'));return m?m[1]:null}catch(e){return null}},
+      ckSet=(k,v)=>{try{document.cookie=k+'='+v+'; max-age=315360000; path=/; SameSite=Lax'}catch(e){}},
+      T=Number(lsGet('lg_t_'+uid)||ck('lg_t')||0);
+    if(!sessionStorage.getItem('lg_'+uid)&&Date.now()-T>12*36e5){sessionStorage.setItem('lg_'+uid,'1');
+    let did=lsGet('dev_id')||ck('dev_id');if(!did){did=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()}
+    lsSet('dev_id',did);ckSet('dev_id',did);
     const r=await rpc('log_login',{p_device_id:did,p_device:devName()});
+    const now=String(Date.now());lsSet('lg_t_'+uid,now);ckSet('lg_t',now);
     if(r&&r.new)setTimeout(()=>toast('🔐 Nuevo dispositivo en tu cuenta. Si no fuiste tú, cambia tu contraseña','err'),700)}}catch(e){}}
 
 /* ----- Alertas de precio ----- */
