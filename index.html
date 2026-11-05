@@ -413,7 +413,8 @@ body.kb .pc-hide{display:none!important}
 <style>body[data-blocked] nav button:not([data-v="wallet"]),body[data-blocked] #fab,body[data-blocked] #fabg{display:none!important}body[data-blocked][data-view="wallet"] main>*:not(h2):not(#blkr):not(#blkb):not(#wcard):not(#hist){display:none!important}</style></head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
-<div id="app"></div>
+<div id="app"><div id="splash" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px"><svg width="64" height="64" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#6d5efc"/><circle cx="20" cy="20" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-weight:800;font-size:22px">Tororo<span style="color:#34d399"> P2P</span></div><div style="width:120px;height:3px;background:#23243a;border-radius:3px;overflow:hidden"><i style="display:block;width:40%;height:100%;background:#6d5efc;animation:spl 1s ease-in-out infinite alternate"></i></div></div></div>
+<style>@keyframes spl{to{transform:translateX(150%)}}</style>
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <script>
@@ -584,13 +585,13 @@ async function boot(){
   S.offScreen=0;
   if(!navigator.onLine)return renderOffline();
   const mp=getMaint();
-  S.maint=(await Promise.race([mp,sleep(1500).then(()=>null)]))||S.maint;drawMaint();
   mp.then(m=>{if(m){S.maint=m;drawMaint()}});
   const{data:{session}}=await sb.auth.getSession();
+  S.maint=(await Promise.race([mp,sleep(800).then(()=>null)]))||S.maint;drawMaint();
   S.user=session?.user||null;
   if(!S.user)return renderAuth(lsGet('pending_ref')?'register':'login');
   if(await mfaGate())return;
-  await loadMe();await afterLogin();render();maybeTuto();setTimeout(checkAnnPopup,1800)}
+  await loadMe();render();afterLogin().catch(()=>{});maybeTuto();setTimeout(checkAnnPopup,1800)}
 async function loadMe(){
   const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
   const[p,w,st,cw,fr,sf]=await Promise.all([
@@ -598,8 +599,9 @@ async function loadMe(){
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
     fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle()]);
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
-  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}if(S.fees&&(S.profile.is_admin||S.profile.is_staff))S.fees.withdraw=0;try{const{data:bk}=await sb.rpc('my_block');S.blocked=!!(bk&&bk.blocked);S.blockWhy=(bk&&bk.reason)||'';document.body.toggleAttribute('data-blocked',S.blocked)}catch(e){}
-try{const{data:fx}=await sb.rpc('my_fee_exempt');S.feeEx=fx===true}catch(e){S.feeEx=false}
+  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}if(S.fees&&(S.profile.is_admin||S.profile.is_staff))S.fees.withdraw=0;{const[b1,b2]=await Promise.allSettled([sb.rpc('my_block'),sb.rpc('my_fee_exempt')]);
+  try{const bk=b1.value&&b1.value.data;S.blocked=!!(bk&&bk.blocked);S.blockWhy=(bk&&bk.reason)||'';document.body.toggleAttribute('data-blocked',S.blocked)}catch(e){}
+  try{S.feeEx=!!(b2.value&&b2.value.data===true)}catch(e){S.feeEx=false}}
 const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
   if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);clearInterval(LT);renderAuth()}
