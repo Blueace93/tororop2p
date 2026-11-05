@@ -2293,7 +2293,7 @@ async function adminStats(mm,my){
     (data.ops_dias||[]).forEach(x=>od[x.day]=x);
     const US=P.usuarios||{},OP=P.ops||{},DEP=P.dep,RET=P.ret,REC=P.rec||{},RETF=P.retf||{},FE=P.fees||{},CU=P.custodia,S14=P.serie14||[],TOP=P.top||[],EQ=P.equipo||[];
     const hasP=!pl.error;
-    const errs=[...Object.keys(data).filter(x=>x.endsWith('_error')).map(x=>[x,data[x]]),...Object.keys(P).filter(x=>x.endsWith('_error')).map(x=>[x,P[x]])];
+    const errs=[...Object.keys(data).filter(x=>x.endsWith('_error')).map(x=>[x,data[x]]),...Object.keys(P).filter(x=>x.endsWith('_error')&&!['rec_error','retf_error'].includes(x)).map(x=>[x,P[x]])];
     /* 1) Atención: lo que necesita acción ahora */
     const al=[],add=(cls,txt,min)=>al.push(`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span>${txt}</span><span class="tag ${cls}">${ageTxt(min)}</span></div>`);
     const cl=m=>m>=240?'bad':'warn';
@@ -2317,8 +2317,7 @@ async function adminStats(mm,my){
     const mrows=[mrow('Depósitos USDT',DEP,'USDT'),mrow('Retiros USDT',RET,'USDT'),...Object.entries(REC).map(([c,x])=>mrow('Recargas '+esc(c),x,c)),...Object.entries(RETF).map(([c,x])=>mrow('Retiros '+esc(c),x,c))].join('');
     const mov=hasP&&mrows?`${H('Movimiento de dinero','Solo lo ya acreditado o enviado; “Pend.” son solicitudes esperando.')}<div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left"></th><th>7 días</th><th>30 días</th><th>Pend.</th></tr>${mrows}</table></div>`:'';
     /* 5) Dinero dentro de la plataforma */
-    const fi=(CU&&CU.fiat)||{};
-    const cus=hasP&&CU?`${H('Dinero dentro de la plataforma','Saldo que los usuarios tienen en la app (lo que respalda lo que les debes).')}<div class="grid2">${t('USDT de usuarios',n(CU.usdt_usuarios,2),'bloqueado en ventas: '+n(CU.usdt_bloqueado,2))}${Object.entries(fi).map(([c,x])=>t(esc(c)+' de usuarios',n(x.usuarios,fdc(c)),'tuyo y de admins: '+n(x.equipo,fdc(c)))).join('')}</div><p class="mut" style="font-size:12px;margin:6px 0 0">USDT tuyo y de admins: ${n(CU.usdt_equipo,2)}</p>`:'';
+        const cus=hasP&&CU?`${H('Dinero dentro de la plataforma','Saldo que los usuarios tienen en la app (lo que respalda lo que les debes).')}<div class="grid2">${t('USDT de usuarios',n(CU.usdt_usuarios,2),'bloqueado en ventas: '+n(CU.usdt_bloqueado,2))}</div><p class="mut" style="font-size:12px;margin:6px 0 0">USDT tuyo y de admins: ${n(CU.usdt_equipo,2)}</p>`:'';
     /* 6) Comisiones */
     const feeKeys=Object.keys(hasP?FE:f);
     const fees=`${H('Comisiones ganadas','Sin descontar lo pagado a referidos.')}<div class="grid2">${feeKeys.length?feeKeys.map(c=>{const x=(hasP?FE:f)[c];return t(esc(c),n(x.hoy,fdc(c))+' <small>hoy</small>','7 días: '+n(x.sem,fdc(c))+(hasP?' · 30 días: '+n(x.mes,fdc(c)):'')+' · total: '+n(x.total,fdc(c)),'ok')}).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>`;
@@ -2371,7 +2370,7 @@ async function staffStats(mm,my){
     const act=`${H('Mi actividad','Lo que has revisado y resuelto.')}<div class="grid2">${GR.map(([lb,fn])=>{const rows=M.filter(x=>fn(x.t)),s=k=>rows.reduce((a,x)=>a+Number(x[k]||0),0);
       const det=rows.filter(x=>Number(x.mes)>0).map(x=>(AUD_A[x.v]||x.v)+' '+n(x.mes,0)).join(' · ');
       return t(lb,n(s('mes'),0)+' <small>en 30 días</small>','hoy: '+n(s('hoy'),0)+' · 7 días: '+n(s('sem'),0)+(det?'<br>'+esc(det):''))}).join('')}</div>`;
-    const bal=`${H('Mi saldo en la plataforma')}<div class="grid2">${t('USDT',n(S.wallet?.available,2),'')}${t('CUP',n(S.bal?.CUP,0),'')}${t('USD',n(S.bal?.USD,2),'')}</div>`;
+    const bal=`${H('Mi saldo en la plataforma')}<div class="grid2">${t('USDT',n(S.wallet?.available,2),'')}</div>`;
     const pan=`${H('Plataforma','Solo cantidades.')}<div class="grid2">${t('Usuarios',n(PL.usuarios,0),'nuevos hoy: '+n(PL.nuevos_hoy,0)+' · 7 días: '+n(PL.nuevos_7d,0))}${t('Verificados',n(PL.verificados,0),'','ok')}${t('En revisión',n(PL.en_revision,0),'',PL.en_revision?'warn':'')}${t('Sin verificar',n(PL.sin_verificar,0),'rechazados: '+n(PL.rechazados,0))}${t('Operaciones hoy',n(OP.hoy,0),'7 días: '+n(OP.sem,0))}${t('Abiertas ahora',n(OP.abiertas,0),n(OP.disputas,0)+' en disputa',OP.disputas?'warn':'')}</div>`;
     const rec=R.length?`${H('Mis últimas acciones')}<div class="card" style="margin:0">${R.map(x=>{const st=String(x.action||'').split(':')[1]||'';return`<div style="padding:7px 0;border-bottom:1px solid var(--line)"><b>${esc(AUD_A[st]||st)}</b> · ${esc(AUD_T[x.target_table]||x.target_table||'')}${x.target?' · @'+esc(x.target):''}<br><span class="mut">${when(x.created_at)}</span></div>`}).join('')}</div>`:`${H('Mis últimas acciones')}<div class="card mut" style="margin:0">Todavía no hay acciones registradas.</div>`;
     b.innerHTML=cola+act+bal+pan+rec+'<button class="b gh w" id="stfR" style="margin-top:10px">Actualizar</button>';
@@ -2497,13 +2496,13 @@ async function adminBalances(){
     if(!$('balL'))return;
     if(error){L.innerHTML='<div class="warnbox bad">Falta ejecutar <code>saldo_administradores.sql</code> en Supabase.</div>';return}
     L.innerHTML=(data||[]).map(u=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="row"><b>@${esc(u.username)}${u.id===S.user.id?' (tú)':''}</b><span class="mut">${u.role==='owner'?'dueño':'administrador'}</span></div>
-      <div class="mut" style="margin:4px 0">${['USDT','CUP','USD'].map(c=>fmt(u[c.toLowerCase()],c)+' '+c).join(' · ')}</div>
+      <div class="mut" style="margin:4px 0">${fmt(u.usdt,'USDT')} USDT</div>
       <div class="grid2"><button class="b ok sm" data-bs="1" data-bu="${u.id}" data-bn="${esc(u.username)}">＋ Poner saldo</button><button class="b bad sm" data-bs="-1" data-bu="${u.id}" data-bn="${esc(u.username)}">− Quitar saldo</button></div></div>`).join('')||'<p class="mut">No hay administradores.</p>';
     L.querySelectorAll('[data-bs]').forEach(b=>b.onclick=async()=>{
       const sign=Number(b.dataset.bs),add=sign>0,who=b.dataset.bn;
-      const m=await ask(add?'Poner saldo':'Quitar saldo',`<p class="mut" style="margin-top:0">${add?'Se sumará a':'Se descontará de'} <b>@${esc(who)}</b>.</p><label>Moneda</label><select id="bcu"><option>USDT</option><option>CUP</option><option>USD</option></select><label>Monto</label><input id="bam" inputmode="decimal" placeholder="Ej: 100" autocomplete="off"><label>Nota (opcional)</label><input id="bnt" maxlength="120" placeholder="Ej: recargas de la semana" autocomplete="off">`,add?'Poner saldo':'Quitar saldo',add?'ok':'bad');
+      const m=await ask(add?'Poner saldo':'Quitar saldo',`<p class="mut" style="margin-top:0">${add?'Se sumará a':'Se descontará de'} <b>@${esc(who)}</b>.</p><label>Monto (USDT)</label><input id="bam" inputmode="decimal" placeholder="Ej: 100" autocomplete="off"><label>Nota (opcional)</label><input id="bnt" maxlength="120" placeholder="Ej: recargas de la semana" autocomplete="off">`,add?'Poner saldo':'Quitar saldo',add?'ok':'bad');
       if(!m)return;
-      const c=m.querySelector('#bcu').value,amt=Number(String(m.querySelector('#bam').value).replace(',','.')),note=m.querySelector('#bnt').value.trim();
+      const c='USDT',amt=Number(String(m.querySelector('#bam').value).replace(',','.')),note=m.querySelector('#bnt').value.trim();
       if(!isFinite(amt)||amt<=0){toast('Escribe un monto mayor que 0','err');return}
       m.remove();
       act(b,async()=>{await rpc('admin_adjust_balance',{p_user:b.dataset.bu,p_currency:c,p_amount:sign*amt,p_note:note||null});
