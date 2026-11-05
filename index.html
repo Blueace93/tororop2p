@@ -1082,10 +1082,8 @@ async function viewOrder(){
     if(bank&&$('xb').checked)await rpc('flag_cross_bank',{p_order:o.id});
     const p=await uploadProof(o.id,'buyer',$('f').files[0]);await rpc('submit_buyer_proof',{p_order:o.id,p_path:p});await reload()},'Captura de pago enviada');
   if($('sOk'))$('sOk').onclick=async ev=>{const m=await ask('Confirmar pago recibido',`<p>Confirmas que recibiste <b>${mny(due(o,cur),cur)} ${esc(cur)}</b>. Los <b>${n(o.amount,2)} USDT</b> se liberarán al comprador ahora mismo y no se puede deshacer.</p>`,'Sí, lo recibí','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_confirm',{p_order:o.id});await reload()},'USDT liberados al comprador')};
-  if($('sAI'))$('sAI').onclick=async ev=>{const b=ev.target,box=$('aiBox');b.disabled=true;b.textContent='Analizando la captura…';
-    let d;try{const{data,error}=await sb.functions.invoke('check-proof',{body:{order_id:o.id,expected:{amount:due(o,cur),currency:cur}}});
-      if(error||!data)throw new Error('fail');d=data.error?{checks:[{level:'na',text:data.msg||'No se pudo analizar la captura.'}]}:data}
-    catch(e){d={checks:[{level:'na',text:'No se pudo analizar la captura ahora. Revísala tú mismo.'}]}}
+  if($('sAI'))$('sAI').onclick=async ev=>{const b=ev.target,box=$('aiBox');b.disabled=true;b.textContent='Leyendo la captura…';
+    let d;try{d=await sellerCheck(o,cur)}catch(e){d={checks:[{level:'na',text:'No se pudo leer la captura ahora. Revísala tú mismo.'}]}}
     box.innerHTML=aiCard(d);b.disabled=false;b.textContent='🔍 Volver a revisar con IA'};
   if($('sNo'))$('sNo').onclick=async ev=>{const m=await ask('No he recibido el pago','<p>La operación queda en pausa. El comprador podrá pedir mediación al administrador y subir sus comprobantes.</p>','Confirmar','bad');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_deny',{p_order:o.id});await reload()},'Operación en pausa')};
   if($('med'))$('med').onclick=async ev=>{const m=await ask('Solicitar mediación',`<p class="mut">Sube una captura de tus <b>últimas operaciones</b> de Transfermóvil o EnZona y escribe el <b>número de referencia</b> del pago (6 a 12 dígitos). El administrador lo revisará.</p><label>Número de referencia</label><input id="mref" inputmode="numeric" maxlength="12" placeholder="Ej: 12345678"><label>Captura del historial</label><input type="file" id="mf" accept="image/*">`,'Enviar a mediación','ok');
@@ -1877,7 +1875,7 @@ function loadTess(){return _tess||(_tess=new Promise((ok,no)=>{const sc=document
 async function ocrBlob(blob){const T=await loadTess();return Promise.race([T.recognize(blob,'eng').then(r=>r.data.text||''),new Promise((_,j)=>setTimeout(()=>j(new Error('ocr')),60000))])}
 async function getProof(path){const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');return r.blob()}
 const aiCard=d=>{const ic={ok:'✅',warn:'⚠️',na:'➖'};
-  return`<div class="card" style="margin-top:10px"><h3>🤖 Revisión con IA</h3><p class="mut" style="font-size:12px;margin-top:0">Lectura automática de la captura del comprador.</p>${(d.checks||[]).map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}<div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura puede estar editada o ser falsa, y la IA puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div><p class="mut" style="font-size:11px;margin-bottom:0">La imagen se analiza con un servicio de IA externo.</p></div>`};
+  return`<div class="card" style="margin-top:10px"><h3>🤖 Revisión con IA</h3><p class="mut" style="font-size:12px;margin-top:0">Lectura automática (OCR) de la captura del comprador.</p>${(d.checks||[]).map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}<div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura puede estar editada o ser falsa, y el lector puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div><p class="mut" style="font-size:11px;margin-bottom:0">La lectura se hace en tu dispositivo (OCR): la imagen no se envía a ningún servicio externo.</p></div>`};
 async function analyzeProofs(o,cur){
   const L=[],W=[];const ok=t=>L.push('✅ '+t),bad=t=>{L.push('⚠️ '+t);W.push(t)},na=t=>L.push('➖ '+t);
   const exp=due(o,cur),ref=o.mediation_ref||'',tail=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-4);
@@ -1900,6 +1898,19 @@ async function analyzeProofs(o,cur){
     if(rr&&rr.length)bad('La misma referencia ya se usó en otra operación: '+rr.map(x=>x.id.slice(0,8)).join(', ')+'.');else ok('La referencia no se había usado antes.')}catch(e){}
   const head=W.length?`Resultado: ${W.length} punto(s) a revisar.`:'Resultado: sin señales raras en lo que se pudo comprobar.';
   return `${HDR}\n${head}\n\n${L.join('\n')}\n\nSolo es un análisis automático de IA, orientativo: NO demuestra si el pago es real o falso y puede equivocarse al leer capturas borrosas. La decisión la toma el administrador.`}
+
+/* Revisión de la captura para el VENDEDOR: solo OCR en el dispositivo (sin servicio externo) */
+async function sellerCheck(o,cur){
+  const na=t=>({checks:[{level:'na',text:t}]});
+  if(!o.buyer_proof)return na('El comprador aún no subió la captura.');
+  let b;try{b=await getProof(o.buyer_proof)}catch(e){return na('No se pudo descargar la captura. Revísala tú mismo.')}
+  let t;try{t=await ocrBlob(b)}catch(e){return na('El lector de texto no cargó (revisa tu conexión). Revísala tú mismo.')}
+  if(!String(t).replace(/\s+/g,'').length)return na('No se pudo leer texto en la captura (borrosa o sin texto). Revísala tú mismo.');
+  const C=[],add=(level,text)=>C.push({level,text});
+  const exp=due(o,cur),tail=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-4);
+  hasAmount(t,exp)?add('ok',`Monto: aparece ${mny(exp,cur)} ${cur} en la captura.`):add('warn',`Monto: no se encontró ${mny(exp,cur)} ${cur} en la captura.`);
+  if(tail)hasTail(t,tail)?add('ok',`Destino: aparecen los últimos dígitos (${tail}) de tus datos de cobro.`):add('warn',`Destino: no se vieron los últimos dígitos (${tail}) de tus datos de cobro (pueden estar ocultos).`);
+  return{checks:C}}
 
 /* ---------- Anuncio a pantalla completa ---------- */
 function showAnnFull(list,i=0,prev){
