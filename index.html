@@ -2275,33 +2275,67 @@ async function viewAdmin(){
 
 
 /* ---------- Estadísticas del administrador ---------- */
+const ageTxt=m=>{m=Math.max(0,Math.round(m||0));if(m<60)return m+' min';if(m<1440){const h=Math.floor(m/60),r=m%60;return h+' h'+(r?' '+r+' min':'')}return Math.floor(m/1440)+' d'};
+const waitTag=ts=>{const m=Math.round((Date.now()-new Date(ts).getTime())/60000);return`<span class="tag ${m>=240?'bad':m>=60?'warn':''}">espera ${ageTxt(m)}</span>`};
 async function adminStats(mm,my){
   mm.insertAdjacentHTML('beforeend','<h3 id="s-stats">Estadísticas</h3><div id="statbox">'+skel(2)+'</div>');
   const fdc=c=>c==='CUP'?0:c==='USD'?2:4;
   const t=(l,v,sub,c)=>`<div class="card" style="margin:0"><div class="mut">${l}</div><div class="big"${c?` style="color:var(--${c})"`:''}>${v}</div>${sub?`<div class="mut" style="font-size:12px">${sub}</div>`:''}</div>`;
+  const H=(x,sub)=>`<h4 style="margin:16px 0 6px">${x}</h4>${sub?`<p class="mut" style="font-size:12px;margin:0 0 8px">${sub}</p>`:''}`;
+  const dlt=(a,b,d=0)=>{a=Number(a||0);b=Number(b||0);if(!a&&!b)return'igual que ayer';const x=a-b;return x===0?'igual que ayer':(x>0?'▲ ':'▼ ')+n(Math.abs(x),d)+' vs ayer'};
+  const dd=x=>x.slice(8)+'/'+x.slice(5,7);
   const load=async()=>{
-    const{data,error}=await sb.rpc('admin_stats');
+    const[a,pl]=await Promise.all([sb.rpc('admin_stats'),sb.rpc('admin_stats_plus')]);
     if(my!==NAV)return;const b=document.getElementById('statbox');if(!b)return;
-    if(error||!data){b.innerHTML='<div class="card dg">'+(/could not find the function/i.test((error&&error.message)||'')?'Falta crear la función <b>admin_stats</b> en Supabase (pega el SQL de estadísticas).':esc((error&&error.message)||'Sin datos'))+'</div>';return}
+    const data=a.data||{},P=pl.data||{};
+    if(a.error&&pl.error){b.innerHTML='<div class="card dg">'+(/could not find the function/i.test((a.error.message||'')+(pl.error.message||''))?'Falta ejecutar <code>estadisticas.sql</code> (y el SQL de estadísticas anterior) en Supabase.':esc(pl.error.message||a.error.message||'Sin datos'))+'</div>';return}
     const k=data.kyc||{},v=data.visitas||{},u=data.nuevos||{},o=data.ops||{},f=data.comisiones||{},ser=data.serie||[],od={};
     (data.ops_dias||[]).forEach(x=>od[x.day]=x);
-    const errs=Object.keys(data).filter(x=>x.endsWith('_error'));
-    const dd=x=>x.slice(8)+'/'+x.slice(5,7);
-    b.innerHTML=`<h4 style="margin:6px 0">Visitas</h4>
-    <div class="grid2" style="margin-bottom:12px">${t('Hoy',n(v.hoy_unicos,0),'dispositivos distintos · '+n(v.hoy_aperturas,0)+' aperturas')}${t('Últimos 7 días',n(v.sem_unicos,0),'dispositivos distintos')}</div>
-    <h4 style="margin:6px 0">Mejores horas para publicar</h4>
-    <div id="stH" style="margin-bottom:12px">${skel(1)}</div>
-    <h4 style="margin:6px 0">Usuarios</h4>
-    <div class="grid2" style="margin-bottom:12px">${t('Sin verificar',n(k.sin_verificar,0),'no han enviado su KYC',k.sin_verificar?'warn':'')}${t('En revisión',n(k.en_revision,0),'KYC pendiente de aprobar')}${t('Verificados',n(k.verificados,0),'KYC aprobado','ok')}${t('Rechazados',n(k.rechazados,0),'KYC rechazado')}${t('Nuevos hoy',n(u.hoy,0),'')}${t('Nuevos 7 días',n(u.sem,0),'Total: '+n(k.total,0)+' usuarios')}</div>
-    <h4 style="margin:6px 0">Operaciones completadas</h4>
-    <div class="grid2" style="margin-bottom:12px">${t('Hoy',n(o.hoy_n,0),n(o.hoy_usdt,2)+' USDT')}${t('7 días',n(o.sem_n,0),n(o.sem_usdt,2)+' USDT')}</div>
-    <h4 style="margin:6px 0">Comisiones registradas</h4>
-    <div class="grid2" style="margin-bottom:6px">${Object.keys(f).some(c=>c==='USDT')?Object.entries(f).filter(([c])=>c==='USDT').map(([c,x])=>t(esc(c)+' hoy',n(x.hoy,fdc(c)),'7 días: '+n(x.sem,fdc(c))+' · total: '+n(x.total,fdc(c)))).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>
-    <p class="mut" style="font-size:12px;margin:0 0 12px">Son las comisiones cobradas, sin descontar lo pagado a referidos.</p>
-    <h4 style="margin:6px 0">Últimos 7 días</h4>
-    <div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left">Día</th><th>Visitas</th><th>Nuevos</th><th>Ops</th><th>USDT</th></tr>
-    ${ser.slice().reverse().map(x=>{const q=od[x.day]||{};return`<tr style="text-align:right"><td style="text-align:left">${dd(x.day)}</td><td>${n(x.visitas,0)}</td><td>${n(x.nuevos,0)}</td><td>${n(q.ops,0)}</td><td>${n(q.usdt,2)}</td></tr>`}).join('')}</table></div>
-    ${errs.length?`<p class="mut" style="font-size:12px">Secciones no disponibles: ${esc(errs.map(x=>x.replace('_error','')+' ('+data[x]+')').join(' · '))}</p>`:''}
+    const US=P.usuarios||{},OP=P.ops||{},DEP=P.dep,RET=P.ret,REC=P.rec||{},RETF=P.retf||{},FE=P.fees||{},CU=P.custodia,S14=P.serie14||[],TOP=P.top||[],EQ=P.equipo||[];
+    const hasP=!pl.error;
+    const errs=[...Object.keys(data).filter(x=>x.endsWith('_error')).map(x=>[x,data[x]]),...Object.keys(P).filter(x=>x.endsWith('_error')).map(x=>[x,P[x]])];
+    /* 1) Atención: lo que necesita acción ahora */
+    const al=[],add=(cls,txt,min)=>al.push(`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span>${txt}</span><span class="tag ${cls}">${ageTxt(min)}</span></div>`);
+    const cl=m=>m>=240?'bad':'warn';
+    if(DEP&&DEP.pend_n>0&&DEP.pend_min>=30)add(cl(DEP.pend_min),`${n(DEP.pend_n,0)} depósito(s) USDT por acreditar`,DEP.pend_min);
+    if(RET&&RET.pend_n>0&&RET.pend_min>=30)add(cl(RET.pend_min),`${n(RET.pend_n,0)} retiro(s) USDT por enviar`,RET.pend_min);
+    Object.entries(REC).forEach(([c,x])=>{if(x.pend_n>0&&x.pend_min>=30)add(cl(x.pend_min),`${n(x.pend_n,0)} recarga(s) en ${esc(c)} sin acreditar`,x.pend_min)});
+    Object.entries(RETF).forEach(([c,x])=>{if(x.pend_n>0&&x.pend_min>=30)add(cl(x.pend_min),`${n(x.pend_n,0)} retiro(s) en ${esc(c)} sin enviar`,x.pend_min)});
+    if(US.kyc_pend>0&&US.kyc_cola_min>=60)add(cl(US.kyc_cola_min),`${n(US.kyc_pend,0)} verificación(es) KYC sin revisar`,US.kyc_cola_min);
+    if(OP.disputas>0)add(OP.disputa_min>=120?'bad':'warn',`${n(OP.disputas,0)} operación(es) en disputa`,OP.disputa_min);
+    const tot30=(OP.mes_n||0)+(OP.mes_canceladas||0),canc=tot30?(OP.mes_canceladas||0)/tot30:0;
+    const attn=hasP?`${H('Atención ahora','Lo que lleva tiempo esperando. Lo que no aparece aquí está al día.')}<div class="card" style="margin:0">${al.length?al.join(''):'<span style="color:var(--ok)">✅ Todo al día: no hay nada esperando.</span>'}${tot30>=5&&canc>.3?`<div class="mut" style="margin-top:8px">⚠️ En 30 días se cancelaron o devolvieron ${Math.round(canc*100)}% de las operaciones.</div>`:''}</div>`:'';
+    /* 2) Hoy */
+    const usd=fe=>fe&&fe.USDT?fe.USDT:{hoy:0,sem:0,mes:0,total:0};
+    const feeU=hasP?usd(FE):{hoy:(f.USDT||{}).hoy||0,sem:(f.USDT||{}).sem||0,mes:0,total:(f.USDT||{}).total||0};
+    const hoy=`${H('Hoy')}<div class="grid2">${t('Operaciones completadas',n(hasP?OP.hoy_n:o.hoy_n,0),hasP?dlt(OP.hoy_n,OP.ayer_n):'')}${t('Volumen',n(hasP?OP.hoy_usdt:o.hoy_usdt,2)+' <small>USDT</small>',hasP?dlt(OP.hoy_usdt,OP.ayer_usdt,2):'')}${t('Comisión ganada',n(feeU.hoy,4)+' <small>USDT</small>','7 días: '+n(feeU.sem,4),'ok')}${t('Usuarios nuevos',n(hasP?US.nuevos_hoy:u.hoy,0),'7 días: '+n(hasP?US.nuevos_7d:u.sem,0))}${t('Visitas',n(v.hoy_unicos,0),'dispositivos distintos · '+n(v.hoy_aperturas,0)+' aperturas')}${t('Visitas 7 días',n(v.sem_unicos,0),'dispositivos distintos')}</div>`;
+    /* 3) Últimos 30 días */
+    const rate=tot30?Math.round((OP.mes_n||0)/tot30*100):0;
+    const mes=hasP?`${H('Últimos 30 días','Operaciones completadas y cómo les fue.')}<div class="grid2">${t('Operaciones',n(OP.mes_n,0),'canceladas o devueltas: '+n(OP.mes_canceladas,0))}${t('Volumen',n(OP.mes_usdt,2)+' <small>USDT</small>','≈ '+n(OP.mes_cup,0)+' CUP')}${t('Tasa de éxito',tot30?rate+'%':'—','completadas de todas las cerradas',tot30&&rate<70?'warn':tot30?'ok':'')}${t('Promedio por operación',n(OP.mes_n?OP.mes_usdt/OP.mes_n:0,2)+' <small>USDT</small>','')}${t('Tiempo promedio',ageTxt(OP.min_prom),'desde que se crea hasta que se completa')}${t('Abiertas ahora',n(OP.abiertas,0),n(OP.disputas,0)+' en disputa',OP.disputas?'warn':'')}</div>`:'';
+    /* 4) Movimiento de dinero */
+    const mrow=(lb,x,c)=>x?`<tr style="text-align:right"><td style="text-align:left">${lb}</td><td>${n(x.sem,fdc(c))}</td><td>${n(x.mes,fdc(c))}</td><td>${x.pend_n?`<span class="tag warn">${n(x.pend_n,0)}</span>`:'—'}</td></tr>`:'';
+    const mrows=[mrow('Depósitos USDT',DEP,'USDT'),mrow('Retiros USDT',RET,'USDT'),...Object.entries(REC).map(([c,x])=>mrow('Recargas '+esc(c),x,c)),...Object.entries(RETF).map(([c,x])=>mrow('Retiros '+esc(c),x,c))].join('');
+    const mov=hasP&&mrows?`${H('Movimiento de dinero','Solo lo ya acreditado o enviado; “Pend.” son solicitudes esperando.')}<div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left"></th><th>7 días</th><th>30 días</th><th>Pend.</th></tr>${mrows}</table></div>`:'';
+    /* 5) Dinero dentro de la plataforma */
+    const fi=(CU&&CU.fiat)||{};
+    const cus=hasP&&CU?`${H('Dinero dentro de la plataforma','Saldo que los usuarios tienen en la app (lo que respalda lo que les debes).')}<div class="grid2">${t('USDT de usuarios',n(CU.usdt_usuarios,2),'bloqueado en ventas: '+n(CU.usdt_bloqueado,2))}${Object.entries(fi).map(([c,x])=>t(esc(c)+' de usuarios',n(x.usuarios,fdc(c)),'tuyo y de admins: '+n(x.equipo,fdc(c)))).join('')}</div><p class="mut" style="font-size:12px;margin:6px 0 0">USDT tuyo y de admins: ${n(CU.usdt_equipo,2)}</p>`:'';
+    /* 6) Comisiones */
+    const feeKeys=Object.keys(hasP?FE:f);
+    const fees=`${H('Comisiones ganadas','Sin descontar lo pagado a referidos.')}<div class="grid2">${feeKeys.length?feeKeys.map(c=>{const x=(hasP?FE:f)[c];return t(esc(c),n(x.hoy,fdc(c))+' <small>hoy</small>','7 días: '+n(x.sem,fdc(c))+(hasP?' · 30 días: '+n(x.mes,fdc(c)):'')+' · total: '+n(x.total,fdc(c)),'ok')}).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>`;
+    /* 7) Usuarios */
+    const usrs=`${H('Usuarios')}<div class="grid2">${t('Total',n(hasP?US.total:k.total,0),'nuevos 30 días: '+n(hasP?US.nuevos_30d:u.sem,0))}${t('Verificados',n(k.verificados??US.kyc_ok,0),'KYC aprobado','ok')}${t('En revisión',n(k.en_revision??US.kyc_pend,0),'KYC pendiente de aprobar',(k.en_revision??US.kyc_pend)?'warn':'')}${t('Sin verificar',n(k.sin_verificar,0),'no han enviado su KYC',k.sin_verificar?'warn':'')}${hasP?t('Activos 30 días',n(US.activos_30d,0),'completaron al menos una operación')+t('Recurrentes',n(US.recurrentes,0),'2 o más operaciones en total'):t('Rechazados',n(k.rechazados,0),'KYC rechazado')}</div>`;
+    /* 8) Mejores horas (se llena después) */
+    const hrs=`${H('Mejores horas para publicar')}<div id="stH">${skel(1)}</div>`;
+    /* 9) Top usuarios */
+    const top=hasP&&TOP.length?`${H('Usuarios que más operan','Últimos 30 días, por volumen.')}<div class="card" style="margin:0">${TOP.map((x,i)=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span><b>${i+1}.</b> @${esc(x.username)}</span><span class="mut">${n(x.usdt,2)} USDT · ${n(x.ops,0)} op.</span></div>`).join('')}</div>`:'';
+    /* 10) Equipo */
+    const eq=hasP&&EQ.length?`${H('Administradores','Lo que ha hecho cada uno (verificaciones y recargas).')}<div class="card" style="margin:0">${EQ.map(x=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)"><div class="row"><b>@${esc(x.username)}</b><span class="mut">${x.ultima?'última: '+when(x.ultima):'sin actividad'}</span></div><div class="mut" style="font-size:12px">7 días: ${n(x.n7,0)} · 30 días: ${n(x.n30,0)} (KYC ${n(x.kyc30,0)} · recargas ${n(x.rec30,0)})</div></div>`).join('')}</div>`:'';
+    /* 11) Gráfico de 14 días y tabla de 7 */
+    const mx=Math.max(1,...S14.map(x=>Number(x.usdt)||0));
+    const chart=hasP&&S14.length?`${H('Volumen de los últimos 14 días','USDT completados por día (hora de Cuba).')}<div class="card" style="margin:0"><div style="display:flex;align-items:flex-end;gap:3px;height:100px">${S14.map(x=>`<div title="${dd(x.day)}: ${n(x.usdt,2)} USDT · ${n(x.ops,0)} op." style="flex:1;height:${Math.max(3,Math.round((Number(x.usdt)||0)/mx*100))}%;background:var(--acc);opacity:${Number(x.usdt)?1:.25};border-radius:3px 3px 0 0"></div>`).join('')}</div><div class="mut" style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px"><span>${dd(S14[0].day)}</span><span>${dd(S14[S14.length-1].day)}</span></div></div>`:'';
+    const tab=`${H('Detalle por día','Últimos 7 días.')}<div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left">Día</th><th>Visitas</th><th>Nuevos</th><th>Ops</th><th>USDT</th></tr>${ser.slice().reverse().map(x=>{const q=od[x.day]||{};return`<tr style="text-align:right"><td style="text-align:left">${dd(x.day)}</td><td>${n(x.visitas,0)}</td><td>${n(x.nuevos,0)}</td><td>${n(q.ops,0)}</td><td>${n(q.usdt,2)}</td></tr>`}).join('')}</table></div>`;
+    b.innerHTML=`${pl.error?'<div class="warnbox" style="margin-bottom:8px">Para ver las estadísticas nuevas ejecuta <code>estadisticas.sql</code> en Supabase.</div>':''}${attn}${hoy}${mes}${mov}${cus}${fees}${usrs}${hrs}${top}${eq}${chart}${tab}
+    ${errs.length?`<p class="mut" style="font-size:12px">Secciones no disponibles: ${esc(errs.map(x=>x[0].replace('_error','')+' ('+x[1]+')').join(' · '))}</p>`:''}
     <button class="b gh w" id="stR" style="margin-top:10px">Actualizar</button>`;
     document.getElementById('stR').onclick=()=>{b.innerHTML=skel(2);load()};
     loadHours();
@@ -2321,6 +2355,31 @@ async function adminStats(mm,my){
   load();
 }
 
+/* Administrador secundario: su resumen y su actividad (sin dinero de la plataforma) */
+async function staffStats(mm,my){
+  mm.insertAdjacentHTML('beforeend','<h3 id="s-sta">Mi resumen</h3><div id="stfbox">'+skel(2)+'</div>');
+  const t=(l,v,sub,c)=>`<div class="card" style="margin:0"><div class="mut">${l}</div><div class="big"${c?` style="color:var(--${c})"`:''}>${v}</div>${sub?`<div class="mut" style="font-size:12px">${sub}</div>`:''}</div>`;
+  const H=(x,sub)=>`<h4 style="margin:16px 0 6px">${x}</h4>${sub?`<p class="mut" style="font-size:12px;margin:0 0 8px">${sub}</p>`:''}`;
+  const GR=[['🪪 Verificaciones KYC',x=>x==='kyc_submissions'],['💳 Recargas de saldo',x=>x==='fiat_topups'],['⚖️ Mediaciones',x=>x==='orders']];
+  const load=async()=>{
+    try{await loadBal()}catch(e){}
+    const{data,error}=await sb.rpc('staff_my_stats');
+    if(my!==NAV)return;const b=document.getElementById('stfbox');if(!b)return;
+    if(error||!data){b.innerHTML='<div class="card dg">'+(/could not find the function/i.test((error&&error.message)||'')?'Falta ejecutar <code>estadisticas.sql</code> en Supabase.':esc((error&&error.message)||'Sin datos'))+'</div>';return}
+    const M=data.mias||[],R=data.recientes||[],C=data.cola||{},PL=data.plataforma||{},OP=data.ops||{};
+    const cola=`${H('Pendiente ahora')}<div class="card" style="margin:0"><div class="row"><b>Verificaciones KYC por revisar</b><span class="tag ${C.kyc_n?(C.kyc_min>=240?'bad':C.kyc_min>=60?'warn':''):'ok'}">${n(C.kyc_n,0)}</span></div>${C.kyc_n?`<div class="mut" style="margin-top:4px">La más antigua espera hace ${ageTxt(C.kyc_min)}. Procura revisarlas en menos de 1 hora.</div>`:'<div class="mut" style="margin-top:4px">✅ No hay ninguna esperando.</div>'}${OP.disputas?`<div class="row" style="margin-top:8px"><b>Operaciones en disputa</b><span class="tag warn">${n(OP.disputas,0)}</span></div>`:''}</div>`;
+    const act=`${H('Mi actividad','Lo que has revisado y resuelto.')}<div class="grid2">${GR.map(([lb,fn])=>{const rows=M.filter(x=>fn(x.t)),s=k=>rows.reduce((a,x)=>a+Number(x[k]||0),0);
+      const det=rows.filter(x=>Number(x.mes)>0).map(x=>(AUD_A[x.v]||x.v)+' '+n(x.mes,0)).join(' · ');
+      return t(lb,n(s('mes'),0)+' <small>en 30 días</small>','hoy: '+n(s('hoy'),0)+' · 7 días: '+n(s('sem'),0)+(det?'<br>'+esc(det):''))}).join('')}</div>`;
+    const bal=`${H('Mi saldo en la plataforma')}<div class="grid2">${t('USDT',n(S.wallet?.available,2),'')}${t('CUP',n(S.bal?.CUP,0),'')}${t('USD',n(S.bal?.USD,2),'')}</div>`;
+    const pan=`${H('Plataforma','Solo cantidades.')}<div class="grid2">${t('Usuarios',n(PL.usuarios,0),'nuevos hoy: '+n(PL.nuevos_hoy,0)+' · 7 días: '+n(PL.nuevos_7d,0))}${t('Verificados',n(PL.verificados,0),'','ok')}${t('En revisión',n(PL.en_revision,0),'',PL.en_revision?'warn':'')}${t('Sin verificar',n(PL.sin_verificar,0),'rechazados: '+n(PL.rechazados,0))}${t('Operaciones hoy',n(OP.hoy,0),'7 días: '+n(OP.sem,0))}${t('Abiertas ahora',n(OP.abiertas,0),n(OP.disputas,0)+' en disputa',OP.disputas?'warn':'')}</div>`;
+    const rec=R.length?`${H('Mis últimas acciones')}<div class="card" style="margin:0">${R.map(x=>{const st=String(x.action||'').split(':')[1]||'';return`<div style="padding:7px 0;border-bottom:1px solid var(--line)"><b>${esc(AUD_A[st]||st)}</b> · ${esc(AUD_T[x.target_table]||x.target_table||'')}${x.target?' · @'+esc(x.target):''}<br><span class="mut">${when(x.created_at)}</span></div>`}).join('')}</div>`:`${H('Mis últimas acciones')}<div class="card mut" style="margin:0">Todavía no hay acciones registradas.</div>`;
+    b.innerHTML=cola+act+bal+pan+rec+'<button class="b gh w" id="stfR" style="margin-top:10px">Actualizar</button>';
+    document.getElementById('stfR').onclick=()=>{b.innerHTML=skel(2);load()};
+  };
+  load();
+}
+
 /* ---------- Administradores adicionales: panel limitado ---------- */
 async function viewStaff(){
   const my=NAV;main().innerHTML='<h2>Panel de administrador</h2>'+skel(3);
@@ -2329,7 +2388,7 @@ async function viewStaff(){
     sb.rpc('staff_active_users'),sb.rpc('staff_my_duty')]);
   if(my!==NAV)return;
   const K=ks.data||[],AT=S.stab||'pend',DUTY=du.error?{on:true,can:false}:(du.data||{on:true,can:false});
-  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],...(DUTY.can?[['med','⚖️ Mediaciones']]:[]),['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
+  const tabsHtml=`<div class="atabs chips" id="atabs">${[['pend','📋 Pendientes'],...(DUTY.can?[['med','⚖️ Mediaciones']]:[]),['sta','📊 Mi resumen'],['usr','🔎 Usuarios'],['cfg','📢 Anuncios y datos']].map(([k,l])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${k==='pend'&&K.length?' · '+K.length:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   ${DUTY.on?`<div class="warnbox" style="margin-bottom:12px">🟢 Estás <b>de turno</b>${DUTY.until?' hasta '+when(DUTY.until):''}.</div>`:'<div class="warnbox bad" style="margin-bottom:12px">⏸️ Estás <b>fuera de turno</b>. Puedes consultar, pero no revisar verificaciones ni resolver mediaciones hasta que el dueño te asigne turno.</div>'}
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac.error?'—':(ac.data??0)}</div></div>
@@ -2340,14 +2399,14 @@ async function viewStaff(){
   ${DUTY.can?'<h3 id="s-med">Mediaciones pendientes</h3><div id="medbox"></div>':''}
   <h3 id="s-find">Buscar usuarios</h3>
   <div class="card"><p class="mut" style="margin-top:0">Consulta de solo lectura: usuario, nombre y estado de verificación. No muestra saldos ni movimientos.</p><input id="sfQ" type="search" placeholder="Escribe el usuario o el nombre" autocomplete="off"><div id="sfR"></div></div>`;
-  const TABOF={'s-kyc':'pend','s-rec':'pend','s-med':'med','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
+  const TABOF={'s-kyc':'pend','s-rec':'pend','s-med':'med','s-sta':'sta','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   /* KYC pendientes: se actualiza en el sitio, sin recargar el panel */
   const drawK=()=>{const bx=$('kycbox');if(!bx)return;
     if(!DUTY.on){bx.innerHTML='<div class="card mut">Estás fuera de turno.</div>';return}
-    bx.innerHTML=K.length?K.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>';
+    bx.innerHTML=K.length?K.map(x=>`<div class="card"><div class="row"><b>${esc(x.full_name)}</b><span class="mut">@${esc(x.profiles?.username)}</span></div><div class="mut">Documento: ${esc(x.id_number)} · ${when(x.created_at)} · ${waitTag(x.created_at)}</div><button class="b gh sm" data-kv="${x.id}" style="margin-top:6px">Ver documentos</button><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-ka="${x.id}">Aprobar</button><button class="b bad sm" data-kr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>';
     const tb=mm.querySelector('[data-at="pend"]');if(tb)tb.textContent='📋 Pendientes'+(K.length?' · '+K.length:'');
     const bd=$('adbd');if(bd){bd.textContent=K.length;bd.style.display=K.length?'block':'none'}
     const find=id=>K.find(k=>String(k.id)===String(id)),drop=id=>{const i=K.findIndex(k=>String(k.id)===String(id));if(i>=0)K.splice(i,1);drawK()};
@@ -2371,6 +2430,7 @@ async function viewStaff(){
   /* Pestañas: cada una carga lo suyo solo cuando se abre */
   const LD={
     pend:()=>staffTopups(my),
+    sta:()=>staffStats(mm,my),
     cfg:async()=>{const[an,ai]=await Promise.all([
       sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
       sb.from('staff_info').select('full_name,about,photo_paths').eq('user_id',S.user.id).maybeSingle()]);
