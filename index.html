@@ -340,6 +340,10 @@ html.lite .auth .ac>*{animation-name:vin!important;animation-duration:.5s!import
 html.lite .auth .ac>*:nth-child(2){animation-delay:.08s!important}html.lite .auth .ac>*:nth-child(3){animation-delay:.16s!important}html.lite .auth .ac>*:nth-child(4){animation-delay:.24s!important}html.lite .auth .ac>*:nth-child(5){animation-delay:.32s!important}html.lite .auth .ac>*:nth-child(6){animation-delay:.4s!important}
 
 body:has(.auth){padding-bottom:0!important}
+/* Login: el teclado no debe tapar los campos */
+body.akb .auth{align-items:flex-start;min-height:0;overflow:visible}
+body.akb{padding-bottom:var(--akh,0px)!important}
+
 .auth{padding:12px 16px}
 .auth .ac{width:100%;max-width:400px;position:relative;z-index:1}
 .auth .lg{margin-bottom:4px!important}
@@ -2752,6 +2756,18 @@ async function staffMed(D,my){
 /* Visitas: una llamada por sesión, con un identificador anónimo por dispositivo */
 (()=>{try{if(sessionStorage.getItem('_tv'))return;sessionStorage.setItem('_tv','1');let v=localStorage.getItem('_vid');if(!v){v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,'');localStorage.setItem('_vid',v)}sb.rpc('track_visit',{p_vid:v}).then(()=>{},()=>{})}catch(e){}})();
 try{if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}catch(e){}
+/* Login: al enfocar un campo, sube la pantalla para que el teclado no lo tape */
+(()=>{const B=document.body,vv=window.visualViewport;let t=null;
+  const kbh=()=>vv?Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop)):0;
+  const isF=e=>e&&e.matches&&e.matches('.auth input,.auth select,.auth textarea');
+  const show=el=>{if(!el||!el.isConnected)return;const h=kbh();
+    B.classList.add('akb');B.style.setProperty('--akh',(h>80?h+24:Math.round(innerHeight*.45))+'px');
+    requestAnimationFrame(()=>{try{el.scrollIntoView({block:'center',behavior:'auto'})}catch(e){}})};
+  document.addEventListener('focusin',e=>{if(!isF(e.target))return;clearTimeout(t);
+    show(e.target);setTimeout(()=>show(e.target),250);setTimeout(()=>show(e.target),600)});
+  document.addEventListener('focusout',()=>{clearTimeout(t);t=setTimeout(()=>{if(!isF(document.activeElement)){B.classList.remove('akb');B.style.removeProperty('--akh')}},200)});
+  if(vv)vv.addEventListener('resize',()=>{const a=document.activeElement;if(isF(a))show(a)})})();
+
 boot();
 </script>
 </body>
