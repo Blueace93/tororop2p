@@ -409,6 +409,14 @@ body.kb .pc-hide{display:none!important}
 .comm b{font-size:30px!important}
 .comm>div>span:nth-child(2){display:flex;flex-direction:column;line-height:1.25}
 .pcs .b{white-space:nowrap;padding-left:6px;padding-right:6px;font-size:13px}.pcs .bd2{position:static!important;display:inline-block;margin-left:3px;transform:none!important}.pcs .b{padding-left:4px;padding-right:4px}
+
+/* ---- Rendimiento: menos animación y menos trabajo de pintado ---- */
+.sk{animation:none!important;background:var(--card)!important}
+main>*,main.vin{animation:none!important}
+#offers .card,#breqs .card{content-visibility:auto;contain-intrinsic-size:auto 150px}
+.seg button,.chip,.tile,.qb,button.b{-webkit-tap-highlight-color:transparent}
+.card,.tile,.wal,.qb{box-shadow:none!important}
+.ov{animation:none!important}.md{animation:none!important}
 </style>
 <style>body[data-blocked] nav button:not([data-v="wallet"]),body[data-blocked] #fab,body[data-blocked] #fabg{display:none!important}body[data-blocked][data-view="wallet"] main>*:not(h2):not(#blkr):not(#blkb):not(#wcard):not(#hist){display:none!important}</style></head>
 <body>
@@ -738,7 +746,7 @@ async function viewMarket(){
     <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></details></details><div id="offers">${skel(3)}</div></div>
   <div id="pnB" style="display:none"><div id="breqs">${skel(1)}</div></div>`;
   $('srt').value=F.sort;bindTop();
-  $('tg').onclick=()=>{if(gate())return;const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
+  $('tg').onclick=()=>{if(gate())return;if(!S.cards)loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   $('tb').onclick=()=>{const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   const setMt=t=>{S.mt=t;$('pnS').style.display=t==='s'?'':'none';$('pnB').style.display=t==='b'?'':'none';$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t))};
   $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'s');
@@ -756,7 +764,6 @@ async function viewMarket(){
     w.style.display=l.length?'block':'none';sv.style.display='flex'};
   $('ocs').onchange=()=>{const x=(S.cards||[]).find(k=>k.id===$('ocs').value);if(x){$('obk').value=x.bank;$('odc').value=x.card_number;if(x.phone)$('odp').value=x.phone}$('osvw').style.display=x?'none':'flex'};
   $('oc').addEventListener('change',syncCards);
-  loadCards().then(()=>{if($('oc'))syncCards()});
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
     const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),card=($('odc').value||'').replace(/\s+/g,' ').trim(),ph=($('odp').value||'').trim(),d=(c!=='Saldo Móvil'&&card?'Tarjeta: '+card+' · ':'')+(ph?'Teléfono: '+ph:'');
@@ -774,7 +781,8 @@ async function viewMarket(){
   $('q').oninput=e=>{F.q=e.target.value;rf()};$('srt').onchange=e=>{F.sort=e.target.value;rf()};
   $('mine').onchange=e=>{F.mine=e.target.checked;rf()};
   $('fm').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;F.m=b.dataset.m;$('fm').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));rf()};
-  const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username)').eq('status','open').order('created_at',{ascending:false}).limit(300);
+  if(S.offers&&S.offers.length)drawOffers();
+  const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username)').eq('status','open').order('created_at',{ascending:false}).limit(100);
   if(my!==NAV)return;
   if(error){$('offers').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
   S.offers=data||[];{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();loadStats(S.offers.map(o=>o.seller_id)).then(c=>{if(c&&my===NAV)drawOffers()})}
@@ -919,13 +927,13 @@ async function pollNotifs(){
   if(!S.user||document.hidden||!navigator.onLine)return;
   if(NPB){S.pollAgain=true;return}
   NPB=true;S.pollN=(S.pollN||0)+1;
-  getMaint().then(m=>{if(m){S.maint=m;drawMaint()}});
+  if(S.pollN%3===1)getMaint().then(m=>{if(m){S.maint=m;drawMaint()}});
   try{
     const{data}=await withTO(sb.from('notifications').select('id,title,body').eq('read',false).order('created_at',{ascending:false}).limit(30),10000);
     const rows=data||[];S.unread=rows.length;
     const fresh=rows.filter(r=>!S.seen.has(r.id));rows.forEach(r=>S.seen.add(r.id));
     if(!S.np0)fresh.slice(0,3).forEach(r=>sysNotify(r.title,r.body));
-    if((S.profile?.is_admin||S.profile?.is_staff)&&S.pollN%2===1){
+    if((S.profile?.is_admin||S.profile?.is_staff)&&S.pollN%4===1){
       const c=async(t,f)=>{const{count}=await f(sb.from(t).select('id',{count:'exact',head:true}));return count||0};
       const v=!S.profile.is_admin?[await c('kyc_submissions',q=>q.eq('status','pending'))]:await Promise.all([c('orders',q=>q.in('status',['seller_confirmed','disputed'])),c('fiat_topups',q=>q.eq('status','pending')),c('fiat_withdrawals',q=>q.eq('status','pending')),c('withdrawals',q=>q.eq('status','pending')),c('deposits',q=>q.eq('status','pending')),c('kyc_submissions',q=>q.eq('status','pending')),c('trades',q=>q.in('status',['pending','review']).eq('asset','MOVIL'))]);
       const tot=v.reduce((a,b)=>a+b,0);
@@ -936,7 +944,7 @@ async function pollNotifs(){
       if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
     S.np0=false;updBell()}catch(e){}finally{NPB=false;if(S.pollAgain){S.pollAgain=false;setTimeout(pollNotifs,300)}}}
 function startNotifs(){
-  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,12000);
+  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,20000);
   try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>pollNotifs()).subscribe()}catch(e){}
   setTimeout(askNotifBanner,2500);
   if('serviceWorker' in navigator&&'Notification' in window&&Notification.permission==='granted')navigator.serviceWorker.register('sw.js').then(()=>pushSubscribe()).catch(()=>{})}
@@ -1655,16 +1663,19 @@ const userTag=(role,kyc)=>role==='owner'?'<span class="tag ok">👑 Creador Toro
 const NEWSQL='chat_y_compras.sql';
 async function loadBuyReqs(my){
   if(!$('breqs'))return;
+  const paint=d=>{
+    if(my!==NAV||!$('breqs'))return;
+    d=d||[];{const c=$('cB');if(c)c.textContent='('+d.length+')'}
+    $('breqs').innerHTML=d.length?d.map(x=>{const mine=x.user_id===S.user.id;
+      return`<div class="card"><div class="row"><b style="font-size:18px">${n(x.amount,2)} USDT</b><span class="tag ok">Pagará con: ${esc(x.currency)}</span></div>
+      <div class="mut" style="margin:4px 0">@${esc(x.username)}${mine?' (tú)':''} · ${when(x.created_at)}</div>${userTag(x.role,x.kyc_status)}
+      ${mine?`<div style="margin-top:8px"><button class="b gh sm" data-bcx="${x.id}">Cancelar mi solicitud</button></div>`:''}</div>`}).join(''):'<div class="card mut">Nadie está solicitando USDT ahora mismo.</div>';
+    $('breqs').querySelectorAll('[data-bcx]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('buy_req_cancel',{p_id:b.dataset.bcx});S.breqsC=null;await loadBuyReqs(NAV)},'Solicitud cancelada'))};
+  if(S.breqsC)paint(S.breqsC);
   let d;
   try{d=await rpc('buy_req_list')}
-  catch(e){if(my===NAV&&$('breqs'))$('breqs').innerHTML=`<div class="card mut">Esta sección todavía no está activada.${isAdm()?' Ejecuta <code>'+NEWSQL+'</code> en Supabase.':''}</div>`;return}
-  if(my!==NAV||!$('breqs'))return;
-  d=d||[];{const c=$('cB');if(c)c.textContent='('+d.length+')'}
-  $('breqs').innerHTML=d.length?d.map(x=>{const mine=x.user_id===S.user.id;
-    return`<div class="card"><div class="row"><b style="font-size:18px">${n(x.amount,2)} USDT</b><span class="tag ok">Pagará con: ${esc(x.currency)}</span></div>
-    <div class="mut" style="margin:4px 0">@${esc(x.username)}${mine?' (tú)':''} · ${when(x.created_at)}</div>${userTag(x.role,x.kyc_status)}
-    ${mine?`<div style="margin-top:8px"><button class="b gh sm" data-bcx="${x.id}">Cancelar mi solicitud</button></div>`:''}</div>`}).join(''):'<div class="card mut">Nadie está solicitando USDT ahora mismo.</div>';
-  $('breqs').querySelectorAll('[data-bcx]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('buy_req_cancel',{p_id:b.dataset.bcx});await loadBuyReqs(NAV)},'Solicitud cancelada'))}
+  catch(e){if(S.breqsC)return;if(my===NAV&&$('breqs'))$('breqs').innerHTML=`<div class="card mut">Esta sección todavía no está activada.${isAdm()?' Ejecuta <code>'+NEWSQL+'</code> en Supabase.':''}</div>`;return}
+  S.breqsC=d||[];paint(S.breqsC)}
 
 /* Filtro del chat: sin enlaces, correos, teléfonos ni datos de contacto (el servidor repite la misma revisión) */
 const chatBad=t=>{const s=String(t);
@@ -1745,7 +1756,7 @@ async function liveTick(){
   try{const r=await withTO(sb.rpc('live_ping'),9000);if(r.error||!r.data)return;const x=r.data;
     S.onl=Number(x.online)||0;setActU();tickChat(x.chat_last==null?null:Number(x.chat_last),x.chat_last_user)}
   catch(e){}finally{LTB=false}}
-function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,8000)}
+function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,15000)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
 async function viewChat(){
@@ -2740,6 +2751,7 @@ async function staffMed(D,my){
 
 /* Visitas: una llamada por sesión, con un identificador anónimo por dispositivo */
 (()=>{try{if(sessionStorage.getItem('_tv'))return;sessionStorage.setItem('_tv','1');let v=localStorage.getItem('_vid');if(!v){v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,'');localStorage.setItem('_vid',v)}sb.rpc('track_visit',{p_vid:v}).then(()=>{},()=>{})}catch(e){}})();
+try{if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}catch(e){}
 boot();
 </script>
 </body>
