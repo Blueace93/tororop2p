@@ -824,16 +824,11 @@ function drawOffers(){
     if(bt.dataset.chat!==undefined)return pcInvite(bt.dataset.chat,bt.dataset.cn);
     if(bt.dataset.cancel!==undefined){
       const oid=bt.dataset.cancel;
-      const m=await ask('Cancelar oferta','<p>¿Seguro que quieres cancelar tu oferta? Se te devolverá el USDT bloqueado (monto + comisión).</p>','Sí, cancelar','bad');if(!m)return;m.remove();
       act(bt,async()=>{
-        try{await rpc('cancel_offer',{p_id:oid})}
-        catch(er){
-          /* si el nombre del parámetro en la base es otro, probamos los alternativos */
-          if(!/Could not find|schema cache|does not exist|function/i.test(String(er&&er.message)))throw er;
-          let last=er;for(const k of ['p_offer','p_offer_id','offer_id']){try{await rpc('cancel_offer',{[k]:oid});last=null;break}catch(e2){last=e2;if(!/Could not find|schema cache|does not exist|function/i.test(String(e2&&e2.message)))break}}
-          if(last)throw last}
+        await rpc('cancel_offer',{p_id:oid});
         S.offers=(S.offers||[]).filter(x=>String(x.id)!==String(oid));
-        drawOffers();{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}loadBal()},'Oferta cancelada')}}}
+        try{drawOffers();const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}catch(e){}
+        loadBal();viewMarket()},'Oferta cancelada')}}}
 function offerDetail(id){
   const o=S.offers.find(x=>String(x.id)===String(id));if(!o)return;
   const{m,c,bank}=parseM(o.methods),mine=o.seller_id===S.user.id,rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),fee=FPO();
@@ -845,23 +840,6 @@ function offerDetail(id){
    <div class="grid2"><button class="b gh" id="dx">Cerrar</button>${mine?'':'<button class="b" id="db">Comprar</button>'}</div>`);
   mm.querySelector('#dx').onclick=()=>mm.remove();
   const db=mm.querySelector('#db');if(db)db.onclick=()=>{mm.remove();const b=document.querySelector(`[data-buy="${id}"]`);if(b)b.click()}}
-function offerShare(id){
-  const o=(S.offers||[]).find(x=>String(x.id)===String(id));if(!o){toast('Esa oferta ya no está disponible. Actualiza la lista.','err');return}const{c}=parseM(o.methods);
-  const url=/^https?:$/.test(location.protocol)?location.origin+location.pathname:'https://tororo.trade';
-  const t=`Tororo P2P · ${n(o.amount,2)} USDT a ${mny(o.price_cup,c)} ${c} por USDT.${url?' Entra y compra: '+url:''}`;
-  const canShare=typeof navigator.share==='function';
-  const mm=modal(`<h3>🔗 Compartir oferta</h3><textarea id="shT" rows="4" readonly style="width:100%">${esc(t)}</textarea>
-    <div class="grid2" style="margin-top:12px"><button class="b" id="shC">📋 Copiar</button>${canShare?'<button class="b gh" id="shS">📤 Compartir</button>':'<button class="b gh" id="shX">Cerrar</button>'}</div>
-    ${canShare?'<button class="b gh w" id="shX" style="margin-top:8px">Cerrar</button>':''}`);
-  const ta=mm.querySelector('#shT');
-  mm.querySelector('#shX').onclick=()=>mm.remove();
-  mm.querySelector('#shC').onclick=async()=>{
-    let ok=false;
-    try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(t);ok=true}}catch(e){}
-    if(!ok){try{ta.focus();ta.select();ta.setSelectionRange(0,t.length);ok=document.execCommand('copy')}catch(e){}}
-    if(ok){toast('Copiado','good');mm.remove()}else toast('Mantén pulsado el texto para copiarlo','err')};
-  const sh=mm.querySelector('#shS');
-  if(sh)sh.onclick=async()=>{try{await navigator.share({title:'Tororo P2P',text:t});mm.remove()}catch(e){if(!e||e.name!=='AbortError')toast('Usa el botón Copiar','err')}}}
 
 /* ---------- Cambio USD Clásica ⇄ CUP ---------- */
 async function viewTrade(){
