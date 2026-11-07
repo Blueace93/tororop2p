@@ -810,27 +810,19 @@ function drawOffers(){
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
     <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
-    <div class="obt">${mine?`<button type="button" class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}</div></div>`}).join('')+
+    <div class="obt">${mine?`<button class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}<button class="b gh sm" data-shr="${o.id}">🔗 Compartir</button></div></div>`}).join('')+
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'');
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
-    const o=S.offers.find(x=>String(x.id)===String(b.dataset.buy));if(!o){toast('Esa oferta ya no está disponible','err');return}const{c,bank}=parseM(o.methods),net=o.amount;
+    const o=S.offers.find(x=>x.id===b.dataset.buy),{c,bank}=parseM(o.methods),net=o.amount;
     const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>${bank?`<p class="warnbox">🏦 Enviarás a <b>${esc(bank)}</b>. Si tu tarjeta es de un banco distinto, la acreditación puede demorar hasta <b>72 h</b>.</p>`:''}`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
-  /* Delegación: los clics siguen funcionando aunque la lista se redibuje (stats, roles, filtros) */
-  box.onclick=async e=>{
-    const bt=e.target.closest&&e.target.closest('[data-cancel],[data-det],[data-chat]');if(!bt||!box.contains(bt))return;
-    if(bt.dataset.det!==undefined)return offerDetail(bt.dataset.det);
-    if(bt.dataset.chat!==undefined)return pcInvite(bt.dataset.chat,bt.dataset.cn);
-    if(bt.dataset.cancel!==undefined){
-      const oid=bt.dataset.cancel;
-      act(bt,async()=>{
-        await rpc('cancel_offer',{p_id:oid});
-        S.offers=(S.offers||[]).filter(x=>String(x.id)!==String(oid));
-        try{drawOffers();const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}catch(e){}
-        loadBal();viewMarket()},'Oferta cancelada')}}}
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadBal();viewMarket()},'Oferta cancelada'));
+  box.querySelectorAll('[data-det]').forEach(b=>b.onclick=()=>offerDetail(b.dataset.det));
+  box.querySelectorAll('[data-shr]').forEach(b=>b.onclick=()=>offerShare(b.dataset.shr));
+  box.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>pcInvite(b.dataset.chat,b.dataset.cn))}
 function offerDetail(id){
-  const o=S.offers.find(x=>String(x.id)===String(id));if(!o)return;
+  const o=S.offers.find(x=>x.id===id);if(!o)return;
   const{m,c,bank}=parseM(o.methods),mine=o.seller_id===S.user.id,rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),fee=FPO();
   const mm=modal(`<h3>${n(o.amount,2)} USDT</h3>
    <div class="mut" style="line-height:1.9">💵 Precio: <b>${mny(o.price_cup,c)} ${esc(c)}</b> por USDT<br>🧾 Total: <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b><br>👤 Vendedor: <b>@${esc(o.profiles?.username)}</b>${mine?' (tú)':''}<br>${repTxt(o.seller_id)?repTxt(o.seller_id)+'<br>':''}🕒 Publicada: ${when(o.created_at)}</div>
@@ -840,6 +832,11 @@ function offerDetail(id){
    <div class="grid2"><button class="b gh" id="dx">Cerrar</button>${mine?'':'<button class="b" id="db">Comprar</button>'}</div>`);
   mm.querySelector('#dx').onclick=()=>mm.remove();
   const db=mm.querySelector('#db');if(db)db.onclick=()=>{mm.remove();const b=document.querySelector(`[data-buy="${id}"]`);if(b)b.click()}}
+async function offerShare(id){
+  const o=S.offers.find(x=>x.id===id);if(!o)return;const{c}=parseM(o.methods);
+  const t=`Tororo P2P · ${n(o.amount,2)} USDT a ${mny(o.price_cup,c)} ${c} por USDT. Entra y compra: ${location.origin}${location.pathname}`;
+  try{if(navigator.share){await navigator.share({title:'Tororo P2P',text:t});return}}catch(e){if(e&&e.name==='AbortError')return}
+  copy(t)}
 
 /* ---------- Cambio USD Clásica ⇄ CUP ---------- */
 async function viewTrade(){
@@ -929,9 +926,6 @@ function playTone(key,seq,type,gain){
     return Promise.resolve(true)}
   catch(e){return Promise.resolve(viaCtx(seq,type,gain))}}
 const DING_SEQ=[[880,0,.4],[1175,.17,.4],[1568,.34,.45]],CHAT_SEQ=[[740,0,.25],[988,.13,.28]];
-/* Prepara los sonidos en reposo para que el primer toque no se congele generándolos */
-{const pre=()=>{try{wavURL('ding',DING_SEQ);wavURL('chat',CHAT_SEQ);aEl('ding',DING_SEQ);aEl('chat',CHAT_SEQ)}catch(e){}};
-  if(window.requestIdleCallback)requestIdleCallback(pre,{timeout:3000});else setTimeout(pre,1500)}
 function ding(){
   if(lsGet('snd')==='0')return Promise.resolve(false);
   try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}
@@ -962,9 +956,6 @@ async function sysNotify(title,body){
   try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
     if(reg)await reg.showNotification(title,{body,icon:'icon-192.png',vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
 let NPB=false;
-/* Evita que todos los usuarios consulten a la vez (picos) y detecta si la persona está activa */
-const jit=ms=>Math.round(ms*(0.85+Math.random()*0.3));
-let LAST_ACT=Date.now();['pointerdown','keydown','touchstart','scroll'].forEach(ev=>addEventListener(ev,()=>{LAST_ACT=Date.now()},{passive:true,capture:true}));
 async function pollNotifs(){
   if(!S.user||document.hidden||!navigator.onLine)return;
   if(NPB){S.pollAgain=true;return}
@@ -986,9 +977,8 @@ async function pollNotifs(){
       if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
     S.np0=false;updBell()}catch(e){}finally{NPB=false;if(S.pollAgain){S.pollAgain=false;setTimeout(pollNotifs,300)}}}
 function startNotifs(){
-  clearTimeout(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();
-  {const g=S._npg=(S._npg||0)+1;const nx=()=>{NP=setTimeout(async()=>{if(g!==S._npg||!S.user)return;try{await pollNotifs()}catch(e){}if(g===S._npg&&S.user)nx()},jit(S.rtHit?40000:20000))};nx()}
-  try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>{S.rtHit=true;pollNotifs()}).subscribe()}catch(e){}
+  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,20000);
+  try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>pollNotifs()).subscribe()}catch(e){}
   setTimeout(askNotifBanner,2500);
   if('serviceWorker' in navigator&&'Notification' in window&&Notification.permission==='granted')navigator.serviceWorker.register('sw.js').then(()=>pushSubscribe()).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)pollNotifs()});
@@ -1384,8 +1374,7 @@ async function viewProfile(){
   <div class="card" id="myrep"><h3>Mi reputación</h3><span class="mut">Cargando…</span></div>
   <button class="b gh w" id="mrb" style="margin-bottom:12px">⋯ Más herramientas (referidos, historial, ayuda…)</button>
   <div class="card"><h3>Cambiar contraseña</h3><input id="np" type="password" autocomplete="new-password" placeholder="Nueva contraseña"><button class="b gh w" id="npb">Actualizar contraseña</button></div>
-  <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>
-  <p class="mut" style="text-align:center;font-size:11px;margin:4px 0 0">Versión 6-nov-b</p>`;
+  <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>`;
   $('lo').onclick=async()=>{await pushUnbind();sb.auth.signOut()};$('mrb').onclick=()=>go('more');
   bindCards(my);
   sb.from('user_contact').select('phone').eq('user_id',S.user.id).maybeSingle().then(r=>{if(my!==NAV||!$('cp'))return;if(r.error){$('cp').placeholder='Falta activar en Supabase';return}if(r.data&&r.data.phone)$('cp').value=r.data.phone});
@@ -1827,8 +1816,7 @@ async function liveTick(){
   try{const r=await withTO(sb.rpc('live_ping'),9000);if(r.error||!r.data)return;const x=r.data;
     S.onl=Number(x.online)||0;setActU();tickChat(x.chat_last==null?null:Number(x.chat_last),x.chat_last_user)}
   catch(e){}finally{LTB=false}}
-function startLive(){clearTimeout(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();
-  {const g=S._ltg=(S._ltg||0)+1;const nx=()=>{LT=setTimeout(async()=>{if(g!==S._ltg||!S.user)return;try{await liveTick()}catch(e){}if(g===S._ltg&&S.user)nx()},jit(Date.now()-LAST_ACT>120000?30000:15000))};nx()}}
+function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,15000)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
 /* ---------- Chat: editar, borrar y reaccionar (capa propia; no toca las tablas del chat) ---------- */
