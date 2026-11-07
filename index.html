@@ -249,6 +249,8 @@ button,a,summary,.chip,.tile,.card[data-o],select,label{touch-action:manipulatio
 html{scroll-behavior:auto}
 .wa{font-size:0!important;width:46px;height:46px;padding:0!important;display:flex;align-items:center;justify-content:center;opacity:.92}.wa:before{content:"💬";font-size:22px}
 .fab-m{width:52px;height:52px;font-size:28px}.fab{bottom:92px;right:14px}
+/* El contenedor del botón + es invisible pero tapaba los botones de las tarjetas (Detalles, Chat…): solo el + y sus opciones abiertas reciben toques */
+.fab{pointer-events:none}.fab-m{pointer-events:auto}
 body{padding-bottom:150px!important}
 /* Rendimiento: sin desenfoques costosos, fondos sólidos */
 header,nav,#toast,.ov,.fab-bg,.wal-a,.wal-c{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
