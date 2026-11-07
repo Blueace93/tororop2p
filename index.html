@@ -426,7 +426,7 @@ body.kb .pc-hide{display:none!important}
 /* ---- Rendimiento: menos animación y menos trabajo de pintado ---- */
 .sk{animation:none!important;background:var(--card)!important}
 main>*,main.vin{animation:none!important}
-#breqs .card{content-visibility:auto;contain-intrinsic-size:auto 150px}
+#offers .card,#breqs .card{content-visibility:auto;contain-intrinsic-size:auto 150px}
 .seg button,.chip,.tile,.qb,button.b{-webkit-tap-highlight-color:transparent}
 .card,.tile,.wal,.qb{box-shadow:none!important}
 .ov{animation:none!important}.md{animation:none!important}
@@ -759,7 +759,7 @@ async function viewMarket(){
     <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></details></details><div id="offers">${skel(3)}</div></div>
   <div id="pnB" style="display:none"><div id="breqs">${skel(1)}</div></div>`;
   $('srt').value=F.sort;bindTop();
-  $('tg').onclick=()=>{if(gate())return;loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
+  $('tg').onclick=()=>{if(gate())return;if(!S.cards)loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   $('tb').onclick=()=>{const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   const setMt=t=>{S.mt=t;$('pnS').style.display=t==='s'?'':'none';$('pnB').style.display=t==='b'?'':'none';$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t))};
   $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'s');
@@ -777,7 +777,6 @@ async function viewMarket(){
     w.style.display=l.length?'block':'none';sv.style.display='flex'};
   $('ocs').onchange=()=>{const x=(S.cards||[]).find(k=>k.id===$('ocs').value);if(x){$('obk').value=x.bank;$('odc').value=x.card_number;if(x.phone)$('odp').value=x.phone}$('osvw').style.display=x?'none':'flex'};
   $('oc').addEventListener('change',syncCards);
-  if($('sell').style.display==='block')loadCards().then(()=>{if($('oc'))syncCards()});
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
     const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),card=($('odc').value||'').replace(/\s+/g,' ').trim(),ph=($('odp').value||'').trim(),d=(c!=='Saldo Móvil'&&card?'Tarjeta: '+card+' · ':'')+(ph?'Teléfono: '+ph:'');
@@ -804,23 +803,23 @@ function drawOffers(){
   const box=$('offers');if(!box)return;const F=S.f,q=F.q.toLowerCase();
   let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
   l.sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount-a.amount);
-  if(!l.length){box.dataset.h='';box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
+  if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=FPO();
-  const H_=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods),rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user');
+  box.innerHTML=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods),rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user');
     return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
     <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
-    <div class="obt">${mine?`<button class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}</div></div>`}).join('')+
+    <div class="obt">${mine?`<button class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}<button class="b gh sm" data-shr="${o.id}">🔗 Compartir</button></div></div>`}).join('')+
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'');
-  if(box.dataset.h===H_)return;box.dataset.h=H_;box.innerHTML=H_;
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.offers.find(x=>x.id===b.dataset.buy),{c,bank}=parseM(o.methods),net=o.amount;
     const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>${bank?`<p class="warnbox">🏦 Enviarás a <b>${esc(bank)}</b>. Si tu tarjeta es de un banco distinto, la acreditación puede demorar hasta <b>72 h</b>.</p>`:''}`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
-  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{try{await rpc('cancel_offer',{p_offer:b.dataset.cancel})}catch(e){if(/Could not find the function|schema cache/i.test(String(e&&e.message)))await rpc('cancel_offer',{p_id:b.dataset.cancel});else throw e}await loadBal();viewMarket()},'Oferta cancelada'));
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadBal();viewMarket()},'Oferta cancelada'));
   box.querySelectorAll('[data-det]').forEach(b=>b.onclick=()=>offerDetail(b.dataset.det));
+  box.querySelectorAll('[data-shr]').forEach(b=>b.onclick=()=>offerShare(b.dataset.shr));
   box.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>pcInvite(b.dataset.chat,b.dataset.cn))}
 function offerDetail(id){
   const o=S.offers.find(x=>x.id===id);if(!o)return;
