@@ -1386,7 +1386,8 @@ async function viewProfile(){
   <div class="card" id="myrep"><h3>Mi reputación</h3><span class="mut">Cargando…</span></div>
   <button class="b gh w" id="mrb" style="margin-bottom:12px">⋯ Más herramientas (referidos, historial, ayuda…)</button>
   <div class="card"><h3>Cambiar contraseña</h3><input id="np" type="password" autocomplete="new-password" placeholder="Nueva contraseña"><button class="b gh w" id="npb">Actualizar contraseña</button></div>
-  <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>`;
+  <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>
+  <p class="mut" style="text-align:center;font-size:11px;margin:4px 0 0">Versión 6-nov-b</p>`;
   $('lo').onclick=async()=>{await pushUnbind();sb.auth.signOut()};$('mrb').onclick=()=>go('more');
   bindCards(my);
   sb.from('user_contact').select('phone').eq('user_id',S.user.id).maybeSingle().then(r=>{if(my!==NAV||!$('cp'))return;if(r.error){$('cp').placeholder='Falta activar en Supabase';return}if(r.data&&r.data.phone)$('cp').value=r.data.phone});

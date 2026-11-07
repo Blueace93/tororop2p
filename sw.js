@@ -1,5 +1,5 @@
 // Service worker de Tororo: notificaciones push con la app cerrada + caché para abrir más rápido
-const CACHE = 'tororo-v1';
+const CACHE = 'tororo-v2';
 const SB_LIB = 'cdn.jsdelivr.net/npm/@supabase/supabase-js';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -19,12 +19,14 @@ self.addEventListener('fetch', e => {
     e.respondWith(caches.open(CACHE).then(c => c.match(r).then(h => h || fetch(r).then(n => { if (n.ok) c.put(r, n.clone()); return n; }))));
     return;
   }
-  // La página y sus iconos: se muestra lo guardado al instante y se actualiza detrás
+  // La página y sus iconos: primero la versión nueva (hasta 3 s); si la red va lenta o falla, la guardada
   if (u.origin === location.origin && (r.mode === 'navigate' || /\/(index\.html|manifest\.json|icon-[^/]+\.png)?$/.test(u.pathname))) {
-    e.respondWith(caches.open(CACHE).then(c => c.match(r, { ignoreSearch: true }).then(h => {
-      const net = fetch(r).then(n => { if (n.ok) c.put(r, n.clone()); return n; }).catch(() => h);
-      return h || net;
-    })));
+    e.respondWith(caches.open(CACHE).then(c => {
+      const net = fetch(r, { cache: 'no-cache' }).then(n => { if (n.ok) c.put(r, n.clone()); return n; });
+      const slow = new Promise(res => setTimeout(res, 3000, null));
+      return Promise.race([net, slow]).then(n => n || c.match(r, { ignoreSearch: true }).then(h => h || net))
+        .catch(() => c.match(r, { ignoreSearch: true }));
+    }));
     return;
   }
   // Todo lo demás (Supabase, pagos, OCR) pasa directo a la red
