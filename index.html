@@ -343,6 +343,15 @@ body:has(.auth){padding-bottom:0!important}
 /* Login: el teclado no debe tapar los campos */
 body.akb .auth{align-items:flex-start;min-height:0;overflow:visible}
 body.akb{padding-bottom:var(--akh,0px)!important}
+/* Ofertas: botones y rol */
+.obt{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.obt .b{flex:1 1 0;min-width:0;white-space:nowrap}
+.obt .ob1{flex:1 1 100%}
+/* Chat: reacciones */
+.rxr{display:flex;gap:6px;margin-top:5px}
+.rx{width:auto;min-height:0;margin:0;box-shadow:none;background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:1px 9px;font-size:12px;line-height:1.7;cursor:pointer}
+.rx.on{background:rgba(124,108,255,.28);border-color:#7c6cff;color:var(--tx)}
+.msg small a{text-decoration:none}
 
 .auth{padding:12px 16px}
 .auth .ac{width:100%;max-width:400px;position:relative;z-index:1}
@@ -786,28 +795,48 @@ async function viewMarket(){
   $('mine').onchange=e=>{F.mine=e.target.checked;rf()};
   $('fm').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;F.m=b.dataset.m;$('fm').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));rf()};
   if(S.offers&&S.offers.length)drawOffers();
-  const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username)').eq('status','open').order('created_at',{ascending:false}).limit(100);
+  const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username,is_admin,kyc_status)').eq('status','open').order('created_at',{ascending:false}).limit(100);
   if(my!==NAV)return;
   if(error){$('offers').innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
-  S.offers=data||[];{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();loadStats(S.offers.map(o=>o.seller_id)).then(c=>{if(c&&my===NAV)drawOffers()})}
+  S.offers=data||[];{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();{const ids=S.offers.map(o=>o.seller_id);Promise.all([loadStats(ids),loadRoles(ids)]).then(r=>{if((r[0]||r[1])&&my===NAV)drawOffers()})}}
 function drawOffers(){
   const box=$('offers');if(!box)return;const F=S.f,q=F.q.toLowerCase();
   let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
   l.sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount-a.amount);
   if(!l.length){box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=FPO();
-  box.innerHTML=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods);
+  box.innerHTML=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods),rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user');
     return`<div class="card"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
+    <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
-    ${mine?`<button class="b gh sm" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm" data-buy="${o.id}">Comprar</button>`}</div>`}).join('')+
+    <div class="obt">${mine?`<button class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}<button class="b gh sm" data-shr="${o.id}">🔗 Compartir</button></div></div>`}).join('')+
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'');
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.offers.find(x=>x.id===b.dataset.buy),{c,bank}=parseM(o.methods),net=o.amount;
     const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>${bank?`<p class="warnbox">🏦 Enviarás a <b>${esc(bank)}</b>. Si tu tarjeta es de un banco distinto, la acreditación puede demorar hasta <b>72 h</b>.</p>`:''}`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
-  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadBal();viewMarket()},'Oferta cancelada'))}
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadBal();viewMarket()},'Oferta cancelada'));
+  box.querySelectorAll('[data-det]').forEach(b=>b.onclick=()=>offerDetail(b.dataset.det));
+  box.querySelectorAll('[data-shr]').forEach(b=>b.onclick=()=>offerShare(b.dataset.shr));
+  box.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>pcInvite(b.dataset.chat,b.dataset.cn))}
+function offerDetail(id){
+  const o=S.offers.find(x=>x.id===id);if(!o)return;
+  const{m,c,bank}=parseM(o.methods),mine=o.seller_id===S.user.id,rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),fee=FPO();
+  const mm=modal(`<h3>${n(o.amount,2)} USDT</h3>
+   <div class="mut" style="line-height:1.9">💵 Precio: <b>${mny(o.price_cup,c)} ${esc(c)}</b> por USDT<br>🧾 Total: <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b><br>👤 Vendedor: <b>@${esc(o.profiles?.username)}</b>${mine?' (tú)':''}<br>${repTxt(o.seller_id)?repTxt(o.seller_id)+'<br>':''}🕒 Publicada: ${when(o.created_at)}</div>
+   <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
+   <div class="chips" style="margin:10px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
+   ${fee?`<p class="mut" style="font-size:12px">Comisión de la plataforma: ${fee}%. La paga el vendedor.</p>`:''}
+   <div class="grid2"><button class="b gh" id="dx">Cerrar</button>${mine?'':'<button class="b" id="db">Comprar</button>'}</div>`);
+  mm.querySelector('#dx').onclick=()=>mm.remove();
+  const db=mm.querySelector('#db');if(db)db.onclick=()=>{mm.remove();const b=document.querySelector(`[data-buy="${id}"]`);if(b)b.click()}}
+async function offerShare(id){
+  const o=S.offers.find(x=>x.id===id);if(!o)return;const{c}=parseM(o.methods);
+  const t=`Tororo P2P · ${n(o.amount,2)} USDT a ${mny(o.price_cup,c)} ${c} por USDT. Entra y compra: ${location.origin}${location.pathname}`;
+  try{if(navigator.share){await navigator.share({title:'Tororo P2P',text:t});return}}catch(e){if(e&&e.name==='AbortError')return}
+  copy(t)}
 
 /* ---------- Cambio USD Clásica ⇄ CUP ---------- */
 async function viewTrade(){
@@ -1317,7 +1346,7 @@ async function drawKycFix(){
     await rpc('submit_kyc_fix',{p_name:v('fn')||null,p_id:v('fi')||null,p_front:pa,p_back:pb,p_selfie:pc});
     await loadMe();viewProfile()},'Datos enviados: el administrador los revisará')}
 async function viewProfile(){
-  const P=S.profile,st=P.kyc_status||'none';
+  const my=NAV,P=S.profile,st=P.kyc_status||'none';
   const TG={none:['Sin verificar','bad'],pending:['En revisión','warn'],approved:['Verificado','ok'],rejected:['Rechazado','bad'],incomplete:['Faltan datos','warn']}[st]||['','' ];
   const kyc=S.kycOff||P.is_admin?'':st==='approved'?'<div class="card hl"><h3>✅ Identidad verificada</h3><p class="mut" style="margin:0">Ya puedes comprar, vender y retirar.</p></div>'
    :st==='incomplete'?'<div class="card" id="kfx"><h3>⏳ Pendiente de verificación por falta de datos</h3><p class="mut" style="margin:0">Cargando…</p></div>'
@@ -1335,11 +1364,28 @@ async function viewProfile(){
   <div class="card"><div class="row" style="justify-content:flex-start;gap:14px">${avatar(64)}<div><b style="font-size:18px">@${esc(P.username)}</b><br><span class="tag ${TG[1]}">${S.kycOff?'KYC no activado':P.is_admin?'Administrador':TG[0]}</span></div></div>
     <label style="margin-top:12px">Foto de perfil</label><input type="file" id="avf" accept="image/*"><button class="b gh sm" id="avb" disabled>Guardar foto</button></div>
   ${kyc}
+  <div class="card" id="ctc"><h3>📇 Datos de contacto</h3>
+   <label>Correo electrónico</label><input id="ce" type="email" autocomplete="email" value="${esc(S.user.email||'')}">
+   <button class="b gh sm" id="ceb">Cambiar correo</button>
+   <label style="margin-top:12px">Teléfono celular</label><input id="cp" type="tel" inputmode="tel" placeholder="Ej: +53 5XXXXXXX" maxlength="20" autocomplete="tel">
+   <button class="b gh sm" id="cpb">Guardar teléfono</button>
+   <p class="mut" style="font-size:12px;margin:10px 0 0">Los demás usuarios no ven estos datos. Si cambias el correo, te enviaremos un enlace para confirmarlo.</p></div>
+  <h3 style="margin:18px 0 6px">💳 Mis tarjetas</h3>${cardsHtml()}
   <div class="card" id="myrep"><h3>Mi reputación</h3><span class="mut">Cargando…</span></div>
   <button class="b gh w" id="mrb" style="margin-bottom:12px">⋯ Más herramientas (referidos, historial, ayuda…)</button>
   <div class="card"><h3>Cambiar contraseña</h3><input id="np" type="password" autocomplete="new-password" placeholder="Nueva contraseña"><button class="b gh w" id="npb">Actualizar contraseña</button></div>
   <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>`;
   $('lo').onclick=async()=>{await pushUnbind();sb.auth.signOut()};$('mrb').onclick=()=>go('more');
+  bindCards(my);
+  sb.from('user_contact').select('phone').eq('user_id',S.user.id).maybeSingle().then(r=>{if(my!==NAV||!$('cp'))return;if(r.error){$('cp').placeholder='Falta activar en Supabase';return}if(r.data&&r.data.phone)$('cp').value=r.data.phone});
+  $('cpb').onclick=ev=>act(ev.target,async()=>{const v=$('cp').value.trim(),d=v.replace(/\D/g,'');
+    if(v&&(d.length<8||d.length>15||!/^[+\d\s().-]+$/.test(v)))throw new Error('Escribe un número de teléfono válido');
+    const q=await sb.from('user_contact').upsert({user_id:S.user.id,phone:v||null,updated_at:new Date().toISOString()});
+    if(q.error)throw needSql(q.error)},'Teléfono guardado');
+  $('ceb').onclick=ev=>act(ev.target,async()=>{const v=$('ce').value.trim().toLowerCase();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))throw new Error('Escribe un correo válido');
+    if(v===(S.user.email||'').toLowerCase())throw new Error('Ese ya es tu correo actual');
+    const{error}=await sb.auth.updateUser({email:v});if(error)throw error},'Te enviamos un enlace de confirmación al correo nuevo');
   if($('kfx'))drawKycFix();
   delete S.st[S.user.id];loadStats([S.user.id]).then(()=>{const r=S.st[S.user.id],b=$('myrep');if(b)b.innerHTML='<h3>Mi reputación</h3>'+(r?`<div class="big" style="font-size:22px">${r.ratings>0?'⭐ '+Number(r.avg_stars).toFixed(1):'Sin calificar'}</div><div class="mut">${r.ratings} calificaciones · ${r.ops} operaciones completadas</div>`:'<span class="mut">Aún sin datos.</span>')});
   $('avf').onchange=()=>$('avb').disabled=!$('avf').files[0];
@@ -1369,22 +1415,23 @@ async function loadCards(force){
   if(S.cards&&!force)return S.cards;
   const{data,error}=await sb.from('user_cards').select('id,alias,currency,bank,card_number,phone').order('created_at',{ascending:false});
   S.cards=error?[]:(data||[]);S.cardsErr=!!error;return S.cards}
-async function viewCards(){
-  const my=NAV,CT=['CUP','MLC','Saldo Clásica'],lb=c=>c==='Saldo Clásica'?'Saldo Clásica (USD)':c;
-  S.cardEdit=null;
-  main().innerHTML=hd('Mis tarjetas')+`<p class="mut">Guarda aquí tus tarjetas para elegirlas al publicar una oferta de venta, sin escribirlas cada vez. Solo tú las ves; el comprador verá los datos de la tarjeta que uses en una oferta.</p>
+const cardLb=c=>c==='Saldo Clásica'?'Saldo Clásica (USD)':c;
+function cardsHtml(){
+  const CT=['CUP','MLC','Saldo Clásica'];
+  return `<p class="mut">Guarda aquí tus tarjetas para elegirlas al publicar una oferta de venta, sin escribirlas cada vez. Solo tú las ves; el comprador verá los datos de la tarjeta que uses en una oferta.</p>
   <div class="card" id="tf"><h3 id="tft">➕ Agregar tarjeta</h3>
-   <label>Tipo</label><select id="tc">${CT.map(c=>`<option value="${c}">${lb(c)}</option>`).join('')}</select>
+   <label>Tipo</label><select id="tc">${CT.map(c=>`<option value="${c}">${cardLb(c)}</option>`).join('')}</select>
    <label>Banco</label><input id="tb" placeholder="Ej: BPA, Metropolitano, BANDEC" maxlength="40" autocomplete="off">
    <label>Número de tarjeta</label><input id="tn" inputmode="numeric" placeholder="Número de tarjeta" maxlength="23" autocomplete="off">
    <label>Teléfono (para confirmar)</label><input id="tp" inputmode="tel" placeholder="Opcional" maxlength="20" autocomplete="off">
    <label>Nombre para reconocerla</label><input id="ta" placeholder="Opcional. Ej: Mi BPA" maxlength="30" autocomplete="off">
    <button class="b w" id="tsv">Guardar tarjeta</button><button class="b gh w" id="tcn" style="display:none;margin-top:8px">Cancelar edición</button></div>
-  <div id="tl">${skel(2)}</div>`;
-  bk('more');
-  const draw=()=>{const l=S.cards||[];$('tl').innerHTML=l.length?l.map(c=>`<div class="card"><div class="row"><b>${esc(c.alias||c.bank)}</b><span class="tag">${esc(lb(c.currency))}</span></div><div class="mut">🏦 ${esc(c.bank)} · 💳 ${esc(c.card_number)}${c.phone?' · 📞 '+esc(c.phone):''}</div><div class="row" style="margin-top:8px"><button class="b gh sm" data-ce="${c.id}">✏️ Editar</button><button class="b gh sm" data-cd="${c.id}">🗑️ Eliminar</button></div></div>`).join(''):'<div class="card mut">Aún no tienes tarjetas guardadas. Agrega una y la podrás elegir al publicar una oferta de venta.</div>'};
+  <div id="tl">${skel(2)}</div>`}
+async function bindCards(my){
+  const lb=cardLb;S.cardEdit=null;
+  const draw=()=>{const l=S.cards||[];if(!$('tl'))return;$('tl').innerHTML=l.length?l.map(c=>`<div class="card"><div class="row"><b>${esc(c.alias||c.bank)}</b><span class="tag">${esc(lb(c.currency))}</span></div><div class="mut">🏦 ${esc(c.bank)} · 💳 ${esc(c.card_number)}${c.phone?' · 📞 '+esc(c.phone):''}</div><div class="row" style="margin-top:8px"><button class="b gh sm" data-ce="${c.id}">✏️ Editar</button><button class="b gh sm" data-cd="${c.id}">🗑️ Eliminar</button></div></div>`).join(''):'<div class="card mut">Aún no tienes tarjetas guardadas. Agrega una y la podrás elegir al publicar una oferta de venta.</div>'};
   const reset=()=>{S.cardEdit=null;['tb','tn','tp','ta'].forEach(i=>$(i).value='');$('tc').value='CUP';$('tft').textContent='➕ Agregar tarjeta';$('tsv').textContent='Guardar tarjeta';$('tcn').style.display='none'};
-  await loadCards(true);if(my!==NAV)return;
+  await loadCards(true);if(my!==NAV||!$('tl'))return;
   if(S.cardsErr)$('tl').innerHTML='<div class="warnbox bad">Falta crear la tabla de tarjetas en Supabase.</div>';else draw();
   $('tsv').onclick=ev=>act(ev.target,async()=>{
     const row={currency:$('tc').value,bank:$('tb').value.trim(),card_number:$('tn').value.trim(),phone:$('tp').value.trim(),alias:$('ta').value.trim()};
@@ -1396,12 +1443,14 @@ async function viewCards(){
   $('tcn').onclick=reset;
   $('tl').onclick=async e=>{
     const ed=e.target.closest('[data-ce]'),dl=e.target.closest('[data-cd]');
-    if(ed){const c=(S.cards||[]).find(x=>x.id===ed.dataset.ce);if(!c)return;S.cardEdit=c.id;$('tc').value=c.currency;$('tb').value=c.bank;$('tn').value=c.card_number;$('tp').value=c.phone||'';$('ta').value=c.alias||'';$('tft').textContent='✏️ Editar tarjeta';$('tsv').textContent='Guardar cambios';$('tcn').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
+    if(ed){const c=(S.cards||[]).find(x=>x.id===ed.dataset.ce);if(!c)return;S.cardEdit=c.id;$('tc').value=c.currency;$('tb').value=c.bank;$('tn').value=c.card_number;$('tp').value=c.phone||'';$('ta').value=c.alias||'';$('tft').textContent='✏️ Editar tarjeta';$('tsv').textContent='Guardar cambios';$('tcn').style.display='block';$('tf').scrollIntoView({behavior:'smooth',block:'center'})}
     if(dl){const m=await ask('Eliminar tarjeta','<p>¿Seguro que quieres eliminar esta tarjeta guardada? Tus ofertas ya publicadas no cambian.</p>','Eliminar','bad');if(!m)return;m.remove();
       act(dl,async()=>{const q=await sb.from('user_cards').delete().eq('id',dl.dataset.cd);if(q.error)throw new Error(friendly(q.error));await loadCards(true);draw()},'Tarjeta eliminada',true)}};
 }
+/* Las tarjetas ahora viven en Perfil */
+function viewCards(){go('profile')}
 function viewMore(){S.bkTo=null;
-  const it=[['cards','💳','Mis tarjetas','Guarda tus tarjetas y no las escribas cada vez'],['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -1663,6 +1712,13 @@ function legalModal(id){
   draw(id)}
 
 /* ---------- Solicitudes de compra de USDT y chat general ---------- */
+const roleTag=(role,kyc)=>(role==='owner'?'<span class="tag ok">👑 Creador Tororo</span>':role==='admin'?'<span class="tag warn">🛡️ Admin</span>':'<span class="tag">👤 Usuario registrado</span>')+(role!=='owner'&&role!=='admin'&&kyc==='approved'?' <span class="tag ok">✅ Verificado</span>':'');
+const needSql=e=>/does not exist|schema cache|Could not find the function/i.test(String(e&&e.message))?new Error('Esta función necesita ejecutar el SQL nuevo (tororo_nov6_mejoras.sql) en Supabase.'):e;
+async function loadRoles(ids){
+  ids=[...new Set((ids||[]).filter(Boolean))];S.roles=S.roles||{};
+  const need=ids.filter(i=>!(i in S.roles));if(!need.length||S.rolesOff)return false;
+  try{const d=await rpc('user_roles',{p_ids:need});(d||[]).forEach(r=>S.roles[r.id]=r.role);need.forEach(i=>{if(!(i in S.roles))S.roles[i]='user'});return true}
+  catch(e){if(/user_roles|does not exist|schema cache/i.test(e.message))S.rolesOff=true;return false}}
 const userTag=(role,kyc)=>role==='owner'?'<span class="tag ok">👑 Creador Tororo</span>':role==='admin'?'<span class="tag warn">🛡️ Admin</span>':kyc==='approved'?'<span class="tag ok">✅ Verificado</span>':kyc==='incomplete'?'<span class="tag warn">⏳ Faltan datos</span>':'<span class="tag">Sin verificar</span>';
 const NEWSQL='chat_y_compras.sql';
 async function loadBuyReqs(my){
@@ -1672,7 +1728,7 @@ async function loadBuyReqs(my){
     d=d||[];{const c=$('cB');if(c)c.textContent='('+d.length+')'}
     $('breqs').innerHTML=d.length?d.map(x=>{const mine=x.user_id===S.user.id;
       return`<div class="card"><div class="row"><b style="font-size:18px">${n(x.amount,2)} USDT</b><span class="tag ok">Pagará con: ${esc(x.currency)}</span></div>
-      <div class="mut" style="margin:4px 0">@${esc(x.username)}${mine?' (tú)':''} · ${when(x.created_at)}</div>${userTag(x.role,x.kyc_status)}
+      <div class="mut" style="margin:4px 0">@${esc(x.username)}${mine?' (tú)':''} · ${when(x.created_at)}</div>${roleTag(x.role,x.kyc_status)}
       ${mine?`<div style="margin-top:8px"><button class="b gh sm" data-bcx="${x.id}">Cancelar mi solicitud</button></div>`:''}</div>`}).join(''):'<div class="card mut">Nadie está solicitando USDT ahora mismo.</div>';
     $('breqs').querySelectorAll('[data-bcx]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('buy_req_cancel',{p_id:b.dataset.bcx});S.breqsC=null;await loadBuyReqs(NAV)},'Solicitud cancelada'))};
   if(S.breqsC)paint(S.breqsC);
@@ -1763,8 +1819,50 @@ async function liveTick(){
 function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,15000)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
+/* ---------- Chat: editar, borrar y reaccionar (capa propia; no toca las tablas del chat) ---------- */
+const RXE=['👍','❤️'];
+const mxOn=()=>!S.mxOff;
+async function msgExtras(scope,room,ids){
+  if(S.mxOff||!ids.length)return null;
+  try{const r=await rpc('msg_extras',{p_scope:scope,p_room:room||0,p_ids:ids});
+    const x={ov:{},rx:{}};
+    ((r&&r.ov)||[]).forEach(o=>x.ov[o.id]={uid:o.uid,body:o.body,del:!!o.del});
+    ((r&&r.rx)||[]).forEach(o=>{(x.rx[o.id]=x.rx[o.id]||{})[o.e]={n:Number(o.n),me:!!o.me}});
+    return x}
+  catch(e){if(/msg_extras|does not exist|schema cache|Could not find the function/i.test(e.message))S.mxOff=true;return null}}
+/* El cambio de un mensaje solo vale si lo hizo su autor */
+function mxView(id,author,body,x){
+  const o=x&&x.ov[id];
+  if(o&&o.uid===author){
+    if(o.del)return{txt:'<i class="mut">🚫 Mensaje eliminado</i>',del:true,raw:''};
+    return{txt:esc(o.body)+' <span class="mut" style="font-size:11px">(editado)</span>',raw:o.body}}
+  return{txt:esc(body),raw:body}}
+const mxRx=(id,x)=>{if(!mxOn())return'';const r=(x&&x.rx[id])||{};
+  return`<div class="rxr">${RXE.map(e=>{const c=r[e];return`<button type="button" class="rx ${c&&c.me?'on':''}" data-rx="${id}" data-e="${e}" aria-label="Reaccionar ${e}">${e}${c&&c.n?' '+c.n:''}</button>`}).join('')}</div>`};
+const mxOwn=(id,mine,del,mod)=>mxOn()&&mine&&!del?` · <a href="#" data-me="${id}" title="Editar">✏️</a>${mod?'':` · <a href="#" data-md="${id}" title="Eliminar">🗑️</a>`}`:'';
+function mxAction(e,scope,room,redraw,max,cur){
+  const rx=e.target.closest('[data-rx]'),ed=e.target.closest('[data-me]'),dl=e.target.closest('[data-md]');
+  if(!rx&&!ed&&!dl)return false;
+  e.preventDefault();
+  if(S.mxOff){toast('Esta función necesita ejecutar el SQL nuevo (tororo_nov6_mejoras.sql) en Supabase.','err');return true}
+  if(rx){act(rx,async()=>{await rpc('msg_react',{p_scope:scope,p_room:room,p_id:+rx.dataset.rx,p_emoji:rx.dataset.e});await redraw()},null,true);return true}
+  const id=+(ed||dl).dataset[ed?'me':'md'],m=cur(id);
+  if(!m||m.author!==S.user.id)return true;
+  if(ed){
+    const q=modal(`<h3>✏️ Editar mensaje</h3><textarea id="mxt" rows="3" maxlength="${max}"></textarea><div class="grid2" style="margin-top:12px"><button class="b gh" id="mxn">Cancelar</button><button class="b" id="mxs">Guardar</button></div>`);
+    const ta=q.querySelector('#mxt');ta.value=m.raw||'';setTimeout(()=>ta.focus(),60);
+    q.querySelector('#mxn').onclick=()=>q.remove();
+    q.querySelector('#mxs').onclick=ev=>act(ev.target,async()=>{
+      const t=ta.value.trim();if(!t)throw new Error('El mensaje no puede quedar vacío');
+      const bad=chatBad(t);if(bad)throw new Error(bad);
+      await rpc('msg_edit',{p_scope:scope,p_room:room,p_id:id,p_body:t});q.remove();await redraw()},'Mensaje editado',true);
+    return true}
+  (async()=>{const q=await ask('Eliminar mensaje','<p>¿Eliminar este mensaje? Se verá como “Mensaje eliminado”.</p>','Eliminar','bad');if(!q)return;q.remove();
+    await act(null,async()=>{await rpc('msg_delete_own',{p_scope:scope,p_room:room,p_id:id});await redraw()},'Mensaje eliminado',true)})();
+  return true}
+
 async function viewChat(){
-  const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='';
+  const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='',MXc=null,LST=[];
   S.chatUnread=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
   main().innerHTML=`${pcTabs('g')}<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Chat general</h2><button class="b gh sm" id="csn"></button></div>
   <div class="warnbox pc-hide">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
@@ -1784,12 +1882,13 @@ async function viewChat(){
     setSeen(mx);S.chatCnt=Math.max(S.chatCnt||0,mx);
     if(S.chatMax==null)S.chatMax=mx;
     else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
-    const key=L.map(x=>x.id+'.'+(x.views||0)).join(',');
+    const MXd=await msgExtras('g',0,L.map(x=>Number(x.id)));if(my!==NAV||!$('cl'))return;MXc=MXd;LST=L;
+    const key=L.map(x=>x.id+'.'+(x.views||0)).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
     if(!force&&key===lastKey)return;lastKey=key;
     const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;
-    cl.innerHTML=L.length?L.map(x=>`<div class="msg ${x.user_id===S.user.id?'me':''}"><small>${userTag(x.role,x.kyc_status)} ${x.user_id!==S.user.id?`<a href="#" class="pu" data-pu="${x.user_id}" data-pn="${esc(x.username)}" title="Invitar a chat privado">@${esc(x.username)}</a>`:'@'+esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}</small>${esc(x.body)}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}</div>`).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    cl.innerHTML=L.length?L.map(x=>{const mine=x.user_id===S.user.id,v=mxView(x.id,x.user_id,x.body,MXc);return`<div class="msg ${mine?'me':''}"><small>${userTag(x.role,x.kyc_status)} ${!mine?`<a href="#" class="pu" data-pu="${x.user_id}" data-pn="${esc(x.username)}" title="Invitar a chat privado">@${esc(x.username)}</a>`:'@'+esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}${mxOwn(x.id,mine,v.del,mod)}</small>${v.txt}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}${v.del?'':mxRx(x.id,MXc)}</div>`}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
-  $('cl').onclick=e=>{const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
+  $('cl').onclick=e=>{if(mxAction(e,'g',0,()=>draw(true),300,id=>{const x=LST.find(m=>Number(m.id)===id);return x?{author:x.user_id,raw:mxView(x.id,x.user_id,x.body,MXc).raw}:null}))return;const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
   const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';KB.fit($('cm'));await draw(true)},null,true);
   $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
   await draw(true);
@@ -1803,15 +1902,42 @@ async function pcSummary(){
   if(PCB||!S.user||S.pcOff)return;PCB=true;
   try{const r=await withTO(sb.rpc('pchat_unread'),9000);
     if(r.error){S.pcOff=true;return}
-    const x=r.data||{},t=(Number(x.unread)||0)+(Number(x.invites)||0);
+    const x=r.data||{},inv=Number(x.invites)||0;let t=(Number(x.unread)||0)+inv;
+    if(inv>0&&!S.pcxOff){try{const c=await rpc('pc_cancelled');t-=Math.min(inv,((c&&c.theirs)||[]).length)}catch(e){if(/pc_cancelled|does not exist|schema cache|Could not find/i.test(e.message))S.pcxOff=true}}
+    t=Math.max(0,t);
     if(S.pcN!=null&&t>S.pcN&&S.view!=='pcon'){chatDing();toast('🔒 Tienes algo nuevo en tus chats privados')}
-    S.pcN=t;S.pcUnread=Math.min(99,t);updChatBd()}
+    S.pcN=t;S.pcUnread=Math.min(99,t);updChatBd();if(inv>0)setTimeout(checkPcPopup,400)}
   catch(e){}finally{PCB=false}}
+let PCP=false;
+async function checkPcPopup(){
+  if(PCP||!S.user||document.querySelector('.ov')||document.getElementById('mnt'))return;
+  PCP=true;
+  try{
+    const me=S.user.id,d=await rpc('pchat_rooms_list');
+    let cx=[];if(!S.pcxOff){try{const c=await rpc('pc_cancelled');cx=((c&&c.theirs)||[]).map(Number)}catch(e){if(/pc_cancelled|does not exist|schema cache|Could not find/i.test(e.message))S.pcxOff=true}}
+    const seen=(lsGet('pcpop_'+me)||'').split(',');
+    const x=(d||[]).find(r=>r.rstatus==='pending'&&r.rinit!==me&&(r.urole==='owner'||r.urole==='admin')&&!cx.includes(Number(r.rid))&&!seen.includes(String(r.rid)));
+    if(!x||document.querySelector('.ov'))return;
+    lsSet('pcpop_'+me,seen.concat(String(x.rid)).filter(Boolean).slice(-60).join(','));
+    try{chatDing()}catch(e){}
+    const m=modal(`<div style="text-align:center"><div style="font-size:44px">${x.urole==='owner'?'👑':'🛡️'}</div><h3 style="margin:6px 0">Solicitud de chat privado</h3>
+      <p style="margin:0 0 6px"><b>@${esc(x.uname)}</b> ${userTag(x.urole,x.ukyc)}</p><p class="mut" style="margin:0 0 4px">quiere hablar contigo en privado.</p></div>
+      <div class="grid2" style="margin-top:12px"><button class="b gh" id="pcpr">Rechazar</button><button class="b" id="pcpa">Aceptar</button></div>
+      <button class="b gh w" id="pcpl" style="margin-top:8px">Decidir después</button>`);
+    m.querySelector('#pcpl').onclick=()=>m.remove();
+    m.querySelector('#pcpa').onclick=ev=>act(ev.target,async()=>{await rpc('pchat_respond',{p_room:+x.rid,p_accept:true});m.remove();S.pcRoom=+x.rid;S.pcName=x.uname;go('pcon');return false},null,true);
+    m.querySelector('#pcpr').onclick=ev=>act(ev.target,async()=>{await rpc('pchat_respond',{p_room:+x.rid,p_accept:false});m.remove();pcSummary()},'Solicitud rechazada',true);
+  }catch(e){}finally{PCP=false}}
+async function pcCancelled(){
+  if(S.pcxOff)return[];
+  try{const c=await rpc('pc_cancelled');return[...((c&&c.mine)||[]),...((c&&c.theirs)||[])].map(Number)}
+  catch(e){if(/pc_cancelled|does not exist|schema cache|Could not find/i.test(e.message))S.pcxOff=true;return[]}}
 async function pcInvite(uid,nm){
   const m=await ask('💬 Chat privado',`<p>¿Invitar a <b>@${esc(nm)}</b> a hablar en privado?</p><p class="mut" style="font-size:13px">Recibirá una invitación y solo podrán escribirse si la acepta.</p>`,'Enviar invitación');
   if(!m)return;m.remove();
   await act(null,async()=>{
     const r=await rpc('pchat_invite',{p_user:uid});
+    if(r&&r.id&&!S.pcxOff)try{await rpc('pc_uncancel',{p_room:+r.id})}catch(e){}
     if(r&&r.status==='active'){S.pcRoom=r.id;S.pcName=nm;S.bkTo='chat';go('pcon');return false}
     toast('Invitación enviada a @'+nm+'. Te avisaremos cuando responda','good');return false})}
 async function viewPchat(){
@@ -1832,17 +1958,19 @@ async function viewPchat(){
     try{d=await rpc('pchat_rooms_list')}
     catch(e){if(my===NAV&&$('pcbox'))$('pcbox').innerHTML=`<div class="warnbox bad">${/pchat_|does not exist|schema cache/i.test(e.message)?'El chat privado todavía no está activado'+(adm?'. Ejecuta <code>chat_privado.sql</code> en Supabase.':'.'):esc(e.message)}</div>`;return}
     if(my!==NAV||!$('pcbox'))return;
-    const L=d||[];
+    const cxl=await pcCancelled();if(my!==NAV||!$('pcbox'))return;
+    const L=(d||[]).filter(x=>!(x.rstatus==='pending'&&cxl.includes(Number(x.rid))));
     $('pcbox').innerHTML=L.length?L.map(x=>{
       const nm=`<span class="nm" style="font-weight:600">@${esc(x.uname)}</span> ${userTag(x.urole,x.ukyc)}`;
       if(x.rstatus==='pending'&&x.rinit!==me)return`<div class="pcrow"><div class="pm">${nm}<div class="pv">te invita a un chat privado</div></div><div class="pa"><button class="b sm" data-pa="${x.rid}">Aceptar</button><button class="b gh sm" data-pr="${x.rid}">Rechazar</button></div></div>`;
-      if(x.rstatus==='pending')return`<div class="pcrow"><div class="pm">${nm}<div class="pv">Invitación enviada · esperando respuesta</div></div></div>`;
+      if(x.rstatus==='pending')return`<div class="pcrow"><div class="pm">${nm}<div class="pv">Invitación enviada · esperando respuesta</div></div><div class="pa"><button class="b gh sm" data-pcx="${x.rid}">Quitar solicitud</button></div></div>`;
       if(x.rstatus==='blocked')return`<div class="pcrow"><div class="pm">${nm}<div class="pv">🚫 Conversación bloqueada</div></div>${x.rblock===me?`<div class="pa"><button class="b gh sm" data-pub="${x.rid}">Desbloquear</button></div>`:''}</div>`;
       return`<div class="pcrow" data-po="${x.rid}" data-pn="${esc(x.uname)}"><div class="pm">${nm}<div class="pv">${x.rbody?esc(x.rbody):'Sin mensajes todavía'}</div></div>${x.runread?`<div class="pa"><span class="bd2">${x.runread>9?'9+':x.runread}</span></div>`:''}</div>`}).join('')
       :'<p class="mut" style="margin:0">Aún no tienes chats privados. Toca el nombre de alguien en el Chat general para invitarle.</p>';
     pcSummary()};
   $('pcbox').onclick=e=>{
-    const o=e.target.closest('[data-po]'),a=e.target.closest('[data-pa]'),r=e.target.closest('[data-pr]'),u=e.target.closest('[data-pub]');
+    const o=e.target.closest('[data-po]'),a=e.target.closest('[data-pa]'),r=e.target.closest('[data-pr]'),u=e.target.closest('[data-pub]'),cq=e.target.closest('[data-pcx]');
+    if(cq)return act(cq,async()=>{try{await rpc('pc_cancel',{p_room:+cq.dataset.pcx})}catch(er){throw needSql(er)}await draw()},'Solicitud quitada',true);
     if(a)return act(a,async()=>{await rpc('pchat_respond',{p_room:+a.dataset.pa,p_accept:true});await draw()},'Invitación aceptada',true);
     if(r)return act(r,async()=>{await rpc('pchat_respond',{p_room:+r.dataset.pr,p_accept:false});await draw()},'Invitación rechazada',true);
     if(u)return act(u,async()=>{await rpc('pchat_unblock',{p_room:+u.dataset.pub});await draw()},'Conversación desbloqueada',true);
@@ -1866,25 +1994,29 @@ async function viewComm(){
   main().innerHTML=`${pcTabs('u')}<h2 style="margin:0 0 4px">Comunidad</h2><p class="mut" style="margin:0 0 12px">Quiénes están en la plataforma ahora mismo.</p><div class="comm">${statsHtml()}</div><p class="mut" style="font-size:12px">Se actualiza solo cada pocos segundos.</p>`;
   bindPcTabs();setActU();loadActU();liveTick()}
 async function viewPcon(){
-  const my=NAV,me=S.user.id,id=S.pcRoom;let last=0;
+  const my=NAV,me=S.user.id,id=S.pcRoom;let last=0,MSGS=[],MXc=null,lastKey='';
   if(!id)return go('pchat');
   const who=S.pcName||'Usuario';
   main().innerHTML=`<div class="row" style="margin-bottom:10px;flex-wrap:nowrap"><a href="#" id="pcb">← Chats</a><b style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
   <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
   <div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
   $('pcb').onclick=e=>{e.preventDefault();go('pchat')};fitChat();setTimeout(fitChat,450);
-  const row=x=>`<div class="msg ${x.msender===me?'me':''}"><small>${x.msender===me?'Tú':'@'+esc(who)} · ${when(x.mat)}</small>${esc(x.mbody)}</div>`;
+  const row=x=>{const mine=x.msender===me,v=mxView(x.mid,x.msender,x.mbody,MXc);return`<div class="msg ${mine?'me':''}"><small>${mine?'Tú':'@'+esc(who)} · ${when(x.mat)}${mxOwn(x.mid,mine,v.del,false)}</small>${v.txt}${v.del?'':mxRx(x.mid,MXc)}</div>`};
   const draw=async force=>{
     let d;
     try{d=await rpc('pchat_msgs',{p_room:id,p_after:force?0:last,p_limit:80})}
     catch(e){if(force&&my===NAV&&$('cl')){$('cl').innerHTML=`<div class="warnbox bad">${/pchat_|does not exist|schema cache/i.test(e.message)?'El chat privado todavía no está activado.':esc(e.message)}</div>`}return}
     if(my!==NAV||!$('cl'))return;
     const L=d||[],cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80;
-    if(force)cl.innerHTML=L.length?L.map(row).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
-    else if(L.length){if(cl.querySelector('.mut'))cl.innerHTML='';cl.insertAdjacentHTML('beforeend',L.map(row).join(''))}
+    if(force)MSGS=L.slice();else if(L.length)MSGS=MSGS.concat(L.filter(x=>!MSGS.some(m=>String(m.mid)===String(x.mid))));
     if(L.length){last=Math.max(last,...L.map(x=>Number(x.mid)));if(!force&&L.some(x=>x.msender!==me))chatDing()}
-    if(force||(atEnd&&L.length))cl.scrollTop=cl.scrollHeight;
+    const ex=await msgExtras('p',id,MSGS.map(x=>Number(x.mid)));if(my!==NAV||!$('cl'))return;MXc=ex;
+    const key=MSGS.map(x=>x.mid).join(',')+'|'+(ex?JSON.stringify(ex):'');
+    if(force||key!==lastKey){lastKey=key;const st0=cl.scrollTop;
+      cl.innerHTML=MSGS.length?MSGS.map(row).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+      if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0}
     if(force)pcSummary()};
+  $('cl').onclick=e=>{mxAction(e,'p',id,()=>draw(false),1000,mid=>{const x=MSGS.find(m=>Number(m.mid)===mid);return x?{author:x.msender,raw:mxView(x.mid,x.msender,x.mbody,MXc).raw}:null})};
   const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('pchat_send',{p_room:id,p_body:t});$('cm').value='';KB.fit($('cm'));await draw(false)},null,true);
   $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
   $('pcm').onclick=()=>{
