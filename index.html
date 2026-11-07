@@ -251,6 +251,33 @@ html{scroll-behavior:auto}
 .fab-m{width:52px;height:52px;font-size:28px}.fab{bottom:92px;right:14px}
 /* El contenedor del botón + es invisible pero tapaba los botones de las tarjetas (Detalles, Chat…): solo el + y sus opciones abiertas reciben toques */
 .fab{pointer-events:none}.fab-m{pointer-events:auto}
+/* ---- Estadísticas (estilo analítica, solo USDT) ---- */
+.an-h{display:flex;flex-direction:column;gap:2px;margin:24px 2px 10px}.an-h b{font-size:15px;font-weight:700;letter-spacing:-.2px}.an-h span{font-size:12px;color:var(--mut)}
+.an-hero{background:linear-gradient(160deg,#171a2e,#10121b 70%);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 18px 50px -28px rgba(124,108,255,.55)}
+.an-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--mut);font-size:13px}
+.an-big{font-size:34px;font-weight:800;letter-spacing:-1px;margin:4px 0 2px;line-height:1.1;overflow-wrap:anywhere}.an-big small{font-size:14px;color:var(--mut);font-weight:600;letter-spacing:0}
+.an-sub{font-size:12px;color:var(--mut)}
+.an-d{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(255,255,255,.07);color:var(--mut);white-space:nowrap}.an-d.up{background:rgba(61,220,151,.14);color:var(--ok)}.an-d.dn{background:rgba(242,104,93,.14);color:var(--bad)}
+.an-seg{display:inline-flex;background:rgba(255,255,255,.06);border-radius:99px;padding:3px;gap:2px;margin:12px 0 8px}.an-seg button{border:0;background:none;color:var(--mut);font:inherit;font-size:12px;font-weight:700;padding:6px 14px;border-radius:99px;cursor:pointer}.an-seg button.on{background:var(--acc);color:#fff}
+.an-cw{position:relative;height:110px;margin-top:4px}.an-cw svg{position:absolute;inset:0;width:100%;height:100%}
+.an-cols{position:absolute;inset:0;display:flex}.an-cols i{flex:1;cursor:pointer;border-radius:6px}.an-cols i.on{background:rgba(124,108,255,.2)}
+.an-ax{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:6px}
+.an-rd{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.an-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.an-m{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:10px;min-width:0}.an-m span{display:block;font-size:11px;color:var(--mut)}.an-m b{display:block;font-size:17px;margin-top:2px;overflow-wrap:anywhere}.an-m i{display:block;font-style:normal;font-size:10px;color:var(--mut);margin-top:2px}
+.an-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.an-k{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 12px 8px;min-width:0}
+.an-kl{font-size:12px;color:var(--mut)}.an-kv{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:2px;overflow-wrap:anywhere}.an-kv small{font-size:11px;color:var(--mut);font-weight:600}.an-ks{font-size:11px;color:var(--mut);margin-top:2px}
+.an-sp{display:block;width:100%;height:30px;margin-top:8px}
+.an-c{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.an-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.an-r:last-child{border-bottom:0}
+.an-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:6px}.an-bar i{display:block;height:100%;border-radius:99px;background:var(--g)}
+.an-fn{padding:8px 0}.an-fn .t{display:flex;justify-content:space-between;font-size:13px;gap:8px}.an-fn .t>span:last-child{color:var(--mut);font-size:12px;text-align:right}
+.an-ring{display:flex;align-items:center;gap:14px}.an-ring .c{position:relative;width:92px;height:92px;flex:none}.an-ring svg{width:92px;height:92px;transform:rotate(-90deg)}.an-ring .c b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.an-al{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.an-al:last-child{border-bottom:0}.an-al em{width:9px;height:9px;border-radius:50%;flex:none;background:var(--warn)}.an-al.bad em{background:var(--bad)}.an-al>span:first-of-type{flex:1}
+.an-hr{display:flex;align-items:flex-end;gap:2px;height:90px;margin-top:10px}.an-hr i{flex:1;border-radius:3px 3px 0 0;background:var(--acc)}.an-hr i.top{background:var(--ok)}
+.an-av{width:28px;height:28px;border-radius:50%;background:var(--g);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-style:normal;color:#fff;flex:none}
+.an-tb{width:100%;font-size:13px;border-collapse:collapse}.an-tb th{color:var(--mut);font-weight:600;font-size:11px;padding:4px 6px;text-align:right}.an-tb td{padding:7px 6px;text-align:right;border-top:1px solid var(--line)}.an-tb th:first-child,.an-tb td:first-child{text-align:left}
 body{padding-bottom:150px!important}
 /* Rendimiento: sin desenfoques costosos, fondos sólidos */
 header,nav,#toast,.ov,.fab-bg,.wal-a,.wal-c{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
@@ -2574,11 +2601,15 @@ const ageTxt=m=>{m=Math.max(0,Math.round(m||0));if(m<60)return m+' min';if(m<144
 const waitTag=ts=>{const m=Math.round((Date.now()-new Date(ts).getTime())/60000);return`<span class="tag ${m>=240?'bad':m>=60?'warn':''}">espera ${ageTxt(m)}</span>`};
 async function adminStats(mm,my){
   mm.insertAdjacentHTML('beforeend','<h3 id="s-stats">Estadísticas</h3><div id="statbox">'+skel(2)+'</div>');
-  const fdc=c=>c==='CUP'?0:c==='USD'?2:4;
-  const t=(l,v,sub,c)=>`<div class="card" style="margin:0"><div class="mut">${l}</div><div class="big"${c?` style="color:var(--${c})"`:''}>${v}</div>${sub?`<div class="mut" style="font-size:12px">${sub}</div>`:''}</div>`;
-  const H=(x,sub)=>`<h4 style="margin:16px 0 6px">${x}</h4>${sub?`<p class="mut" style="font-size:12px;margin:0 0 8px">${sub}</p>`:''}`;
-  const dlt=(a,b,d=0)=>{a=Number(a||0);b=Number(b||0);if(!a&&!b)return'igual que ayer';const x=a-b;return x===0?'igual que ayer':(x>0?'▲ ':'▼ ')+n(Math.abs(x),d)+' vs ayer'};
-  const dd=x=>x.slice(8)+'/'+x.slice(5,7);
+  const U=' <small>USDT</small>';
+  const dd=x=>String(x).slice(8)+'/'+String(x).slice(5,7);
+  const dlt=(a,b,d=0)=>{a=Number(a||0);b=Number(b||0);const x=a-b;if(x===0)return'<span class="an-d">= igual que ayer</span>';return`<span class="an-d ${x>0?'up':'dn'}">${x>0?'▲ ':'▼ '}${n(Math.abs(x),d)} vs ayer</span>`};
+  const H=(x,sub)=>`<div class="an-h"><b>${x}</b>${sub?`<span>${sub}</span>`:''}</div>`;
+  const spark=(vals,col)=>{vals=(vals||[]).map(x=>Number(x)||0);if(vals.length<2)return'';const mx=Math.max(...vals),mn=Math.min(...vals),rg=mx-mn||1,h=30,st=100/(vals.length-1);
+    const ln=vals.map((x,i)=>(i?'L':'M')+(i*st).toFixed(1)+' '+(h-4-((x-mn)/rg)*(h-9)).toFixed(1)).join(' ');
+    return`<svg class="an-sp" viewBox="0 0 100 ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${ln} L100 ${h} L0 ${h} Z" fill="${col||'#7c6cff'}" opacity=".16"/><path d="${ln}" fill="none" stroke="${col||'#9b8cff'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`};
+  const kpi=(l,v,sub,sp)=>`<div class="an-k"><div class="an-kl">${l}</div><div class="an-kv">${v}</div>${sub?`<div class="an-ks">${sub}</div>`:''}${sp||''}</div>`;
+  const mini=(l,v,s,c)=>`<div class="an-m"><span>${l}</span><b${c?` style="color:var(--${c})"`:''}>${v}</b>${s?`<i>${s}</i>`:''}</div>`;
   const load=async()=>{
     const[a,pl]=await Promise.all([sb.rpc('admin_stats'),sb.rpc('admin_stats_plus')]);
     if(my!==NAV)return;const b=document.getElementById('statbox');if(!b)return;
@@ -2586,65 +2617,122 @@ async function adminStats(mm,my){
     if(a.error&&pl.error){b.innerHTML='<div class="card dg">'+(/could not find the function/i.test((a.error.message||'')+(pl.error.message||''))?'Falta ejecutar <code>estadisticas.sql</code> (y el SQL de estadísticas anterior) en Supabase.':esc(pl.error.message||a.error.message||'Sin datos'))+'</div>';return}
     const k=data.kyc||{},v=data.visitas||{},u=data.nuevos||{},o=data.ops||{},f=data.comisiones||{},ser=data.serie||[],od={};
     (data.ops_dias||[]).forEach(x=>od[x.day]=x);
-    const US=P.usuarios||{},OP=P.ops||{},DEP=P.dep,RET=P.ret,REC=P.rec||{},RETF=P.retf||{},FE=P.fees||{},CU=P.custodia,S14=P.serie14||[],TOP=P.top||[],EQ=P.equipo||[];
+    const US=P.usuarios||{},OP=P.ops||{},DEP=P.dep,RET=P.ret,FE=P.fees||{},CU=P.custodia,S14=P.serie14||[],TOP=P.top||[],EQ=P.equipo||[];
     const hasP=!pl.error;
     const errs=[...Object.keys(data).filter(x=>x.endsWith('_error')).map(x=>[x,data[x]]),...Object.keys(P).filter(x=>x.endsWith('_error')&&!['rec_error','retf_error'].includes(x)).map(x=>[x,P[x]])];
+    const FU=(hasP?FE.USDT:f.USDT)||{hoy:0,sem:0,mes:0,total:0};
+    const TR=(S14.length?S14:(data.ops_dias||[])).slice().sort((x,y)=>String(x.day).localeCompare(String(y.day)));
+    const hn=hasP?OP.hoy_n:o.hoy_n,hv=hasP?OP.hoy_usdt:o.hoy_usdt;
+    const nuev7=Number(hasP?US.nuevos_7d:u.sem)||0,vis7=Number(v.sem_unicos)||0;
+    const tot30=(OP.mes_n||0)+(OP.mes_canceladas||0),rate=tot30?Math.round((OP.mes_n||0)/tot30*100):0;
+
     /* 1) Atención: lo que necesita acción ahora */
-    const al=[],add=(cls,txt,min)=>al.push(`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span>${txt}</span><span class="tag ${cls}">${ageTxt(min)}</span></div>`);
-    const cl=m=>m>=240?'bad':'warn';
-    if(DEP&&DEP.pend_n>0&&DEP.pend_min>=30)add(cl(DEP.pend_min),`${n(DEP.pend_n,0)} depósito(s) USDT por acreditar`,DEP.pend_min);
-    if(RET&&RET.pend_n>0&&RET.pend_min>=30)add(cl(RET.pend_min),`${n(RET.pend_n,0)} retiro(s) USDT por enviar`,RET.pend_min);
-    Object.entries(REC).forEach(([c,x])=>{if(x.pend_n>0&&x.pend_min>=30)add(cl(x.pend_min),`${n(x.pend_n,0)} recarga(s) en ${esc(c)} sin acreditar`,x.pend_min)});
-    Object.entries(RETF).forEach(([c,x])=>{if(x.pend_n>0&&x.pend_min>=30)add(cl(x.pend_min),`${n(x.pend_n,0)} retiro(s) en ${esc(c)} sin enviar`,x.pend_min)});
-    if(US.kyc_pend>0&&US.kyc_cola_min>=60)add(cl(US.kyc_cola_min),`${n(US.kyc_pend,0)} verificación(es) KYC sin revisar`,US.kyc_cola_min);
-    if(OP.disputas>0)add(OP.disputa_min>=120?'bad':'warn',`${n(OP.disputas,0)} operación(es) en disputa`,OP.disputa_min);
-    const tot30=(OP.mes_n||0)+(OP.mes_canceladas||0),canc=tot30?(OP.mes_canceladas||0)/tot30:0;
-    const attn=hasP?`${H('Atención ahora','Lo que lleva tiempo esperando. Lo que no aparece aquí está al día.')}<div class="card" style="margin:0">${al.length?al.join(''):'<span style="color:var(--ok)">✅ Todo al día: no hay nada esperando.</span>'}${tot30>=5&&canc>.3?`<div class="mut" style="margin-top:8px">⚠️ En 30 días se cancelaron o devolvieron ${Math.round(canc*100)}% de las operaciones.</div>`:''}</div>`:'';
-    /* 2) Hoy */
-    const usd=fe=>fe&&fe.USDT?fe.USDT:{hoy:0,sem:0,mes:0,total:0};
-    const feeU=hasP?usd(FE):{hoy:(f.USDT||{}).hoy||0,sem:(f.USDT||{}).sem||0,mes:0,total:(f.USDT||{}).total||0};
-    const hoy=`${H('Hoy')}<div class="grid2">${t('Operaciones completadas',n(hasP?OP.hoy_n:o.hoy_n,0),hasP?dlt(OP.hoy_n,OP.ayer_n):'')}${t('Volumen',n(hasP?OP.hoy_usdt:o.hoy_usdt,2)+' <small>USDT</small>',hasP?dlt(OP.hoy_usdt,OP.ayer_usdt,2):'')}${t('Comisión ganada',n(feeU.hoy,4)+' <small>USDT</small>','7 días: '+n(feeU.sem,4),'ok')}${t('Usuarios nuevos',n(hasP?US.nuevos_hoy:u.hoy,0),'7 días: '+n(hasP?US.nuevos_7d:u.sem,0))}${t('Visitas',n(v.hoy_unicos,0),'dispositivos distintos · '+n(v.hoy_aperturas,0)+' aperturas')}${t('Visitas 7 días',n(v.sem_unicos,0),'dispositivos distintos')}</div>`;
-    /* 3) Últimos 30 días */
-    const rate=tot30?Math.round((OP.mes_n||0)/tot30*100):0;
-    const mes=hasP?`${H('Últimos 30 días','Operaciones completadas y cómo les fue.')}<div class="grid2">${t('Operaciones',n(OP.mes_n,0),'canceladas o devueltas: '+n(OP.mes_canceladas,0))}${t('Volumen',n(OP.mes_usdt,2)+' <small>USDT</small>','≈ '+n(OP.mes_cup,0)+' CUP')}${t('Tasa de éxito',tot30?rate+'%':'—','completadas de todas las cerradas',tot30&&rate<70?'warn':tot30?'ok':'')}${t('Promedio por operación',n(OP.mes_n?OP.mes_usdt/OP.mes_n:0,2)+' <small>USDT</small>','')}${t('Tiempo promedio',ageTxt(OP.min_prom),'desde que se crea hasta que se completa')}${t('Abiertas ahora',n(OP.abiertas,0),n(OP.disputas,0)+' en disputa',OP.disputas?'warn':'')}</div>`:'';
-    /* 4) Movimiento de dinero */
-    const mrow=(lb,x,c)=>x?`<tr style="text-align:right"><td style="text-align:left">${lb}</td><td>${n(x.sem,fdc(c))}</td><td>${n(x.mes,fdc(c))}</td><td>${x.pend_n?`<span class="tag warn">${n(x.pend_n,0)}</span>`:'—'}</td></tr>`:'';
-    const mrows=[mrow('Depósitos USDT',DEP,'USDT'),mrow('Retiros USDT',RET,'USDT'),...Object.entries(REC).map(([c,x])=>mrow('Recargas '+esc(c),x,c)),...Object.entries(RETF).map(([c,x])=>mrow('Retiros '+esc(c),x,c))].join('');
-    const mov=hasP&&mrows?`${H('Movimiento de dinero','Solo lo ya acreditado o enviado; “Pend.” son solicitudes esperando.')}<div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left"></th><th>7 días</th><th>30 días</th><th>Pend.</th></tr>${mrows}</table></div>`:'';
-    /* 5) Dinero dentro de la plataforma */
-        const cus=hasP&&CU?`${H('Dinero dentro de la plataforma','Saldo que los usuarios tienen en la app (lo que respalda lo que les debes).')}<div class="grid2">${t('USDT de usuarios',n(CU.usdt_usuarios,2),'bloqueado en ventas: '+n(CU.usdt_bloqueado,2))}</div><p class="mut" style="font-size:12px;margin:6px 0 0">USDT tuyo y de admins: ${n(CU.usdt_equipo,2)}</p>`:'';
-    /* 6) Comisiones */
-    const feeKeys=Object.keys(hasP?FE:f);
-    const fees=`${H('Comisiones ganadas','Sin descontar lo pagado a referidos.')}<div class="grid2">${feeKeys.length?feeKeys.map(c=>{const x=(hasP?FE:f)[c];return t(esc(c),n(x.hoy,fdc(c))+' <small>hoy</small>','7 días: '+n(x.sem,fdc(c))+(hasP?' · 30 días: '+n(x.mes,fdc(c)):'')+' · total: '+n(x.total,fdc(c)),'ok')}).join(''):'<div class="card mut" style="margin:0">Todavía no hay comisiones.</div>'}</div>`;
-    /* 7) Usuarios */
-    const usrs=`${H('Usuarios')}<div class="grid2">${t('Total',n(hasP?US.total:k.total,0),'nuevos 30 días: '+n(hasP?US.nuevos_30d:u.sem,0))}${t('Verificados',n(k.verificados??US.kyc_ok,0),'KYC aprobado','ok')}${t('En revisión',n(k.en_revision??US.kyc_pend,0),'KYC pendiente de aprobar',(k.en_revision??US.kyc_pend)?'warn':'')}${t('Sin verificar',n(k.sin_verificar,0),'no han enviado su KYC',k.sin_verificar?'warn':'')}${hasP?t('Activos 30 días',n(US.activos_30d,0),'completaron al menos una operación')+t('Recurrentes',n(US.recurrentes,0),'2 o más operaciones en total'):t('Rechazados',n(k.rechazados,0),'KYC rechazado')}</div>`;
-    /* 8) Mejores horas (se llena después) */
-    const hrs=`${H('Mejores horas para publicar')}<div id="stH">${skel(1)}</div>`;
-    /* 9) Top usuarios */
-    const top=hasP&&TOP.length?`${H('Usuarios que más operan','Últimos 30 días, por volumen.')}<div class="card" style="margin:0">${TOP.map((x,i)=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span><b>${i+1}.</b> @${esc(x.username)}</span><span class="mut">${n(x.usdt,2)} USDT · ${n(x.ops,0)} op.</span></div>`).join('')}</div>`:'';
-    /* 10) Equipo */
-    const eq=hasP&&EQ.length?`${H('Administradores','Lo que ha hecho cada uno (verificaciones y recargas).')}<div class="card" style="margin:0">${EQ.map(x=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)"><div class="row"><b>@${esc(x.username)}</b><span class="mut">${x.ultima?'última: '+when(x.ultima):'sin actividad'}</span></div><div class="mut" style="font-size:12px">7 días: ${n(x.n7,0)} · 30 días: ${n(x.n30,0)} (KYC ${n(x.kyc30,0)} · recargas ${n(x.rec30,0)})</div></div>`).join('')}</div>`:'';
-    /* 11) Gráfico de 14 días y tabla de 7 */
-    const mx=Math.max(1,...S14.map(x=>Number(x.usdt)||0));
-    const chart=hasP&&S14.length?`${H('Volumen de los últimos 14 días','USDT completados por día (hora de Cuba).')}<div class="card" style="margin:0"><div style="display:flex;align-items:flex-end;gap:3px;height:100px">${S14.map(x=>`<div title="${dd(x.day)}: ${n(x.usdt,2)} USDT · ${n(x.ops,0)} op." style="flex:1;height:${Math.max(3,Math.round((Number(x.usdt)||0)/mx*100))}%;background:var(--acc);opacity:${Number(x.usdt)?1:.25};border-radius:3px 3px 0 0"></div>`).join('')}</div><div class="mut" style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px"><span>${dd(S14[0].day)}</span><span>${dd(S14[S14.length-1].day)}</span></div></div>`:'';
-    const tab=`${H('Detalle por día','Últimos 7 días.')}<div class="card" style="padding:8px;overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr class="mut" style="text-align:right"><th style="text-align:left">Día</th><th>Visitas</th><th>Nuevos</th><th>Ops</th><th>USDT</th></tr>${ser.slice().reverse().map(x=>{const q=od[x.day]||{};return`<tr style="text-align:right"><td style="text-align:left">${dd(x.day)}</td><td>${n(x.visitas,0)}</td><td>${n(x.nuevos,0)}</td><td>${n(q.ops,0)}</td><td>${n(q.usdt,2)}</td></tr>`}).join('')}</table></div>`;
-    b.innerHTML=`${pl.error?'<div class="warnbox" style="margin-bottom:8px">Para ver las estadísticas nuevas ejecuta <code>estadisticas.sql</code> en Supabase.</div>':''}${attn}${hoy}${mes}${mov}${cus}${fees}${usrs}${hrs}${top}${eq}${chart}${tab}
+    const al=[],add=(bad,txt,min)=>al.push(`<div class="an-al ${bad?'bad':''}"><em></em><span>${txt}</span><span class="an-d">${ageTxt(min)}</span></div>`);
+    const isBad=m=>m>=240;
+    if(DEP&&DEP.pend_n>0&&DEP.pend_min>=30)add(isBad(DEP.pend_min),`${n(DEP.pend_n,0)} depósito(s) USDT por acreditar`,DEP.pend_min);
+    if(RET&&RET.pend_n>0&&RET.pend_min>=30)add(isBad(RET.pend_min),`${n(RET.pend_n,0)} retiro(s) USDT por enviar`,RET.pend_min);
+    if(US.kyc_pend>0&&US.kyc_cola_min>=60)add(isBad(US.kyc_cola_min),`${n(US.kyc_pend,0)} verificación(es) KYC sin revisar`,US.kyc_cola_min);
+    if(OP.disputas>0)add(OP.disputa_min>=120,`${n(OP.disputas,0)} operación(es) en disputa`,OP.disputa_min);
+    const canc=tot30?(OP.mes_canceladas||0)/tot30:0;
+    const attn=hasP?`${H('Atención ahora','Lo que lleva tiempo esperando. Lo que no aparece aquí está al día.')}<div class="an-c">${al.length?al.join(''):'<span style="color:var(--ok)">✅ Todo al día: no hay nada esperando.</span>'}${tot30>=5&&canc>.3?`<div class="mut" style="margin-top:8px;font-size:12px">⚠️ En 30 días se cancelaron o devolvieron ${Math.round(canc*100)}% de las operaciones.</div>`:''}</div>`:'';
+
+    /* 2) Resumen: volumen con gráfico */
+    const hero=`${H('Resumen')}<div class="an-hero">
+      <div class="an-top"><span>Volumen de hoy</span>${hasP?dlt(OP.hoy_usdt,OP.ayer_usdt,2):''}</div>
+      <div class="an-big">${n(hv,2)}${U}</div>
+      <div class="an-sub" id="anTt"></div>
+      <div class="an-seg" id="anSg"><button data-r="7">7 días</button><button data-r="14" class="on">14 días</button></div>
+      <div id="anT"></div>
+      <div class="an-3">${mini('Operaciones hoy',n(hn,0),hasP?dlt(OP.hoy_n,OP.ayer_n).replace(/<[^>]+>/g,''):'')}${mini('Comisión hoy',n(FU.hoy,4)+' USDT','7 días: '+n(FU.sem,4),'ok')}${mini('Visitas hoy',n(v.hoy_unicos,0),n(v.hoy_aperturas,0)+' aperturas')}</div></div>`;
+
+    /* 3) Indicadores con minigráfica */
+    const sv=ser.map(x=>x.visitas),sn=ser.map(x=>x.nuevos),tv=TR.map(x=>x.usdt),to=TR.map(x=>x.ops);
+    const cards=[
+      kpi('Visitas · 7 días',n(vis7,0),'hoy: '+n(v.hoy_unicos,0)+' dispositivos',spark(sv,'#4cc9f0')),
+      kpi('Registros nuevos · 7 días',n(nuev7,0),'hoy: '+n(hasP?US.nuevos_hoy:u.hoy,0),spark(sn,'#9b8cff')),
+      kpi('Visita → registro',vis7?Math.round(nuev7/vis7*100)+'%':'—','registros ÷ visitantes (7 días)')
+    ];
+    if(hasP)cards.push(
+      kpi('Operaciones · 30 días',n(OP.mes_n,0),'abiertas ahora: '+n(OP.abiertas,0),spark(to,'#3ddc97')),
+      kpi('Volumen · 30 días',n(OP.mes_usdt,2)+U,'promedio: '+n(OP.mes_n?OP.mes_usdt/OP.mes_n:0,2)+' USDT',spark(tv,'#9b8cff')),
+      kpi('Comisión · 30 días',n(FU.mes,4)+U,'total: '+n(FU.total,4)+' USDT')
+    );else cards.push(kpi('Comisión · 7 días',n(FU.sem,4)+U,'total: '+n(FU.total,4)+' USDT'));
+    const grid=`${H('Indicadores','Cada tarjeta muestra la tendencia de los últimos días.')}<div class="an-g">${cards.join('')}</div>`;
+
+    /* 4) Embudo de usuarios */
+    const totU=Number(hasP?US.total:k.total)||0,ver=Number(k.verificados??US.kyc_ok)||0;
+    const steps=[['Usuarios registrados',totU],['Verificados (KYC)',ver]];
+    if(hasP){steps.push(['Activos en 30 días',Number(US.activos_30d)||0]);steps.push(['Recurrentes (2+ operaciones)',Number(US.recurrentes)||0])}
+    const fun=steps.map(([l,x,i],j)=>{const prev=j?steps[j-1][1]:0,w=totU?Math.max(2,Math.round(x/totU*100)):0;
+      return`<div class="an-fn"><div class="t"><b>${l}</b><span>${n(x,0)}${j?' · '+(prev?Math.round(x/prev*100):0)+'% del paso anterior':''}</span></div><div class="an-bar"><i style="width:${w}%"></i></div></div>`}).join('');
+    const rev=k.en_revision??US.kyc_pend,sinv=k.sin_verificar;
+    const usrs=`${H('Embudo de usuarios','De registrarse a operar de forma recurrente.')}<div class="an-c">${fun}</div>
+      <div class="an-3">${mini('En revisión',n(rev,0),'KYC pendiente',rev?'warn':'')}${mini('Sin verificar',n(sinv,0),'no enviaron KYC',sinv?'warn':'')}${mini('Rechazados',n(k.rechazados,0),'KYC rechazado')}</div>`;
+
+    /* 5) Rendimiento de operaciones */
+    const ringCol=!tot30?'#8f94b3':rate<70?'#f5b94a':'#3ddc97';
+    const perf=hasP?`${H('Rendimiento · 30 días','Qué tan bien terminan las operaciones.')}<div class="an-c"><div class="an-ring"><div class="c"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.4"/><circle cx="18" cy="18" r="15.9155" fill="none" stroke="${ringCol}" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="${tot30?rate:0} ${tot30?100-rate:100}"/></svg><b>${tot30?rate+'%':'—'}</b></div>
+      <div style="flex:1;min-width:0"><div class="an-r"><span class="mut">Completadas</span><b>${n(OP.mes_n,0)}</b></div><div class="an-r"><span class="mut">Canceladas o devueltas</span><b>${n(OP.mes_canceladas,0)}</b></div><div class="an-r"><span class="mut">Tiempo promedio</span><b>${ageTxt(OP.min_prom)}</b></div><div class="an-r"><span class="mut">En disputa</span><b${OP.disputas?' style="color:var(--warn)"':''}>${n(OP.disputas,0)}</b></div></div></div></div>`:'';
+
+    /* 6) Movimiento de USDT */
+    let mov='';
+    if(hasP&&(DEP||RET)){
+      const mxv=Math.max(1,Number(DEP&&DEP.mes)||0,Number(RET&&RET.mes)||0);
+      const row=(lb,x,col)=>x?`<div class="an-fn"><div class="t"><b>${lb}</b><span>7 días: ${n(x.sem,2)} · 30 días: ${n(x.mes,2)}${x.pend_n?` · <b style="color:var(--warn)">${n(x.pend_n,0)} pendiente(s)</b>`:''}</span></div><div class="an-bar"><i style="width:${Math.max(2,Math.round((Number(x.mes)||0)/mxv*100))}%;background:${col}"></i></div></div>`:'';
+      const net=(Number(DEP&&DEP.mes)||0)-(Number(RET&&RET.mes)||0);
+      mov=`${H('Movimiento de USDT','Solo lo ya acreditado o enviado.')}<div class="an-c">${row('Depósitos',DEP,'var(--ok)')}${row('Retiros',RET,'var(--warn)')}<div class="an-r"><span class="mut">Flujo neto · 30 días</span><b style="color:var(--${net>=0?'ok':'bad'})">${net>=0?'+':''}${n(net,2)} USDT</b></div></div>`}
+
+    /* 7) Comisiones */
+    const eff=hasP&&OP.mes_usdt>0?FU.mes/OP.mes_usdt*100:null;
+    const fees=`${H('Comisiones ganadas','En USDT, sin descontar lo pagado a referidos.')}<div class="an-g">${kpi('Hoy',n(FU.hoy,4)+U,'')}${kpi('7 días',n(FU.sem,4)+U,'')}${hasP?kpi('30 días',n(FU.mes,4)+U,eff!=null?'≈ '+n(eff,2)+'% del volumen':''):''}${kpi('Total',n(FU.total,4)+U,'')}</div>`;
+
+    /* 8) Dinero dentro de la plataforma */
+    const cus=hasP&&CU?`${H('USDT dentro de la plataforma','Saldo que los usuarios tienen en la app (lo que respalda lo que les debes).')}<div class="an-3">${mini('De usuarios',n(CU.usdt_usuarios,2),'USDT')}${mini('Bloqueado en ventas',n(CU.usdt_bloqueado,2),'USDT')}${mini('Tuyo y de admins',n(CU.usdt_equipo,2),'USDT')}</div>`:'';
+
+    /* 9) Mejores horas (se llena después) */
+    const hrs=`${H('Mejores horas para publicar','Cuándo entra más gente.')}<div id="stH">${skel(1)}</div>`;
+
+    /* 10) Top usuarios */
+    const tmx=Math.max(1,...TOP.map(x=>Number(x.usdt)||0));
+    const top=hasP&&TOP.length?`${H('Usuarios que más operan','Últimos 30 días, por volumen en USDT.')}<div class="an-c">${TOP.map((x,i)=>`<div class="an-fn"><div class="t"><span style="display:flex;align-items:center;gap:8px;min-width:0;color:var(--tx);font-size:13px"><em class="an-av">${esc(String(x.username||'?').charAt(0).toUpperCase())}</em><b>${i+1}. @${esc(x.username)}</b></span><span>${n(x.usdt,2)} USDT · ${n(x.ops,0)} op.</span></div><div class="an-bar"><i style="width:${Math.max(3,Math.round((Number(x.usdt)||0)/tmx*100))}%"></i></div></div>`).join('')}</div>`:'';
+
+    /* 11) Detalle por día */
+    const tab=`${H('Detalle por día','Últimos 7 días.')}<div class="an-c" style="padding:8px;overflow-x:auto"><table class="an-tb"><tr><th>Día</th><th>Visitas</th><th>Nuevos</th><th>Ops</th><th>USDT</th></tr>${ser.slice().reverse().map(x=>{const q=od[x.day]||{};return`<tr><td>${dd(x.day)}</td><td>${n(x.visitas,0)}</td><td>${n(x.nuevos,0)}</td><td>${n(q.ops,0)}</td><td>${n(q.usdt,2)}</td></tr>`}).join('')}</table></div>`;
+
+    /* 12) Equipo */
+    const eq=hasP&&EQ.length?`${H('Administradores','Lo que ha hecho cada uno (verificaciones y recargas).')}<div class="an-c">${EQ.map(x=>`<div class="an-r" style="align-items:flex-start"><div style="min-width:0"><b>@${esc(x.username)}</b><div class="mut" style="font-size:12px">7 días: ${n(x.n7,0)} · 30 días: ${n(x.n30,0)} (KYC ${n(x.kyc30,0)} · recargas ${n(x.rec30,0)})</div></div><span class="mut" style="font-size:12px;text-align:right">${x.ultima?'última: '+when(x.ultima):'sin actividad'}</span></div>`).join('')}</div>`:'';
+
+    b.innerHTML=`${pl.error?'<div class="warnbox" style="margin-bottom:8px">Para ver las estadísticas nuevas ejecuta <code>estadisticas.sql</code> en Supabase.</div>':''}${attn}${hero}${grid}${usrs}${perf}${mov}${fees}${cus}${hrs}${top}${tab}${eq}
     ${errs.length?`<p class="mut" style="font-size:12px">Secciones no disponibles: ${esc(errs.map(x=>x[0].replace('_error','')+' ('+x[1]+')').join(' · '))}</p>`:''}
-    <button class="b gh w" id="stR" style="margin-top:10px">Actualizar</button>`;
+    <button class="b gh w" id="stR" style="margin-top:14px">Actualizar</button>`;
     document.getElementById('stR').onclick=()=>{b.innerHTML=skel(2);load()};
+
+    /* Gráfico del hero: 7 o 14 días; al tocar un día se ve su detalle */
+    const drawTrend=days=>{const el=document.getElementById('anT');if(!el)return;
+      const L=TR.slice(-days),vals=L.map(x=>Number(x.usdt)||0),mx=Math.max(1,...vals),w=300,h=100,cw=w/Math.max(1,L.length);
+      const pts=vals.map((x,i)=>[+((i+.5)*cw).toFixed(1),+(h-8-(x/mx)*(h-16)).toFixed(1)]);
+      const ln=pts.map((p,i)=>(i?'L':'M')+p[0]+' '+p[1]).join(' ');
+      const tot=vals.reduce((a,x)=>a+x,0),ops=L.reduce((a,x)=>a+(Number(x.ops)||0),0),bi=vals.indexOf(Math.max(...vals));
+      const tt=document.getElementById('anTt');if(tt)tt.textContent=L.length?`Últimos ${L.length} días: ${n(tot,2)} USDT · ${n(ops,0)} operaciones`:'Todavía no hay operaciones completadas.';
+      const show=(i,tag)=>{const x=L[i];if(!x)return;const rd=document.getElementById('anR');if(rd)rd.innerHTML=`<span><b>${dd(x.day)}</b>${tag?' · '+tag:''}</span><span>${n(x.usdt,2)} USDT · ${n(x.ops,0)} operaciones</span>`;el.querySelectorAll('.an-cols i').forEach((c,j)=>c.classList.toggle('on',j===i))};
+      el.innerHTML=`<div class="an-cw"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="anG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c6cff" stop-opacity=".45"/><stop offset="1" stop-color="#7c6cff" stop-opacity="0"/></linearGradient></defs>${L.length>1?`<path d="${ln} L${pts[pts.length-1][0]} ${h} L${pts[0][0]} ${h} Z" fill="url(#anG)"/><path d="${ln}" fill="none" stroke="#9b8cff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`:''}</svg><div class="an-cols">${L.map((x,i)=>`<i data-i="${i}"></i>`).join('')}</div></div><div class="an-ax"><span>${L.length?dd(L[0].day):''}</span><span>${L.length?dd(L[L.length-1].day):''}</span></div><div class="an-rd" id="anR"></div>`;
+      el.onclick=e=>{const c=e.target.closest('[data-i]');if(c)show(+c.dataset.i)};
+      if(L.length&&tot>0)show(bi,'mejor día');else{const rd=document.getElementById('anR');if(rd)rd.style.display='none'}};
+    document.getElementById('anSg').onclick=e=>{const bt=e.target.closest('button[data-r]');if(!bt)return;document.querySelectorAll('#anSg button').forEach(x=>x.classList.toggle('on',x===bt));drawTrend(+bt.dataset.r)};
+    drawTrend(14);
     loadHours();
   };
   const loadHours=async()=>{
     const h=await sb.rpc('admin_stats_hours');
     if(my!==NAV)return;const bx=document.getElementById('stH');if(!bx)return;
-    if(h.error||!h.data){bx.innerHTML='<div class="card mut" style="margin:0">'+(/could not find the function/i.test((h.error&&h.error.message)||'')?'Falta pegar en Supabase el SQL de las horas.':esc((h.error&&h.error.message)||'Sin datos'))+'</div>';return}
+    if(h.error||!h.data){bx.innerHTML='<div class="an-c mut">'+(/could not find the function/i.test((h.error&&h.error.message)||'')?'Falta pegar en Supabase el SQL de las horas.':esc((h.error&&h.error.message)||'Sin datos'))+'</div>';return}
     const hs=h.data.horas||[],tot=hs.reduce((a,x)=>a+x.v,0),mx=Math.max(1,...hs.map(x=>x.v));
-    if(!tot){bx.innerHTML='<div class="card mut" style="margin:0">Aún no hay datos por hora. Se irán llenando con las visitas nuevas.</div>';return}
+    if(!tot){bx.innerHTML='<div class="an-c mut">Aún no hay datos por hora. Se irán llenando con las visitas nuevas.</div>';return}
     const top=hs.slice().sort((a,b)=>b.v-a.v).slice(0,3).filter(x=>x.v>0),hh=x=>String(x).padStart(2,'0')+':00';
-    bx.innerHTML=`<div class="card" style="margin:0"><div class="mut">Horas con más visitas · hora de Cuba · últimos 14 días (${n(h.data.dias,0)} con datos)</div>
-    <div class="big" style="font-size:20px;margin:4px 0">${top.map(x=>hh(x.h)).join(' · ')}</div>
-    <div style="display:flex;align-items:flex-end;gap:2px;height:90px;margin-top:10px">${hs.map(x=>`<div title="${hh(x.h)}: ${x.v} visitas" style="flex:1;height:${Math.max(3,Math.round(x.v/mx*100))}%;background:${top.some(q=>q.h===x.h)?'var(--ok)':'var(--acc)'};opacity:${x.v?1:.25};border-radius:3px 3px 0 0"></div>`).join('')}</div>
-    <div class="mut" style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div></div>`;
+    bx.innerHTML=`<div class="an-c"><div class="mut" style="font-size:12px">Horas con más visitas · hora de Cuba · últimos 14 días (${n(h.data.dias,0)} con datos)</div>
+    <div class="an-big" style="font-size:22px;margin:6px 0">${top.map(x=>hh(x.h)).join(' · ')}</div>
+    <div class="an-hr">${hs.map(x=>`<i class="${top.some(q=>q.h===x.h)?'top':''}" title="${hh(x.h)}: ${x.v} visitas" style="height:${Math.max(3,Math.round(x.v/mx*100))}%;opacity:${x.v?1:.25}"></i>`).join('')}</div>
+    <div class="an-ax"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div></div>`;
   };
   load();
 }
