@@ -759,7 +759,7 @@ async function viewMarket(){
     <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></details></details><div id="offers">${skel(3)}</div></div>
   <div id="pnB" style="display:none"><div id="breqs">${skel(1)}</div></div>`;
   $('srt').value=F.sort;bindTop();
-  $('tg').onclick=()=>{if(gate())return;if(!S.cards)loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
+  $('tg').onclick=()=>{if(gate())return;loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   $('tb').onclick=()=>{const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   const setMt=t=>{S.mt=t;$('pnS').style.display=t==='s'?'':'none';$('pnB').style.display=t==='b'?'':'none';$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t))};
   $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'s');
@@ -777,6 +777,7 @@ async function viewMarket(){
     w.style.display=l.length?'block':'none';sv.style.display='flex'};
   $('ocs').onchange=()=>{const x=(S.cards||[]).find(k=>k.id===$('ocs').value);if(x){$('obk').value=x.bank;$('odc').value=x.card_number;if(x.phone)$('odp').value=x.phone}$('osvw').style.display=x?'none':'flex'};
   $('oc').addEventListener('change',syncCards);
+  if($('sell').style.display==='block')loadCards().then(()=>{if($('oc'))syncCards()});
   $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
     const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),card=($('odc').value||'').replace(/\s+/g,' ').trim(),ph=($('odp').value||'').trim(),d=(c!=='Saldo Móvil'&&card?'Tarjeta: '+card+' · ':'')+(ph?'Teléfono: '+ph:'');
