@@ -833,7 +833,7 @@ function drawOffers(){
           let last=er;for(const k of ['p_offer','p_offer_id','offer_id']){try{await rpc('cancel_offer',{[k]:oid});last=null;break}catch(e2){last=e2;if(!/Could not find|schema cache|does not exist|function/i.test(String(e2&&e2.message)))break}}
           if(last)throw last}
         S.offers=(S.offers||[]).filter(x=>String(x.id)!==String(oid));
-        await loadBal();viewMarket()},'Oferta cancelada')}}}
+        drawOffers();{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}loadBal()},'Oferta cancelada')}}}
 function offerDetail(id){
   const o=S.offers.find(x=>String(x.id)===String(id));if(!o)return;
   const{m,c,bank}=parseM(o.methods),mine=o.seller_id===S.user.id,rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),fee=FPO();
@@ -951,6 +951,9 @@ function playTone(key,seq,type,gain){
     return Promise.resolve(true)}
   catch(e){return Promise.resolve(viaCtx(seq,type,gain))}}
 const DING_SEQ=[[880,0,.4],[1175,.17,.4],[1568,.34,.45]],CHAT_SEQ=[[740,0,.25],[988,.13,.28]];
+/* Prepara los sonidos en reposo para que el primer toque no se congele generándolos */
+{const pre=()=>{try{wavURL('ding',DING_SEQ);wavURL('chat',CHAT_SEQ);aEl('ding',DING_SEQ);aEl('chat',CHAT_SEQ)}catch(e){}};
+  if(window.requestIdleCallback)requestIdleCallback(pre,{timeout:3000});else setTimeout(pre,1500)}
 function ding(){
   if(lsGet('snd')==='0')return Promise.resolve(false);
   try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}
@@ -981,6 +984,9 @@ async function sysNotify(title,body){
   try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
     if(reg)await reg.showNotification(title,{body,icon:'icon-192.png',vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
 let NPB=false;
+/* Evita que todos los usuarios consulten a la vez (picos) y detecta si la persona está activa */
+const jit=ms=>Math.round(ms*(0.85+Math.random()*0.3));
+let LAST_ACT=Date.now();['pointerdown','keydown','touchstart','scroll'].forEach(ev=>addEventListener(ev,()=>{LAST_ACT=Date.now()},{passive:true,capture:true}));
 async function pollNotifs(){
   if(!S.user||document.hidden||!navigator.onLine)return;
   if(NPB){S.pollAgain=true;return}
@@ -1002,8 +1008,9 @@ async function pollNotifs(){
       if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
     S.np0=false;updBell()}catch(e){}finally{NPB=false;if(S.pollAgain){S.pollAgain=false;setTimeout(pollNotifs,300)}}}
 function startNotifs(){
-  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,20000);
-  try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>pollNotifs()).subscribe()}catch(e){}
+  clearTimeout(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();
+  {const g=S._npg=(S._npg||0)+1;const nx=()=>{NP=setTimeout(async()=>{if(g!==S._npg||!S.user)return;try{await pollNotifs()}catch(e){}if(g===S._npg&&S.user)nx()},jit(S.rtHit?40000:20000))};nx()}
+  try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>{S.rtHit=true;pollNotifs()}).subscribe()}catch(e){}
   setTimeout(askNotifBanner,2500);
   if('serviceWorker' in navigator&&'Notification' in window&&Notification.permission==='granted')navigator.serviceWorker.register('sw.js').then(()=>pushSubscribe()).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)pollNotifs()});
@@ -1842,7 +1849,8 @@ async function liveTick(){
   try{const r=await withTO(sb.rpc('live_ping'),9000);if(r.error||!r.data)return;const x=r.data;
     S.onl=Number(x.online)||0;setActU();tickChat(x.chat_last==null?null:Number(x.chat_last),x.chat_last_user)}
   catch(e){}finally{LTB=false}}
-function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();LT=setInterval(liveTick,15000)}
+function startLive(){clearTimeout(LT);S.chatMax=null;S.chatCnt=null;S.chatUnread=0;S.pcUnread=0;S.pcN=null;S.ltn=0;S.pcOff=false;S.onl=null;updChatBd();liveTick();
+  {const g=S._ltg=(S._ltg||0)+1;const nx=()=>{LT=setTimeout(async()=>{if(g!==S._ltg||!S.user)return;try{await liveTick()}catch(e){}if(g===S._ltg&&S.user)nx()},jit(Date.now()-LAST_ACT>120000?30000:15000))};nx()}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
 /* ---------- Chat: editar, borrar y reaccionar (capa propia; no toca las tablas del chat) ---------- */
