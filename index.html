@@ -354,6 +354,11 @@ body.akb{padding-bottom:var(--akh,0px)!important}
 .rx{width:auto;min-height:0;margin:0;box-shadow:none;background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:1px 9px;font-size:12px;line-height:1.7;cursor:pointer}
 .rx.on{background:rgba(124,108,255,.28);border-color:#7c6cff;color:var(--tx)}
 .msg small a{text-decoration:none}
+/* Botones: zonas de toque cómodas y nada que los tape */
+#toast{pointer-events:none}
+.rx{padding:5px 12px;min-height:32px;font-size:13px;line-height:1.3}
+.msg small a[data-me],.msg small a[data-md],.msg small a[data-cd]{display:inline-block;padding:7px 9px;margin:-7px -3px}
+#breqs .card{content-visibility:visible}
 
 .auth{padding:12px 16px}
 .auth .ac{width:100%;max-width:400px;position:relative;z-index:1}
@@ -428,7 +433,6 @@ body.kb .pc-hide{display:none!important}
 /* ---- Rendimiento: menos animación y menos trabajo de pintado ---- */
 .sk{animation:none!important;background:var(--card)!important}
 main>*,main.vin{animation:none!important}
-#breqs .card{content-visibility:auto;contain-intrinsic-size:auto 150px}
 .seg button,.chip,.tile,.qb,button.b{-webkit-tap-highlight-color:transparent}
 .card,.tile,.wal,.qb{box-shadow:none!important}
 .ov{animation:none!important}.md{animation:none!important}
@@ -669,7 +673,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-07b';
+const APP_V='2026-11-07c';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -738,7 +742,7 @@ async function refreshBadge(){
 function go(v,orderId){if(S.blocked&&!['wallet','hist'].includes(v))v='wallet';
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'||v==='comm'?'chat':v)));
   {let b=document.getElementById('ldbar');if(!b){b=document.createElement('div');b.id='ldbar';document.body.appendChild(b)}b.classList.remove('on');void b.offsetWidth;b.classList.add('on')}
-  drawMaint();S.view=v;if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
+  drawMaint();S.view=v;S._navT=Date.now();if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'||v==='comm'?'chat':v)));
   ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,cards:viewCards,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,pchat:viewPchat,pcon:viewPcon,comm:viewComm,admin:viewAdmin}[v]||viewMarket)();
@@ -908,7 +912,7 @@ async function viewTrade(){
     if(!m)return;const fl=m.querySelector('#mf').files[0];m.remove();
     act(ev.target,async()=>{const p=await uploadProof('trade/'+t.id,isS?'envio':'recepcion',fl);await rpc('trade_upload',{p_trade:t.id,p_path:p});viewTrade()},'Foto enviada: el administrador la revisará')};
   let last=t.status+t.updated_at;
-  POLL=setInterval(async()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;const{data:u}=await sb.from('trades').select('status,updated_at').eq('id',t.id).single();if(u&&u.status+u.updated_at!==last){await loadBal();viewTrade()}},10000)}
+  POLL=setInterval(async()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;const{data:u}=await sb.from('trades').select('status,updated_at').eq('id',t.id).single();if(u&&u.status+u.updated_at!==last){await loadBal();await idle();if(my!==NAV)return;viewTrade()}},10000)}
 
 /* ---------- Conexión lenta / sin internet ---------- */
 function showRetry(){const m=document.querySelector('main');if(!m||!m.querySelector('.sk'))return;
@@ -1228,8 +1232,8 @@ async function viewOrder(){
     if(my!==NAV)return clearInterval(POLL);
     if(document.hidden||!navigator.onLine)return;
     const{data:u}=await sb.from('orders').select('status,updated_at').eq('id',o.id).single();
-    if(u&&u.status+u.updated_at!==last){last=u.status+u.updated_at;toast('La operación se actualizó');await loadBal();viewOrder()}
-    else if(med&&!fin_&&document.activeElement?.id!=='cm')drawChat()},10000)}
+    if(u&&u.status+u.updated_at!==last){last=u.status+u.updated_at;toast('La operación se actualizó');await loadBal();await idle();if(my!==NAV)return;viewOrder()}
+    else if(med&&!fin_&&document.activeElement?.id!=='cm'){await idle();if(my!==NAV)return;drawChat()}},10000)}
 
 /* ---------- Billetera ---------- */
 async function viewWallet(){
@@ -1921,8 +1925,10 @@ async function viewChat(){
     if(S.chatMax==null)S.chatMax=mx;
     else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
     const MXd=await msgExtras('g',0,L.map(x=>Number(x.id)));if(my!==NAV||!$('cl'))return;MXc=MXd;LST=L;
-    const key=L.map(x=>x.id+'.'+(x.views||0)).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
-    if(!force&&key===lastKey)return;lastKey=key;
+    const key=L.map(x=>x.id).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
+    if(!force&&key===lastKey)return;
+    if(!force){await idle();if(my!==NAV||!$('cl'))return}
+    lastKey=key;
     const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;
     cl.innerHTML=L.length?L.map(x=>{const mine=x.user_id===S.user.id,v=mxView(x.id,x.user_id,x.body,MXc);return`<div class="msg ${mine?'me':''}"><small>${userTag(x.role,x.kyc_status)} ${!mine?`<a href="#" class="pu" data-pu="${x.user_id}" data-pn="${esc(x.username)}" title="Invitar a chat privado">@${esc(x.username)}</a>`:'@'+esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}${mxOwn(x.id,mine,v.del,mod)}</small>${v.txt}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}${v.del?'':mxRx(x.id,MXc)}</div>`}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
@@ -1991,6 +1997,7 @@ async function viewPchat(){
     if(!$('pcres'))return;
     $('pcres').innerHTML=(data||[]).length?data.map(x=>`<div class="pcrow"><div class="pm"><span class="nm" style="font-weight:600">@${esc(x.username)}</span> ${userTag(x.is_admin?'admin':null,x.kyc_status)}</div><div class="pa"><button class="b sm" data-pi="${x.id}" data-pn="${esc(x.username)}">Pedir chat</button></div></div>`).join(''):'<p class="mut" style="margin:8px 0 0">No encontré ese usuario.</p>'},300)};
   $('pcres').onclick=e=>{const b=e.target.closest('[data-pi]');if(b)pcInvite(b.dataset.pi,b.dataset.pn)}}
+  let PK='';
   const draw=async()=>{
     let d;
     try{d=await rpc('pchat_rooms_list')}
@@ -1998,6 +2005,7 @@ async function viewPchat(){
     if(my!==NAV||!$('pcbox'))return;
     const cxl=await pcCancelled();if(my!==NAV||!$('pcbox'))return;
     const L=(d||[]).filter(x=>!(x.rstatus==='pending'&&cxl.includes(Number(x.rid))));
+    {const k=JSON.stringify(L);if(k===PK&&$('pcbox').querySelector('.pcrow,.mut'))return pcSummary();await idle();if(my!==NAV||!$('pcbox'))return;PK=k}
     $('pcbox').innerHTML=L.length?L.map(x=>{
       const nm=`<span class="nm" style="font-weight:600">@${esc(x.uname)}</span> ${userTag(x.urole,x.ukyc)}`;
       if(x.rstatus==='pending'&&x.rinit!==me)return`<div class="pcrow"><div class="pm">${nm}<div class="pv">te invita a un chat privado</div></div><div class="pa"><button class="b sm" data-pa="${x.rid}">Aceptar</button><button class="b gh sm" data-pr="${x.rid}">Rechazar</button></div></div>`;
@@ -2050,6 +2058,7 @@ async function viewPcon(){
     if(L.length){last=Math.max(last,...L.map(x=>Number(x.mid)));if(!force&&L.some(x=>x.msender!==me))chatDing()}
     const ex=await msgExtras('p',id,MSGS.map(x=>Number(x.mid)));if(my!==NAV||!$('cl'))return;MXc=ex;
     const key=MSGS.map(x=>x.mid).join(',')+'|'+(ex?JSON.stringify(ex):'');
+    if(!force&&key!==lastKey){await idle();if(my!==NAV||!$('cl'))return}
     if(force||key!==lastKey){lastKey=key;const st0=cl.scrollTop;
       cl.innerHTML=MSGS.length?MSGS.map(row).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
       if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0}
@@ -2925,6 +2934,36 @@ async function staffMed(D,my){
 
 /* Visitas: una llamada por sesión, con un identificador anónimo por dispositivo */
 (()=>{try{if(sessionStorage.getItem('_tv'))return;sessionStorage.setItem('_tv','1');let v=localStorage.getItem('_vid');if(!v){v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,'');localStorage.setItem('_vid',v)}sb.rpc('track_visit',{p_vid:v}).then(()=>{},()=>{})}catch(e){}})();
+/* ---------- Botones siempre vivos ---------- */
+/* 1) Sabemos cuándo el dedo está sobre la pantalla para no redibujar justo debajo */
+let PRESS=0;
+const pressing=()=>PRESS>0&&Date.now()-PRESS<2500;
+const idle=async()=>{for(let i=0;i<20&&pressing();i++)await sleep(100)};
+/* 2) Red de seguridad: si una actualización cambió el botón entre que lo tocas y lo sueltas,
+      el navegador pierde el toque. Aquí lo recuperamos y pulsamos el botón nuevo. */
+(()=>{
+  const SEL='button,a[href],[role=button],summary,.chip,.tile,.qb,[data-o],[data-mv],[data-m]';
+  const sig=el=>el?[el.tagName,el.id,el.className,JSON.stringify(el.dataset||{}),(el.textContent||'').trim().slice(0,40)].join('|'):'';
+  let down=null;
+  const start=e=>{PRESS=Date.now();const el=e.target&&e.target.closest?e.target.closest(SEL):null;
+    down=el?{el,sig:sig(el),x:e.clientX,y:e.clientY,t:Date.now()}:null};
+  const end=e=>{PRESS=0;const d=down;down=null;if(!d||e.type==='pointercancel')return;
+    const x=e.clientX,y=e.clientY;
+    setTimeout(()=>{
+      if(d.el.isConnected)return;
+      if(Date.now()-d.t>1500||Math.hypot(x-d.x,y-d.y)>12)return;
+      const n=document.elementFromPoint(x,y),b=n&&n.closest?n.closest(SEL):null;
+      if(b&&!b.disabled&&sig(b)===d.sig)b.click()},40)};
+  addEventListener('pointerdown',start,true);addEventListener('pointerup',end,true);addEventListener('pointercancel',end,true);
+})();
+/* 3) Si una pantalla falla por un error de programación justo al abrirla (y se queda a medias, con botones muertos),
+      se vuelve a cargar sola una vez. */
+addEventListener('unhandledrejection',e=>{
+  const r=e.reason;if(!(r instanceof TypeError||r instanceof ReferenceError))return;
+  if(!S.user||document.querySelector('.auth'))return;
+  const now=Date.now();if(now-(S._navT||0)>8000||now-(S._healT||0)<30000)return;S._healT=now;
+  console.warn('Pantalla incompleta, se recarga:',r&&r.message);toast('Actualizando la pantalla…');go(S.view)});
+
 try{if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}catch(e){}
 /* Login: al enfocar un campo, sube la pantalla para que el teclado no lo tape */
 (()=>{const B=document.body,vv=window.visualViewport;let t=null;
