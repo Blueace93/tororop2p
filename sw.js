@@ -19,11 +19,20 @@ self.addEventListener('fetch', e => {
     e.respondWith(caches.open(CACHE).then(c => c.match(r).then(h => h || fetch(r).then(n => { if (n.ok) c.put(r, n.clone()); return n; }))));
     return;
   }
-  // La página y sus iconos: primero la versión nueva (hasta 8 s); si la red va lenta o falla, la guardada
+  // Librería de Supabase en tu propio dominio (nombre con versión): primero la copia guardada.
+  // Solo se guarda si de verdad es JavaScript (por si el servidor responde con otra cosa).
+  if (u.origin === location.origin && /\/supabase-[\d.]+\.min\.js$/.test(u.pathname)) {
+    e.respondWith(caches.open(CACHE).then(c => c.match(r).then(h => h || fetch(r).then(n => {
+      if (n.ok && /javascript/i.test(n.headers.get('content-type') || '')) c.put(r, n.clone());
+      return n;
+    }))));
+    return;
+  }
+  // La página y sus iconos: primero la versión nueva (hasta 3 s); si la red va lenta o falla, la guardada
   if (u.origin === location.origin && (r.mode === 'navigate' || /\/(index\.html|manifest\.json|icon-[^/]+\.png)?$/.test(u.pathname))) {
     e.respondWith(caches.open(CACHE).then(c => {
       const net = fetch(r, { cache: 'no-cache' }).then(n => { if (n.ok) c.put(r, n.clone()); return n; });
-      const slow = new Promise(res => setTimeout(res, 8000, null));
+      const slow = new Promise(res => setTimeout(res, 3000, null));
       return Promise.race([net, slow]).then(n => n || c.match(r, { ignoreSearch: true }).then(h => h || net))
         .catch(() => c.match(r, { ignoreSearch: true }));
     }));
