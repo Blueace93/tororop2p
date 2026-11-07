@@ -810,7 +810,7 @@ function drawOffers(){
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
     <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
-    <div class="obt">${mine?`<button type="button" class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}<button type="button" class="b gh sm" data-shr="${o.id}">🔗 Compartir</button></div></div>`}).join('')+
+    <div class="obt">${mine?`<button type="button" class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}</div></div>`}).join('')+
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'');
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
     const o=S.offers.find(x=>String(x.id)===String(b.dataset.buy));if(!o){toast('Esa oferta ya no está disponible','err');return}const{c,bank}=parseM(o.methods),net=o.amount;
@@ -819,9 +819,8 @@ function drawOffers(){
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
   /* Delegación: los clics siguen funcionando aunque la lista se redibuje (stats, roles, filtros) */
   box.onclick=async e=>{
-    const bt=e.target.closest&&e.target.closest('[data-cancel],[data-det],[data-shr],[data-chat]');if(!bt||!box.contains(bt))return;
+    const bt=e.target.closest&&e.target.closest('[data-cancel],[data-det],[data-chat]');if(!bt||!box.contains(bt))return;
     if(bt.dataset.det!==undefined)return offerDetail(bt.dataset.det);
-    if(bt.dataset.shr!==undefined)return offerShare(bt.dataset.shr);
     if(bt.dataset.chat!==undefined)return pcInvite(bt.dataset.chat,bt.dataset.cn);
     if(bt.dataset.cancel!==undefined){
       const oid=bt.dataset.cancel;
