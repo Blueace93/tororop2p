@@ -832,11 +832,23 @@ function offerDetail(id){
    <div class="grid2"><button class="b gh" id="dx">Cerrar</button>${mine?'':'<button class="b" id="db">Comprar</button>'}</div>`);
   mm.querySelector('#dx').onclick=()=>mm.remove();
   const db=mm.querySelector('#db');if(db)db.onclick=()=>{mm.remove();const b=document.querySelector(`[data-buy="${id}"]`);if(b)b.click()}}
-async function offerShare(id){
+function offerShare(id){
   const o=S.offers.find(x=>x.id===id);if(!o)return;const{c}=parseM(o.methods);
-  const t=`Tororo P2P · ${n(o.amount,2)} USDT a ${mny(o.price_cup,c)} ${c} por USDT. Entra y compra: ${location.origin}${location.pathname}`;
-  try{if(navigator.share){await navigator.share({title:'Tororo P2P',text:t});return}}catch(e){if(e&&e.name==='AbortError')return}
-  copy(t)}
+  const url=/^https?:$/.test(location.protocol)?location.origin+location.pathname:'';
+  const t=`Tororo P2P · ${n(o.amount,2)} USDT a ${mny(o.price_cup,c)} ${c} por USDT.${url?' Entra y compra: '+url:''}`;
+  const canShare=typeof navigator.share==='function';
+  const mm=modal(`<h3>🔗 Compartir oferta</h3><textarea id="shT" rows="4" readonly style="width:100%">${esc(t)}</textarea>
+    <div class="grid2" style="margin-top:12px"><button class="b" id="shC">📋 Copiar</button>${canShare?'<button class="b gh" id="shS">📤 Compartir</button>':'<button class="b gh" id="shX">Cerrar</button>'}</div>
+    ${canShare?'<button class="b gh w" id="shX" style="margin-top:8px">Cerrar</button>':''}`);
+  const ta=mm.querySelector('#shT');
+  mm.querySelector('#shX').onclick=()=>mm.remove();
+  mm.querySelector('#shC').onclick=async()=>{
+    let ok=false;
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(t);ok=true}}catch(e){}
+    if(!ok){try{ta.focus();ta.select();ta.setSelectionRange(0,t.length);ok=document.execCommand('copy')}catch(e){}}
+    if(ok){toast('Copiado','good');mm.remove()}else toast('Mantén pulsado el texto para copiarlo','err')};
+  const sh=mm.querySelector('#shS');
+  if(sh)sh.onclick=async()=>{try{await navigator.share({title:'Tororo P2P',text:t});mm.remove()}catch(e){if(!e||e.name!=='AbortError')toast('Usa el botón Copiar','err')}}}
 
 /* ---------- Cambio USD Clásica ⇄ CUP ---------- */
 async function viewTrade(){
