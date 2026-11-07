@@ -810,19 +810,33 @@ function drawOffers(){
     <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
     <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
     <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
-    <div class="obt">${mine?`<button class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}<button class="b gh sm" data-shr="${o.id}">🔗 Compartir</button></div></div>`}).join('')+
+    <div class="obt">${mine?`<button type="button" class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}<button type="button" class="b gh sm" data-shr="${o.id}">🔗 Compartir</button></div></div>`}).join('')+
     (fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'');
   box.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(gate())return;
-    const o=S.offers.find(x=>x.id===b.dataset.buy),{c,bank}=parseM(o.methods),net=o.amount;
+    const o=S.offers.find(x=>String(x.id)===String(b.dataset.buy));if(!o){toast('Esa oferta ya no está disponible','err');return}const{c,bank}=parseM(o.methods),net=o.amount;
     const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>${bank?`<p class="warnbox">🏦 Enviarás a <b>${esc(bank)}</b>. Si tu tarjeta es de un banco distinto, la acreditación puede demorar hasta <b>72 h</b>.</p>`:''}`,'Iniciar compra');
     if(!m)return;m.remove();
     act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})});
-  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>act(b,async()=>{await rpc('cancel_offer',{p_id:b.dataset.cancel});await loadBal();viewMarket()},'Oferta cancelada'));
-  box.querySelectorAll('[data-det]').forEach(b=>b.onclick=()=>offerDetail(b.dataset.det));
-  box.querySelectorAll('[data-shr]').forEach(b=>b.onclick=()=>offerShare(b.dataset.shr));
-  box.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>pcInvite(b.dataset.chat,b.dataset.cn))}
+  /* Delegación: los clics siguen funcionando aunque la lista se redibuje (stats, roles, filtros) */
+  box.onclick=async e=>{
+    const bt=e.target.closest&&e.target.closest('[data-cancel],[data-det],[data-shr],[data-chat]');if(!bt||!box.contains(bt))return;
+    if(bt.dataset.det!==undefined)return offerDetail(bt.dataset.det);
+    if(bt.dataset.shr!==undefined)return offerShare(bt.dataset.shr);
+    if(bt.dataset.chat!==undefined)return pcInvite(bt.dataset.chat,bt.dataset.cn);
+    if(bt.dataset.cancel!==undefined){
+      const oid=bt.dataset.cancel;
+      const m=await ask('Cancelar oferta','<p>¿Seguro que quieres cancelar tu oferta? Se te devolverá el USDT bloqueado (monto + comisión).</p>','Sí, cancelar','bad');if(!m)return;m.remove();
+      act(bt,async()=>{
+        try{await rpc('cancel_offer',{p_id:oid})}
+        catch(er){
+          /* si el nombre del parámetro en la base es otro, probamos los alternativos */
+          if(!/Could not find|schema cache|does not exist|function/i.test(String(er&&er.message)))throw er;
+          let last=er;for(const k of ['p_offer','p_offer_id','offer_id']){try{await rpc('cancel_offer',{[k]:oid});last=null;break}catch(e2){last=e2;if(!/Could not find|schema cache|does not exist|function/i.test(String(e2&&e2.message)))break}}
+          if(last)throw last}
+        S.offers=(S.offers||[]).filter(x=>String(x.id)!==String(oid));
+        await loadBal();viewMarket()},'Oferta cancelada')}}}
 function offerDetail(id){
-  const o=S.offers.find(x=>x.id===id);if(!o)return;
+  const o=S.offers.find(x=>String(x.id)===String(id));if(!o)return;
   const{m,c,bank}=parseM(o.methods),mine=o.seller_id===S.user.id,rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),fee=FPO();
   const mm=modal(`<h3>${n(o.amount,2)} USDT</h3>
    <div class="mut" style="line-height:1.9">💵 Precio: <b>${mny(o.price_cup,c)} ${esc(c)}</b> por USDT<br>🧾 Total: <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b><br>👤 Vendedor: <b>@${esc(o.profiles?.username)}</b>${mine?' (tú)':''}<br>${repTxt(o.seller_id)?repTxt(o.seller_id)+'<br>':''}🕒 Publicada: ${when(o.created_at)}</div>
@@ -833,8 +847,8 @@ function offerDetail(id){
   mm.querySelector('#dx').onclick=()=>mm.remove();
   const db=mm.querySelector('#db');if(db)db.onclick=()=>{mm.remove();const b=document.querySelector(`[data-buy="${id}"]`);if(b)b.click()}}
 function offerShare(id){
-  const o=S.offers.find(x=>x.id===id);if(!o)return;const{c}=parseM(o.methods);
-  const url=/^https?:$/.test(location.protocol)?location.origin+location.pathname:'';
+  const o=(S.offers||[]).find(x=>String(x.id)===String(id));if(!o){toast('Esa oferta ya no está disponible. Actualiza la lista.','err');return}const{c}=parseM(o.methods);
+  const url=/^https?:$/.test(location.protocol)?location.origin+location.pathname:'https://tororo.trade';
   const t=`Tororo P2P · ${n(o.amount,2)} USDT a ${mny(o.price_cup,c)} ${c} por USDT.${url?' Entra y compra: '+url:''}`;
   const canShare=typeof navigator.share==='function';
   const mm=modal(`<h3>🔗 Compartir oferta</h3><textarea id="shT" rows="4" readonly style="width:100%">${esc(t)}</textarea>
