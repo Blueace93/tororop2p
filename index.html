@@ -251,6 +251,28 @@ html{scroll-behavior:auto}
 .fab-m{width:52px;height:52px;font-size:28px}.fab{bottom:92px;right:14px}
 /* El contenedor del botón + es invisible pero tapaba los botones de las tarjetas (Detalles, Chat…): solo el + y sus opciones abiertas reciben toques */
 .fab{pointer-events:none}.fab-m{pointer-events:auto}
+/* ---- Mercado: ofertas con el estilo de QvaPay ---- */
+#offers:has(.qo){background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+#offers>p{margin:0;padding:10px 14px}
+.qo{display:flex;justify-content:space-between;gap:12px;padding:14px;border-bottom:1px solid var(--line)}
+.qo-l{flex:1;min-width:0}
+.qo-r{flex:0 0 128px;display:flex;flex-direction:column;gap:6px;text-align:center;padding-top:50px}
+.qo-u{display:flex;align-items:center;gap:10px}
+.qo-av{width:44px;height:44px;border-radius:50%;flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:18px}.qo-av img{width:100%;height:100%;object-fit:cover}
+.qo-n{min-width:0}.qo-n>b{font-size:15px;font-weight:700;overflow-wrap:anywhere}
+.qo-vf{display:inline-flex;width:16px;height:16px;border-radius:50%;border:1.5px solid #5aa9ff;color:#5aa9ff;font-size:10px;font-weight:800;align-items:center;justify-content:center;vertical-align:1px;margin-left:4px}
+.qo-cr{font-size:14px;margin-left:4px}
+.qo-ic{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:2px}
+.qo-p{display:flex;align-items:baseline;gap:8px;margin-top:12px}.qo-p b{font-size:26px;font-weight:800;letter-spacing:-.5px;overflow-wrap:anywhere}
+.qo-d{font-size:12px;font-weight:700;color:var(--ok)}.qo-d.dn{color:var(--bad)}
+.qo-c{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:16px}.qo-c span{color:var(--mut);font-size:14px}
+.qo-ci{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800;color:#fff;flex:none}
+.qo-k{display:flex;gap:10px;margin-top:6px;font-size:14px}.qo-k span{color:var(--mut);min-width:54px}.qo-k b{font-weight:700;overflow-wrap:anywhere}
+.qo-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qo-r small{color:var(--mut);font-size:12px}
+#offers .qo-btn{width:100%;padding:12px 6px;font-size:15px;font-weight:800;border-radius:12px;background:#e4001b;color:#fff;border:0;box-shadow:none}
+#offers .qo-btn.own{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.qo-a{display:flex;gap:6px}.qo-a .b{flex:1;padding:6px 4px;font-size:12px}
 /* ---- Estadísticas (estilo analítica, solo USDT) ---- */
 .an-h{display:flex;flex-direction:column;gap:2px;margin:24px 2px 10px}.an-h b{font-size:15px;font-weight:700;letter-spacing:-.2px}.an-h span{font-size:12px;color:var(--mut)}
 .an-hero{background:linear-gradient(160deg,#171a2e,#10121b 70%);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 18px 50px -28px rgba(124,108,255,.55)}
@@ -856,12 +878,23 @@ function drawOffers(){
   l.sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount-a.amount);
   if(!l.length){box.dataset.h='';box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=FPO();
-  const items=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods),rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user');
-    return{id:o.id,html:`<div class="card" data-oid="${o.id}"><div class="row"><b style="font-size:18px">${n(o.amount,2)} USDT</b><span class="px"><small>Precio por USDT</small><b>${mny(o.price_cup,c)} ${esc(c)}</b></span></div>
-    <div class="mut">Total: ${mny(o.amount*o.price_cup,c)} ${esc(c)} · Vendedor: @${esc(o.profiles?.username)}${mine?' (tú)':''}${repTxt(o.seller_id)?' · '+repTxt(o.seller_id):''}</div>
-    <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
-    <div class="chips" style="margin:8px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
-    <div class="obt">${mine?`<button class="b gh sm ob1" data-cancel="${o.id}">Cancelar mi oferta</button>`:`<button class="b sm ob1" data-buy="${o.id}">Comprar</button>`}<button class="b gh sm" data-det="${o.id}">👁 Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(o.profiles?.username)}">💬 Chat</button>`}</div></div>`}}),feeH=fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'';
+  const meds={};{const g={};(S.offers||[]).forEach(o=>{const c=parseM(o.methods).c;(g[c]=g[c]||[]).push(Number(o.price_cup)||0)});Object.keys(g).forEach(c=>{const a=g[c].sort((x,y)=>x-y);if(a.length>=3){const h=a.length>>1;meds[c]=a.length%2?a[h]:(a[h-1]+a[h])/2}})}
+  const hue=s=>{let h=0;for(const ch of String(s||''))h=(h*31+ch.charCodeAt(0))%360;return h};
+  const tm=t=>new Date(t).toLocaleString('es',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
+  const items=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods),rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),
+      p=o.profiles||{},nm=p.username||'?',r=(S.st||{})[o.seller_id],ref=meds[c],dl=ref&&o.price_cup?(o.price_cup/ref-1)*100:null,
+      au=p.avatar_path?avUrl(p.avatar_path):'',staff=rl==='owner'||rl==='admin',ver=!staff&&p.kyc_status==='approved';
+    return{id:o.id,html:`<div class="qo" data-oid="${o.id}"><div class="qo-l">
+    <div class="qo-u"><span class="qo-av" style="background:hsl(${hue(nm)} 50% 40%)">${au?`<img src="${esc(au)}" alt="" loading="lazy">`:esc(nm.charAt(0).toUpperCase())}</span>
+    <div class="qo-n"><b>${esc(nm)}</b>${mine?' <span class="tag">tú</span>':''}${ver?'<span class="qo-vf" title="Verificado">✓</span>':''}${staff?`<span class="qo-cr" title="${rl==='owner'?'Creador Tororo':'Admin'}">👑</span>`:''}
+    ${r?`<div class="qo-ic"><span>${r.ratings>0?'⭐ '+Number(r.avg_stars).toFixed(1):'Sin calificar'}</span><span>🔁 ${n(r.ops,0)}</span></div>`:''}</div></div>
+    <div class="qo-p"><b>${mny(o.price_cup,c)}</b>${dl!=null&&Math.abs(dl)>=0.05?`<span class="qo-d ${dl<0?'dn':'up'}" title="Frente a la mediana de las ofertas en ${esc(c)}">${dl>0?'+':''}${dl.toFixed(1)}%</span>`:''}</div>
+    <div class="qo-c"><i class="qo-ci" style="background:hsl(${hue(c)} 55% 42%)">${esc(String(c).charAt(0).toUpperCase())}</i><b>${esc(c)}</b><span>/ USDT</span></div>
+    <div class="qo-k"><span>Monto</span><b>${n(o.amount,2)} USDT</b></div>
+    <div class="qo-k"><span>Pagas</span><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></div>
+    <div class="qo-m">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div></div>
+    <div class="qo-r">${mine?`<button class="b ob1 qo-btn own" data-cancel="${o.id}">Cancelar oferta</button>`:`<button class="b ob1 qo-btn" data-buy="${o.id}">Comprar</button>`}<small>${tm(o.created_at)}</small>
+    <div class="qo-a"><button class="b gh sm" data-det="${o.id}">Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(nm)}">Chat</button>`}</div></div></div>`}}),feeH=fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'';
   const key=items.map(i=>i.html).join('')+feeH;
   if(box.dataset.h===key)return;box.dataset.h=key;
   /* Solo se cambian las tarjetas que cambiaron: así los botones no desaparecen justo cuando los tocas */
@@ -892,7 +925,10 @@ function cancelOffer(b){const id=b.dataset.cancel;
     S.offers=(S.offers||[]).filter(o=>o.id!==id);{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();
     loadBal().catch(()=>{});if(S.view==='market')loadOffers(NAV)},'Oferta cancelada')}
 async function loadOffers(my){
-  const{data,error}=await sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles(username,is_admin,kyc_status)').eq('status','open').order('created_at',{ascending:false}).limit(100);
+  const sel=x=>sb.from('offers').select('id,seller_id,amount,price_cup,methods,status,created_at,profiles('+x+')').eq('status','open').order('created_at',{ascending:false}).limit(100);
+  let rr=await sel('username,is_admin,kyc_status,avatar_path');
+  if(rr.error&&/avatar_path|column|permission/i.test(String(rr.error.message)))rr=await sel('username,is_admin,kyc_status');
+  const{data,error}=rr;
   if(my!==NAV)return;
   if(error){const bx=$('offers');if(bx){bx.dataset.h='';bx.innerHTML=`<div class="card mut">${esc(error.message)}</div>`}return}
   S.offers=data||[];{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();
