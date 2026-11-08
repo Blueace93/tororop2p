@@ -523,7 +523,69 @@ header .ib{font-size:18px}@media(max-width:420px){header .pill small{display:non
 .msg.me{background:var(--acc);color:#fff;border-radius:16px 16px 5px 16px}.msg.me small{color:rgba(255,255,255,.78)}
 .cmp{gap:6px}.cmp textarea{border-radius:22px;padding:10px 14px;min-height:40px}.cmp .b{border-radius:22px;padding:11px 16px}
 </style>
-<style>body[data-blocked] nav button:not([data-v="wallet"]),body[data-blocked] #fab,body[data-blocked] #fabg{display:none!important}body[data-blocked][data-view="wallet"] main>*:not(h2):not(#blkr):not(#blkb):not(#wcard):not(#hist){display:none!important}</style></head>
+<style>body[data-blocked] nav button:not([data-v="wallet"]),body[data-blocked] #fab,body[data-blocked] #fabg{display:none!important}body[data-blocked][data-view="wallet"] main>*:not(h2):not(#blkr):not(#blkb):not(#wcard):not(#hist){display:none!important}</style><style id="wa">
+/* ===== Chat estilo WhatsApp ===== */
+:root{--wb:#0a0c16;--bo:#1c2033;--bo-t:#e9ebf6;--wbd:rgba(124,108,255,.11)}
+html[data-theme=light]{--wb:#e7e9f5;--bo:#fff;--bo-t:#151a30;--wbd:rgba(106,86,240,.10)}
+/* parte de arriba más compacta para que el chat tenga más espacio */
+body[data-view=chat] header,body[data-view=pcon] header{padding-top:7px;padding-bottom:7px}
+body[data-view=chat] main,body[data-view=pcon] main{padding-top:7px;padding-bottom:0}
+.pcs.pcs-c{align-items:center;margin-bottom:6px}
+.pcs.pcs-c{gap:5px}.pcs.pcs-c>[data-pt]{min-width:0;padding:6px 3px;font-size:12px;letter-spacing:-.1px}.pcs.pcs-c .bd2{margin-left:2px}
+.pcs .cib{flex:none;width:34px;height:34px;padding:0;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--tx);font-size:16px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:none}
+@media(max-width:350px){.pcs.pcs-c>[data-pt]{font-size:10.5px;padding:6px 1px}.pcs .cib{width:30px}}
+.pcs .cib.on{background:var(--acc);color:#fff;border-color:transparent}
+.warnbox.ch-note{margin:0 0 6px}
+.pcrow-top{display:flex;align-items:center;gap:10px;margin:0 0 6px;flex-wrap:nowrap}
+.pcrow-top b{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcrow-top .b{flex:none}
+/* ventana del chat */
+.cwrap{position:relative;padding:0!important;border:1px solid var(--line)!important;border-radius:18px!important;background:radial-gradient(var(--wbd) 1.2px,transparent 1.6px) 0 0/22px 22px,var(--wb)!important;box-shadow:none!important}
+.cwrap #cl{padding:10px 10px 16px;gap:3px;scroll-behavior:auto}
+.cwrap .msg{position:relative;max-width:80%;padding:5px 9px 5px;border-radius:14px 14px 14px 4px;background:var(--bo);color:var(--bo-t);font-size:14.5px;line-height:1.35;box-shadow:0 1px 1px rgba(0,0,0,.14);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:text}
+.cwrap .msg.me{background:linear-gradient(135deg,var(--acc),#8a78ff);color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end}
+.cwrap .msg:after{content:"";display:block;clear:both}
+.cwrap .msg.hx{margin-bottom:13px}
+.cwrap .msg.sel{box-shadow:0 0 0 2px var(--acc),0 6px 18px -6px rgba(0,0,0,.4)}
+.msg .mh{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 1px;font-size:12.5px;font-weight:700;line-height:1.25}
+.msg .mn{color:hsl(var(--h,250) 72% 66%);text-decoration:none;overflow-wrap:anywhere}
+html[data-theme=light] .msg .mn{color:hsl(var(--h,250) 65% 38%)}
+.msg a.pu.mn{text-decoration:none}
+.msg .mh .tag{font-size:10px;padding:1px 7px;font-weight:700}
+.msg .mf{float:right;margin:7px 0 -3px 12px;font-size:10.5px;line-height:1;opacity:.62;display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+.msg.me .mf{opacity:.8}
+.msg .mx{white-space:pre-wrap}
+.dsep{align-self:center;margin:8px 0 6px}
+.dsep span{display:inline-block;padding:3px 12px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(124,108,255,.18);color:var(--mut)}
+html[data-theme=light] .dsep span{background:rgba(255,255,255,.85);box-shadow:0 1px 1px rgba(0,0,0,.08)}
+/* reacciones: pequeñas, pegadas al borde de la burbuja (solo aparecen cuando alguien reacciona) */
+.rxr{display:flex;gap:3px;margin:3px 0 -19px;float:left;clear:both;position:relative;z-index:1}
+.msg.me .rxr{float:right}
+.rxr .rxp{width:auto;min-height:0;margin:0;display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:99px;background:var(--bo);color:var(--bo-t);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.25);font-size:13px;line-height:1.5;cursor:pointer;animation:rxpop .28s cubic-bezier(.3,1.6,.5,1) both}
+.rxr .rxp b{font-size:11px;font-weight:700;color:var(--mut)}
+.rxr .rxp.on{border-color:var(--acc);background:rgba(124,108,255,.22)}
+@keyframes rxpop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+/* menú que aparece al tocar un mensaje */
+.mxp{position:absolute;z-index:30;display:flex;flex-direction:column;gap:6px;max-width:calc(100% - 16px)}
+.mxp.me{align-items:flex-end}
+.mxe{display:flex;gap:2px;padding:5px 7px;border-radius:99px;background:var(--card);border:1px solid var(--line);box-shadow:0 10px 28px -6px rgba(0,0,0,.55);transform-origin:var(--ox,50%) 100%;animation:mxin .2s cubic-bezier(.2,1.2,.4,1) both}
+.mxe button{width:38px;height:38px;margin:0;padding:0;border:0;border-radius:50%;background:transparent;font-size:23px;line-height:1;cursor:pointer;box-shadow:none;animation:mxem .32s cubic-bezier(.3,1.7,.5,1) both;animation-delay:calc(var(--i)*35ms)}
+.mxe button:active{transform:scale(1.3)}
+.mxe button.on{background:rgba(124,108,255,.28)}
+.mxm{display:flex;flex-direction:column;min-width:170px;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:0 10px 28px -6px rgba(0,0,0,.55);transform-origin:var(--ox,50%) 0;animation:mxin .22s .03s cubic-bezier(.2,1.1,.4,1) both}
+.mxm button{width:100%;margin:0;display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:var(--tx);font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:none}
+.mxm button:active{background:var(--card2)}
+.mxm button.bad{color:var(--bad)}
+@keyframes mxin{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes mxem{from{transform:translateY(10px) scale(.4);opacity:0}to{transform:none;opacity:1}}
+/* caja de escribir */
+.cwrap .cmp{margin:0;padding:8px;gap:8px;background:var(--card);border-top:1px solid var(--line);align-items:flex-end}
+.cwrap .cmp textarea{border-radius:22px;padding:10px 15px;min-height:42px}
+html[data-theme=light] #toast:not(.err):not(.good){color:#f2f3ff}
+.cmp .b.snd{width:44px;height:44px;min-width:44px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.cmp .b.snd svg{margin-left:2px}
+</style>
+</head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
 <div id="app"><div id="splash" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px"><svg width="64" height="64" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#6d5efc"/><circle cx="20" cy="20" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-weight:800;font-size:22px">Tororo<span style="color:#34d399"> P2P</span></div><div style="width:120px;height:3px;background:#23243a;border-radius:3px;overflow:hidden"><i style="display:block;width:40%;height:100%;background:#6d5efc;animation:spl 1s ease-in-out infinite alternate"></i></div></div></div>
@@ -664,7 +726,7 @@ async function act(btn,fn,okMsg,q){
   let wd,hint,orig=null;if(S.profile&&S.profile.is_admin)S._cfgAt=0;
   const free=()=>{clearTimeout(wd);clearTimeout(hint);if(btn){btn.dataset.busy='';if(btn.isConnected){btn.disabled=false;if(orig!==null)btn.innerHTML=orig}}};
   if(btn){if(btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;
-    if(btn.classList&&btn.classList.contains('b')){orig=btn.innerHTML;btn.textContent='Enviando…'}
+    if(btn.classList&&btn.classList.contains('b')&&!btn.classList.contains('snd')){orig=btn.innerHTML;btn.textContent='Enviando…'}
     wd=setTimeout(free,45000);hint=setTimeout(()=>toast('Sigue enviando… con internet lento puede tardar. No repitas la operación.'),8000)}
   try{
     if(S.user&&maintOn()&&!isAdm())throw new Error('La plataforma está en mantenimiento. Vuelve más tarde.');
@@ -759,7 +821,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-07c';
+const APP_V='2026-11-07d';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -1965,7 +2027,7 @@ function startLive(){clearInterval(LT);S.chatMax=null;S.chatCnt=null;S.chatUnrea
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)liveTick()});
 
 /* ---------- Chat: editar, borrar y reaccionar (capa propia; no toca las tablas del chat) ---------- */
-const RXE=['👍','❤️'];
+const RXE=['👍','❤️','😂','😮','😢','🙏'];
 const mxOn=()=>!S.mxOff;
 async function msgExtras(scope,room,ids){
   if(S.mxOff||!ids.length)return null;
@@ -1983,7 +2045,57 @@ function mxView(id,author,body,x){
     return{txt:esc(o.body)+' <span class="mut" style="font-size:11px">(editado)</span>',raw:o.body}}
   return{txt:esc(body),raw:body}}
 const mxRx=(id,x)=>{if(!mxOn())return'';const r=(x&&x.rx[id])||{};
-  return`<div class="rxr">${RXE.map(e=>{const c=r[e];return`<button type="button" class="rx ${c&&c.me?'on':''}" data-rx="${id}" data-e="${e}" aria-label="Reaccionar ${e}">${e}${c&&c.n?' '+c.n:''}</button>`}).join('')}</div>`};
+  const p=RXE.concat(Object.keys(r).filter(e=>!RXE.includes(e))).filter(e=>r[e]&&r[e].n>0).map(e=>`<button type="button" class="rxp ${r[e].me?'on':''}" data-rx="${id}" data-e="${e}" aria-label="Reaccionar ${e}">${e}${r[e].n>1?'<b>'+r[e].n+'</b>':''}</button>`).join('');
+  return p?`<div class="rxr">${p}</div>`:''};
+const hm=t=>new Date(t).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+const dayKey=t=>{const d=new Date(t);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()};
+const dayLbl=t=>{const d=new Date(t),k=dayKey(d);return k===dayKey(Date.now())?'Hoy':k===dayKey(Date.now()-864e5)?'Ayer':d.toLocaleDateString('es',{day:'numeric',month:'long'})};
+const hue=t=>{let h=0;for(const c of String(t))h=(h*31+c.charCodeAt(0))%360;return h};
+const SEND_IC='<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3 20.5v-6.8l9-1.7-9-1.7V3.5L22 12z"/></svg>';
+/* Una burbuja de chat (estilo WhatsApp): nombre y etiqueta arriba, texto, hora abajo a la derecha, reacciones pegadas al borde */
+function mxBubble(o){
+  const v=o.v,r=v.del?'':mxRx(o.id,o.MX);
+  const nm=o.mine||!o.un?'':(o.pu?`<a href="#" class="pu mn" style="--h:${hue(o.un)}" data-pu="${o.pu}" data-pn="${esc(o.un)}" title="Invitar a chat privado">@${esc(o.un)}</a>`:`<span class="mn" style="--h:${hue(o.un)}">@${esc(o.un)}</span>`);
+  const tg=o.tag||'';const hd=nm||tg?`<div class="mh">${nm}${tg}</div>`:'';
+  return`<div class="msg ${o.mine?'me':''}${r?' hx':''}" data-id="${o.id}">${hd}<span class="mx">${v.txt}</span><span class="mf">${o.views!=null?'👁 '+n(o.views,0)+' ':''}${hm(o.at)}</span>${r}</div>`}
+/* Menú flotante al tocar un mensaje: reacciones arriba y acciones debajo */
+function mxPopClose(){const p=document.getElementById('mxp');if(p)p.remove();document.querySelectorAll('.msg.sel').forEach(m=>m.classList.remove('sel'))}
+function mxPop(msgEl,ctx){
+  const wasSame=document.getElementById('mxp')&&document.getElementById('mxp').dataset.id===msgEl.dataset.id;
+  mxPopClose();if(wasSame)return;
+  const id=+msgEl.dataset.id,m=ctx.cur(id),w=document.getElementById('cwrap'),cl=document.getElementById('cl');
+  if(!m||m.del||!w)return;
+  const mine=msgEl.classList.contains('me'),mr=(ctx.mx()&&ctx.mx().rx[id])||{},my=Object.keys(mr).find(k=>mr[k].me);
+  const own=mxOn()&&m.author===S.user.id,items=[];
+  if(mxOn()&&own)items.push(`<button type="button" data-me="${id}">✏️ Editar</button>`);
+  items.push(`<button type="button" data-cpx="1">📋 Copiar texto</button>`);
+  if(ctx.pu&&!own&&m.author)items.push(`<button type="button" data-pu="${m.author}" data-pn="${esc(m.un||'')}">🔒 Chat privado</button>`);
+  if(ctx.mod)items.push(`<button type="button" class="bad" data-cd="${id}">🗑️ Eliminar${own?'':' (admin)'}</button>`);
+  else if(mxOn()&&own)items.push(`<button type="button" class="bad" data-md="${id}">🗑️ Eliminar</button>`);
+  const pop=document.createElement('div');pop.id='mxp';pop.className='mxp'+(mine?' me':'');pop.dataset.id=id;
+  pop.innerHTML=(mxOn()?`<div class="mxe">${RXE.map((e,i)=>`<button type="button" style="--i:${i}" class="${my===e?'on':''}" data-rx="${id}" data-e="${e}" aria-label="Reaccionar ${e}">${e}</button>`).join('')}</div>`:'')+`<div class="mxm">${items.join('')}</div>`;
+  w.appendChild(pop);msgEl.classList.add('sel');
+  const wr=w.getBoundingClientRect(),mr2=msgEl.getBoundingClientRect(),ph=pop.offsetHeight,pw=pop.offsetWidth;
+  let top=mr2.top-wr.top-ph-6;if(top<6)top=mr2.bottom-wr.top+6;
+  if(top+ph>wr.height-6)top=Math.max(6,Math.round((wr.height-ph)/2));
+  let left=mine?mr2.right-wr.left-pw:mr2.left-wr.left;left=Math.max(8,Math.min(left,wr.width-pw-8));
+  pop.style.top=Math.round(top)+'px';pop.style.left=Math.round(left)+'px';
+  pop.style.setProperty('--ox',(mine?'85%':'15%'));
+  pop.onclick=e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();
+    if(b.dataset.cpx){mxPopClose();copy(m.raw||'');return}
+    if(b.dataset.pu){mxPopClose();pcInvite(b.dataset.pu,b.dataset.pn);return}
+    if(b.dataset.cd){mxPopClose();ctx.delMod(+b.dataset.cd);return}
+    if(b.dataset.rx&&mxOn()&&!S.mxOff)ctx.opt(+b.dataset.rx,b.dataset.e);
+    mxPopClose();
+    mxAction({target:b,preventDefault(){}},ctx.scope,ctx.room,ctx.redraw,ctx.max,ctx.cur)};
+  pop.addEventListener('pointerdown',e=>e.stopPropagation())}
+/* Se cierra al desplazar el chat o tocar fuera */
+document.addEventListener('pointerdown',e=>{if(!document.getElementById('mxp'))return;if(e.target.closest&&(e.target.closest('#mxp')||e.target.closest('.msg')))return;mxPopClose()},true);
+document.addEventListener('scroll',e=>{if(e.target&&e.target.id==='cl')mxPopClose()},true);
+/* Cambio inmediato de la reacción en pantalla (el servidor lo confirma enseguida) */
+function mxOpt(MX,id,e){if(!MX)return;const r=MX.rx[id]=MX.rx[id]||{};const c=Object.keys(r).find(k=>r[k].me);
+  if(c){r[c].n--;r[c].me=false;if(r[c].n<=0)delete r[c]}
+  if(c!==e){const q=r[e]=r[e]||{n:0,me:false};q.n++;q.me=true}}
 const mxOwn=(id,mine,del,mod)=>mxOn()&&mine&&!del?` · <a href="#" data-me="${id}" title="Editar">✏️</a>${mod?'':` · <a href="#" data-md="${id}" title="Eliminar">🗑️</a>`}`:'';
 function mxAction(e,scope,room,redraw,max,cur){
   const rx=e.target.closest('[data-rx]'),ed=e.target.closest('[data-me]'),dl=e.target.closest('[data-md]');
@@ -2009,12 +2121,13 @@ function mxAction(e,scope,room,redraw,max,cur){
 async function viewChat(){
   const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='',MXc=null,LST=[];
   S.chatUnread=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
-  main().innerHTML=`${pcTabs('g')}<div class="ch-top"><h2>Chat general</h2><button class="b gh xs" id="csn"></button></div>
-  <div class="warnbox pc-hide ch-note">💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
+  main().innerHTML=`${pcTabs('g','<button class="cib" id="csn" type="button"></button><button class="cib" id="cin" type="button" aria-label="Información">ⓘ</button>')}
+  <div class="warnbox pc-hide ch-note" id="cnote" hidden>💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
   <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
-  <div class="cmp"><textarea id="cm" rows="1" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
+  <div class="cmp"><textarea id="cm" rows="1" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b snd" id="cs" aria-label="Enviar">${SEND_IC}</button></div></div>`;
   bindPcTabs();fitChat();setTimeout(fitChat,450);
-  const setSnd=()=>{$('csn').textContent=chatSnd()?'🔔 Alarma: encendida':'🔕 Alarma: apagada'};setSnd();
+  const setSnd=()=>{$('csn').textContent=chatSnd()?'🔔':'🔕';$('csn').title=chatSnd()?'Alarma encendida':'Alarma apagada';$('csn').setAttribute('aria-label',$('csn').title)};setSnd();
+  $('cin').onclick=()=>{const n=$('cnote');n.hidden=!n.hidden;$('cin').classList.toggle('on',!n.hidden);fitChat()};
   $('csn').onclick=()=>{lsSet('chat_snd',chatSnd()?'0':'1');setSnd();if(chatSnd()){unlockAudio();chatDing();toast('Alarma del chat encendida','good')}else toast('Alarma del chat apagada')};
   const getMsgs=async()=>{try{return await rpc('chat_recent',{p_limit:80,p_mark:true})}catch(e){return await rpc('chat_recent',{p_limit:80})}};
   const draw=async force=>{
@@ -2028,21 +2141,31 @@ async function viewChat(){
     if(S.chatMax==null)S.chatMax=mx;
     else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
     const MXd=await msgExtras('g',0,L.map(x=>Number(x.id)));if(my!==NAV||!$('cl'))return;MXc=MXd;LST=L;
-    const key=L.map(x=>x.id).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
+    paint(force)};
+  const paint=async force=>{
+    const L=LST,MXd=MXc,key=L.map(x=>x.id).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
     if(!force&&key===lastKey)return;
     if(!force){await idle();if(my!==NAV||!$('cl'))return}
     lastKey=key;
-    const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;
-    cl.innerHTML=L.length?L.map(x=>{const mine=x.user_id===S.user.id,v=mxView(x.id,x.user_id,x.body,MXc);return`<div class="msg ${mine?'me':''}"><small>${userTag(x.role,x.kyc_status)} ${!mine?`<a href="#" class="pu" data-pu="${x.user_id}" data-pn="${esc(x.username)}" title="Invitar a chat privado">@${esc(x.username)}</a>`:'@'+esc(x.username)} · ${when(x.created_at)}${mod?` · <a href="#" data-cd="${x.id}">🗑️</a>`:''}${mxOwn(x.id,mine,v.del,mod)}</small>${v.txt}${x.views!=null?`<div class="mut" style="font-size:11px;text-align:right;margin-top:2px" title="Usuarios que lo han visto">👁 ${n(x.views,0)}</div>`:''}${v.del?'':mxRx(x.id,MXc)}</div>`}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    const cl=$('cl'),atEnd=cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;let pk='';
+    cl.innerHTML=L.length?L.map(x=>{const mine=x.user_id===S.user.id,v=mxView(x.id,x.user_id,x.body,MXd),dk=dayKey(x.created_at);
+      const sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.created_at)}</span></div>`):'';
+      return sp+mxBubble({id:x.id,mine,v,MX:MXd,un:x.username,pu:mine?'':x.user_id,tag:(mine&&x.role!=='owner'&&x.role!=='admin')?'':userTag(x.role,x.kyc_status),at:x.created_at,views:x.views})}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
-  $('cl').onclick=e=>{if(mxAction(e,'g',0,()=>draw(true),300,id=>{const x=LST.find(m=>Number(m.id)===id);return x?{author:x.user_id,raw:mxView(x.id,x.user_id,x.body,MXc).raw}:null}))return;const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}const a=e.target.closest('[data-cd]');if(!a)return;e.preventDefault();act(a,async()=>{await rpc('chat_delete',{p_id:+a.dataset.cd});await draw(true)},'Mensaje eliminado',true)};
+  const curG=id=>{const x=LST.find(m=>Number(m.id)===id);if(!x)return null;const v=mxView(x.id,x.user_id,x.body,MXc);return{author:x.user_id,raw:v.raw,del:v.del,un:x.username}};
+  const delG=id=>act(null,async()=>{await rpc('chat_delete',{p_id:id});await draw(false)},'Mensaje eliminado',true);
+  const ctxG={scope:'g',room:0,redraw:()=>draw(false),max:300,cur:curG,mx:()=>MXc,mod,pu:true,delMod:delG,opt:(id,e)=>{mxOpt(MXc,id,e);paint(true)}};
+  $('cl').onclick=e=>{
+    if(e.target.closest('[data-rx]')){mxAction(e,'g',0,()=>draw(false),300,curG);return}
+    const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}
+    const m=e.target.closest('.msg');if(m&&!(window.getSelection&&String(getSelection()).length>0))mxPop(m,ctxG)};
   const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('chat_send',{p_body:t});$('cm').value='';KB.fit($('cm'));await draw(true)},null,true);
   $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
   await draw(true);
   POLL=setInterval(()=>{if(my!==NAV)return clearInterval(POLL);if(document.hidden||!navigator.onLine)return;draw(false)},5000)}
 
 /* ---------- Chat privado entre dos usuarios ---------- */
-const pcTabs=a=>`<div class="pcs"><button class="b sm ${a==='g'?'':'gh'}" data-pt="g">💬 General</button><button class="b sm ${a==='p'?'':'gh'}" data-pt="p">🔒 Privados${S.pcUnread?` <span class="bd2">${S.pcUnread>9?'9+':S.pcUnread}</span>`:''}</button><button class="b sm ${a==='u'?'':'gh'}" data-pt="u">👥 Usuarios</button></div>`;
+const pcTabs=(a,x)=>`<div class="pcs${x?' pcs-c':''}"><button class="b sm ${a==='g'?'':'gh'}" data-pt="g">💬 General</button><button class="b sm ${a==='p'?'':'gh'}" data-pt="p">🔒 Privados${S.pcUnread?` <span class="bd2">${S.pcUnread>9?'9+':S.pcUnread}</span>`:''}</button><button class="b sm ${a==='u'?'':'gh'}" data-pt="u">👥 Usuarios</button>${x||''}</div>`;
 const bindPcTabs=()=>document.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>go({g:'chat',p:'pchat',u:'comm'}[b.dataset.pt]));
 let PCB=false;
 async function pcSummary(){
@@ -2146,11 +2269,11 @@ async function viewPcon(){
   const my=NAV,me=S.user.id,id=S.pcRoom;let last=0,MSGS=[],MXc=null,lastKey='';
   if(!id)return go('pchat');
   const who=S.pcName||'Usuario';
-  main().innerHTML=`<div class="row" style="margin-bottom:10px;flex-wrap:nowrap"><a href="#" id="pcb">← Chats</a><b style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
+  main().innerHTML=`<div class="pcrow-top"><a href="#" id="pcb">← Chats</a><b>🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
   <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
-  <div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b" id="cs">Enviar</button></div></div>`;
+  <div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b snd" id="cs" aria-label="Enviar">${SEND_IC}</button></div></div>`;
   $('pcb').onclick=e=>{e.preventDefault();go('pchat')};fitChat();setTimeout(fitChat,450);
-  const row=x=>{const mine=x.msender===me,v=mxView(x.mid,x.msender,x.mbody,MXc);return`<div class="msg ${mine?'me':''}"><small>${mine?'Tú':'@'+esc(who)} · ${when(x.mat)}${mxOwn(x.mid,mine,v.del,false)}</small>${v.txt}${v.del?'':mxRx(x.mid,MXc)}</div>`};
+  const row=x=>{const mine=x.msender===me,v=mxView(x.mid,x.msender,x.mbody,MXc);return mxBubble({id:x.mid,mine,v,MX:MXc,un:'',at:x.mat})};
   const draw=async force=>{
     let d;
     try{d=await rpc('pchat_msgs',{p_room:id,p_after:force?0:last,p_limit:80})}
@@ -2160,13 +2283,20 @@ async function viewPcon(){
     if(force)MSGS=L.slice();else if(L.length)MSGS=MSGS.concat(L.filter(x=>!MSGS.some(m=>String(m.mid)===String(x.mid))));
     if(L.length){last=Math.max(last,...L.map(x=>Number(x.mid)));if(!force&&L.some(x=>x.msender!==me))chatDing()}
     const ex=await msgExtras('p',id,MSGS.map(x=>Number(x.mid)));if(my!==NAV||!$('cl'))return;MXc=ex;
-    const key=MSGS.map(x=>x.mid).join(',')+'|'+(ex?JSON.stringify(ex):'');
-    if(!force&&key!==lastKey){await idle();if(my!==NAV||!$('cl'))return}
-    if(force||key!==lastKey){lastKey=key;const st0=cl.scrollTop;
-      cl.innerHTML=MSGS.length?MSGS.map(row).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
-      if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0}
+    paint(force,atEnd);
     if(force)pcSummary()};
-  $('cl').onclick=e=>{mxAction(e,'p',id,()=>draw(false),1000,mid=>{const x=MSGS.find(m=>Number(m.mid)===mid);return x?{author:x.msender,raw:mxView(x.mid,x.msender,x.mbody,MXc).raw}:null})};
+  const paint=async(force,atEnd0)=>{
+    const key=MSGS.map(x=>x.mid).join(',')+'|'+(MXc?JSON.stringify(MXc):'');
+    if(!force&&key===lastKey)return;
+    if(!force){await idle();if(my!==NAV||!$('cl'))return}
+    lastKey=key;const cl=$('cl'),atEnd=atEnd0!=null?atEnd0:cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;let pk='';
+    cl.innerHTML=MSGS.length?MSGS.map(x=>{const dk=dayKey(x.mat),sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.mat)}</span></div>`):'';return sp+row(x)}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
+  const curP=mid=>{const x=MSGS.find(m=>Number(m.mid)===mid);if(!x)return null;const v=mxView(x.mid,x.msender,x.mbody,MXc);return{author:x.msender,raw:v.raw,del:v.del}};
+  const ctxP={scope:'p',room:id,redraw:()=>draw(false),max:1000,cur:curP,mx:()=>MXc,mod:false,pu:false,delMod:()=>{},opt:(mid,e)=>{mxOpt(MXc,mid,e);paint(true)}};
+  $('cl').onclick=e=>{
+    if(e.target.closest('[data-rx]')){mxAction(e,'p',id,()=>draw(false),1000,curP);return}
+    const m=e.target.closest('.msg');if(m&&!(window.getSelection&&String(getSelection()).length>0))mxPop(m,ctxP)};
   const send=()=>act($('cs'),async()=>{const t=$('cm').value.trim();if(!t)return false;const bad=chatBad(t);if(bad)throw new Error(bad);await rpc('pchat_send',{p_room:id,p_body:t});$('cm').value='';KB.fit($('cm'));await draw(false)},null,true);
   $('cs').onclick=send;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();send()}};
   $('pcm').onclick=()=>{
