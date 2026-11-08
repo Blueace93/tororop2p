@@ -254,25 +254,26 @@ html{scroll-behavior:auto}
 /* ---- Mercado: ofertas con el estilo de QvaPay ---- */
 #offers:has(.qo){background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 #offers>p{margin:0;padding:10px 14px}
-.qo{display:flex;justify-content:space-between;gap:12px;padding:14px;border-bottom:1px solid var(--line)}
-.qo-l{flex:1;min-width:0}
-.qo-r{flex:0 0 128px;display:flex;flex-direction:column;gap:6px;text-align:center;padding-top:50px}
-.qo-u{display:flex;align-items:center;gap:10px}
+.qo{padding:14px;border-bottom:1px solid var(--line)}
+.qo-h{display:flex;align-items:center;gap:10px}
 .qo-av{width:44px;height:44px;border-radius:50%;flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:18px}.qo-av img{width:100%;height:100%;object-fit:cover}
-.qo-n{min-width:0}.qo-n>b{font-size:15px;font-weight:700;overflow-wrap:anywhere}
-.qo-vf{display:inline-flex;width:16px;height:16px;border-radius:50%;border:1.5px solid #5aa9ff;color:#5aa9ff;font-size:10px;font-weight:800;align-items:center;justify-content:center;vertical-align:1px;margin-left:4px}
-.qo-cr{font-size:14px;margin-left:4px}
-.qo-ic{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:2px}
-.qo-p{display:flex;align-items:baseline;gap:8px;margin-top:12px}.qo-p b{font-size:26px;font-weight:800;letter-spacing:-.5px;overflow-wrap:anywhere}
-.qo-d{font-size:12px;font-weight:700;color:var(--ok)}.qo-d.dn{color:var(--bad)}
-.qo-c{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:16px}.qo-c span{color:var(--mut);font-size:14px}
-.qo-ci{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800;color:#fff;flex:none}
-.qo-k{display:flex;gap:10px;margin-top:6px;font-size:14px}.qo-k span{color:var(--mut);min-width:54px}.qo-k b{font-weight:700;overflow-wrap:anywhere}
-.qo-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.qo-r small{color:var(--mut);font-size:12px}
-#offers .qo-btn{width:100%;padding:12px 6px;font-size:15px;font-weight:800;border-radius:12px;background:#e4001b;color:#fff;border:0;box-shadow:none}
+.qo-n{flex:1;min-width:0}
+.qo-nm{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.qo-nm b{font-size:15px;font-weight:700;overflow-wrap:anywhere}
+.qo-vf{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--ok);color:#06281c;font-size:11px;font-weight:900;align-items:center;justify-content:center}
+.qo-rk{display:inline-block;margin-top:3px;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;background:#3d3113;color:var(--warn)}.qo-rk.own{background:rgba(245,185,74,.16);border:1px solid rgba(245,185,74,.45)}
+.qo-ic{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:3px}
+.qo-t{color:var(--mut);font-size:12px;align-self:flex-start;white-space:nowrap}
+.qo-s{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}
+.qo-v span{display:block;font-size:12px;color:var(--mut)}.qo-v b{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1;overflow-wrap:anywhere}.qo-v u{text-decoration:none;font-size:15px;font-weight:700;color:var(--mut)}
+#offers .qo-btn{flex:0 0 140px;padding:13px 6px;font-size:15px;font-weight:800;border-radius:12px;background:#e4001b;color:#fff;border:0;box-shadow:none}
 #offers .qo-btn.own{background:transparent;border:1px solid var(--bad);color:var(--bad)}
-.qo-a{display:flex;gap:6px}.qo-a .b{flex:1;padding:6px 4px;font-size:12px}
+.qo-g{margin-top:12px;border-top:1px solid var(--line)}
+.qo-k{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.qo-k span{color:var(--mut);flex:none}
+.qo-k b{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px;text-align:right;font-weight:700;overflow-wrap:anywhere}
+.qo-ci{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:10px;font-weight:800;color:#fff;flex:none}
+.qo-d{font-style:normal;font-size:12px;font-weight:700;color:var(--ok)}.qo-d.dn{color:var(--bad)}
+.qo-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qo-a{display:flex;gap:8px;margin-top:12px}.qo-a .b{flex:1;padding:9px 6px;font-size:13px}
 /* ---- Estadísticas (estilo analítica, solo USDT) ---- */
 .an-h{display:flex;flex-direction:column;gap:2px;margin:24px 2px 10px}.an-h b{font-size:15px;font-weight:700;letter-spacing:-.2px}.an-h span{font-size:12px;color:var(--mut)}
 .an-hero{background:linear-gradient(160deg,#171a2e,#10121b 70%);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 18px 50px -28px rgba(124,108,255,.55)}
@@ -884,17 +885,18 @@ function drawOffers(){
   const items=l.slice(0,80).map(o=>{const mine=o.seller_id===S.user.id,{m,c,bank}=parseM(o.methods),rl=(S.roles||{})[o.seller_id]||(o.profiles?.is_admin?'admin':'user'),
       p=o.profiles||{},nm=p.username||'?',r=(S.st||{})[o.seller_id],ref=meds[c],dl=ref&&o.price_cup?(o.price_cup/ref-1)*100:null,
       au=p.avatar_path?avUrl(p.avatar_path):'',staff=rl==='owner'||rl==='admin',ver=!staff&&p.kyc_status==='approved';
-    return{id:o.id,html:`<div class="qo" data-oid="${o.id}"><div class="qo-l">
-    <div class="qo-u"><span class="qo-av" style="background:hsl(${hue(nm)} 50% 40%)">${au?`<img src="${esc(au)}" alt="" loading="lazy">`:esc(nm.charAt(0).toUpperCase())}</span>
-    <div class="qo-n"><b>${esc(nm)}</b>${mine?' <span class="tag">tú</span>':''}${ver?'<span class="qo-vf" title="Verificado">✓</span>':''}${staff?`<span class="qo-cr" title="${rl==='owner'?'Creador Tororo':'Admin'}">👑</span>`:''}
-    ${r?`<div class="qo-ic"><span>${r.ratings>0?'⭐ '+Number(r.avg_stars).toFixed(1):'Sin calificar'}</span><span>🔁 ${n(r.ops,0)}</span></div>`:''}</div></div>
-    <div class="qo-p"><b>${mny(o.price_cup,c)}</b>${dl!=null&&Math.abs(dl)>=0.05?`<span class="qo-d ${dl<0?'dn':'up'}" title="Frente a la mediana de las ofertas en ${esc(c)}">${dl>0?'+':''}${dl.toFixed(1)}%</span>`:''}</div>
-    <div class="qo-c"><i class="qo-ci" style="background:hsl(${hue(c)} 55% 42%)">${esc(String(c).charAt(0).toUpperCase())}</i><b>${esc(c)}</b><span>/ USDT</span></div>
-    <div class="qo-k"><span>Monto</span><b>${n(o.amount,2)} USDT</b></div>
-    <div class="qo-k"><span>Pagas</span><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></div>
-    <div class="qo-m">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div></div>
-    <div class="qo-r">${mine?`<button class="b ob1 qo-btn own" data-cancel="${o.id}">Cancelar oferta</button>`:`<button class="b ob1 qo-btn" data-buy="${o.id}">Comprar</button>`}<small>${tm(o.created_at)}</small>
-    <div class="qo-a"><button class="b gh sm" data-det="${o.id}">Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(nm)}">Chat</button>`}</div></div></div>`}}),feeH=fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'';
+    return{id:o.id,html:`<div class="qo" data-oid="${o.id}">
+    <div class="qo-h"><span class="qo-av" style="background:hsl(${hue(nm)} 50% 40%)">${au?`<img src="${esc(au)}" alt="" loading="lazy">`:esc(nm.charAt(0).toUpperCase())}</span>
+    <div class="qo-n"><div class="qo-nm"><b>${esc(nm)}</b>${mine?'<span class="tag">tú</span>':''}${ver?'<span class="qo-vf" title="Verificado">✓</span>':''}</div>
+    ${rl==='owner'?'<div><span class="qo-rk own">👑 Creador Tororo</span></div>':rl==='admin'?'<div><span class="qo-rk">🛡️ Admin</span></div>':''}
+    ${r?`<div class="qo-ic"><span>${r.ratings>0?'⭐ '+Number(r.avg_stars).toFixed(1):'Sin calificar'}</span><span>🔁 ${n(r.ops,0)}</span></div>`:''}</div>
+    <small class="qo-t">${tm(o.created_at)}</small></div>
+    <div class="qo-s"><div class="qo-v"><span>Vende</span><div><b>${n(o.amount,2)}</b> <u>USDT</u></div></div>
+    ${mine?`<button class="b ob1 qo-btn own" data-cancel="${o.id}">Cancelar oferta</button>`:`<button class="b ob1 qo-btn" data-buy="${o.id}">Comprar</button>`}</div>
+    <div class="qo-g"><div class="qo-k"><span>Precio por USDT</span><b><i class="qo-ci" style="background:hsl(${hue(c)} 55% 42%)">${esc(String(c).charAt(0).toUpperCase())}</i>${mny(o.price_cup,c)} ${esc(c)}${dl!=null&&Math.abs(dl)>=0.05?`<em class="qo-d ${dl<0?'dn':'up'}" title="Frente a la mediana de las ofertas en ${esc(c)}">${dl>0?'+':''}${dl.toFixed(1)}%</em>`:''}</b></div>
+    <div class="qo-k"><span>Total a pagar</span><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></div></div>
+    <div class="qo-m">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
+    <div class="qo-a"><button class="b gh sm" data-det="${o.id}">Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(nm)}">Chat</button>`}</div></div>`}}),feeH=fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'';
   const key=items.map(i=>i.html).join('')+feeH;
   if(box.dataset.h===key)return;box.dataset.h=key;
   /* Solo se cambian las tarjetas que cambiaron: así los botones no desaparecen justo cuando los tocas */
