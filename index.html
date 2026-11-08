@@ -584,6 +584,17 @@ html[data-theme=light] .dsep span{background:rgba(255,255,255,.85);box-shadow:0 
 html[data-theme=light] #toast:not(.err):not(.good){color:#f2f3ff}
 .cmp .b.snd{width:44px;height:44px;min-width:44px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
 .cmp .b.snd svg{margin-left:2px}
+/* ===== Animaciones pequeñas (solo transform/opacity; se apagan en modo ligero y con "reducir movimiento") ===== */
+@keyframes mnew{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes navp{0%{transform:scale(.8)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+.cwrap .msg.nw{animation:mnew .22s cubic-bezier(.2,.9,.3,1.1) both}
+nav button.on svg,nav button.on>span{animation:navp .32s cubic-bezier(.3,1.5,.5,1)}
+.b,.chip,.qb,.tile{transition:transform .12s ease,filter .12s ease}
+.b:active:not(:disabled),.chip:active,.qb:active,.tile:active{transform:scale(.96)}
+.qo{transition:background .15s}.qo:active{background:var(--card2)}
+.mxm button,.cwrap .msg{transition:background .12s}
+@media (prefers-reduced-motion:reduce){.cwrap .msg.nw,nav button.on svg,nav button.on>span{animation:none!important}.b,.chip,.qb,.tile{transition:none}}
+html.lite .cwrap .msg.nw,html.lite nav button.on svg,html.lite nav button.on>span{animation:none!important}
 </style>
 </head>
 <body>
@@ -821,7 +832,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-07d';
+const APP_V='2026-11-07e';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -2059,6 +2070,7 @@ function mxBubble(o){
   const tg=o.tag||'';const hd=nm||tg?`<div class="mh">${nm}${tg}</div>`:'';
   return`<div class="msg ${o.mine?'me':''}${r?' hx':''}" data-id="${o.id}">${hd}<span class="mx">${v.txt}</span><span class="mf">${o.views!=null?'👁 '+n(o.views,0)+' ':''}${hm(o.at)}</span>${r}</div>`}
 /* Menú flotante al tocar un mensaje: reacciones arriba y acciones debajo */
+function mxNew(cl,st){const m=[...cl.querySelectorAll('.msg[data-id]')];if(st.s)m.forEach(x=>{if(!st.s.has(x.dataset.id))x.classList.add('nw')});st.s=new Set(m.map(x=>x.dataset.id))}
 function mxPopClose(){const p=document.getElementById('mxp');if(p)p.remove();document.querySelectorAll('.msg.sel').forEach(m=>m.classList.remove('sel'))}
 function mxPop(msgEl,ctx){
   const wasSame=document.getElementById('mxp')&&document.getElementById('mxp').dataset.id===msgEl.dataset.id;
@@ -2142,6 +2154,7 @@ async function viewChat(){
     else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
     const MXd=await msgExtras('g',0,L.map(x=>Number(x.id)));if(my!==NAV||!$('cl'))return;MXc=MXd;LST=L;
     paint(force)};
+  const NWg={};
   const paint=async force=>{
     const L=LST,MXd=MXc,key=L.map(x=>x.id).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
     if(!force&&key===lastKey)return;
@@ -2151,6 +2164,7 @@ async function viewChat(){
     cl.innerHTML=L.length?L.map(x=>{const mine=x.user_id===S.user.id,v=mxView(x.id,x.user_id,x.body,MXd),dk=dayKey(x.created_at);
       const sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.created_at)}</span></div>`):'';
       return sp+mxBubble({id:x.id,mine,v,MX:MXd,un:x.username,pu:mine?'':x.user_id,tag:(mine&&x.role!=='owner'&&x.role!=='admin')?'':userTag(x.role,x.kyc_status),at:x.created_at,views:x.views})}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    mxNew(cl,NWg);
     if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   const curG=id=>{const x=LST.find(m=>Number(m.id)===id);if(!x)return null;const v=mxView(x.id,x.user_id,x.body,MXc);return{author:x.user_id,raw:v.raw,del:v.del,un:x.username}};
   const delG=id=>act(null,async()=>{await rpc('chat_delete',{p_id:id});await draw(false)},'Mensaje eliminado',true);
@@ -2285,12 +2299,14 @@ async function viewPcon(){
     const ex=await msgExtras('p',id,MSGS.map(x=>Number(x.mid)));if(my!==NAV||!$('cl'))return;MXc=ex;
     paint(force,atEnd);
     if(force)pcSummary()};
+  const NWp={};
   const paint=async(force,atEnd0)=>{
     const key=MSGS.map(x=>x.mid).join(',')+'|'+(MXc?JSON.stringify(MXc):'');
     if(!force&&key===lastKey)return;
     if(!force){await idle();if(my!==NAV||!$('cl'))return}
     lastKey=key;const cl=$('cl'),atEnd=atEnd0!=null?atEnd0:cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;let pk='';
     cl.innerHTML=MSGS.length?MSGS.map(x=>{const dk=dayKey(x.mat),sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.mat)}</span></div>`):'';return sp+row(x)}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
+    mxNew(cl,NWp);
     if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   const curP=mid=>{const x=MSGS.find(m=>Number(m.mid)===mid);if(!x)return null;const v=mxView(x.mid,x.msender,x.mbody,MXc);return{author:x.msender,raw:v.raw,del:v.del}};
   const ctxP={scope:'p',room:id,redraw:()=>draw(false),max:1000,cur:curP,mx:()=>MXc,mod:false,pu:false,delMod:()=>{},opt:(mid,e)=>{mxOpt(MXc,mid,e);paint(true)}};
