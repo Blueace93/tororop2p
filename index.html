@@ -1124,6 +1124,7 @@ async function botAI(q){
   BOT.aiFail=0;return a.slice(0,900)}
 /* ----- Gestiones guiadas ----- */
 async function botFlowStart(k,pre){
+  if(['sell','card','breq','cancel'].includes(k)&&S.user&&maintOn()&&!isAdm()){BOT.fl=null;return botSay('La plataforma está en mantenimiento. Vuelve más tarde.')}
   if(k==='sell'){
     if(needKyc()){botSay('Para publicar ofertas primero debes verificar tu identidad (KYC), una sola vez.',{acts:['kyc']});return}
     BOT.fl={k,s:'',d:Object.assign({m:[]},pre||{}),ch:[]};return botSellNext()}
@@ -1290,6 +1291,7 @@ async function botOps(){
   botSay(`Tienes ${data.length} operación${data.length>1?'es':''} en curso. Toca una para abrirla:`,{ops:data.map(o=>({id:o.id,t:(o.buyer_id===S.user.id?'Compras ':'Vendes ')+n(o.amount,2)+' USDT · '+((STATUS[o.status]||[o.status])[0])}))})}
 async function botFlowIn(x,raw){
   const f=BOT.fl;
+  if(x!=='__x'&&S.user&&maintOn()&&!isAdm()){BOT.fl=null;return botSay('La plataforma está en mantenimiento. Vuelve más tarde.')}
   if(x==='__x'){BOT.fl=null;return botSay('Listo, cancelé la gestión. ¿Algo más?')}
   if(f.k==='sell')return botSellIn(x,raw);
   if(f.k==='card')return botCardIn(x,raw);
@@ -1381,7 +1383,15 @@ function botBuild(){
     if(window.visualViewport)visualViewport.addEventListener('resize',()=>{const p=$('botp');if(!p||!p.classList.contains('show'))return;const kb=innerHeight-visualViewport.height-visualViewport.offsetTop;p.style.bottom=kb>80?(kb+8)+'px':''})}
   if(!BOT.msgs.length){const nm=(S.profile&&S.profile.username)||'';
     botSay(`¡Hola${nm?' '+nm:''}! 👋 Soy el asistente de ${APP_NAME}. Respondo tus dudas y hago gestiones por ti. ¿Qué necesitas?`,{menu:1})}}
-function botOpen(){botBuild();$('botp').classList.add('show');const g=$('fabg'),b=$('fabi');if(g)g.style.display='block';if(b)b.textContent='✕';BOT.unread=0;botBadge();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
+function botSummary(){
+  if(!S.user||BOT.fl)return;
+  const now=Date.now();if(BOT._sm&&now-BOT._sm<90000)return;
+  const un=Number(S.unread||0),ad=(S.profile&&(S.profile.is_admin||S.profile.is_staff))?Number(S.adminPend||0):0;
+  if(!un&&!ad)return;
+  BOT._sm=now;
+  const pt=[];if(un)pt.push(un+' aviso'+(un>1?'s':'')+' sin leer');if(ad)pt.push(ad+' solicitud'+(ad>1?'es':'')+' pendiente'+(ad>1?'s':'')+' en el panel');
+  botSay('📌 Tienes '+pt.join(' y ')+'.',{acts:(un?['notifs']:[]).concat(ad?['adm']:[])})}
+function botOpen(){botBuild();$('botp').classList.add('show');const g=$('fabg'),b=$('fabi');if(g)g.style.display='block';if(b)b.textContent='✕';BOT.unread=0;botBadge();botSummary();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
 function botClose(){const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),b=$('fabi');if(g)g.style.display='none';if(b)b.textContent='🤖'}
 function botToggle(){const p=$('botp');if(p&&p.classList.contains('show'))botClose();else botOpen()}
 function bindFab(){
