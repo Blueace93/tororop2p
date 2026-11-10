@@ -740,7 +740,7 @@ async function netFetch(url,opt={}){
   throw last}
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:netFetch}});
 /* ---- Antifraude (Worker tororo-analisis) ---- */
-const FRAUD_URL='https://tororo-analisis.lazaromichelfn.workers.dev';
+const FRAUD_URL='https://api.tororo.trade';
 async function fraudCheck(endpoint,body){
   try{
     const{data:{session}}=await sb.auth.getSession();
@@ -1350,7 +1350,7 @@ async function proofImg(path,who){
   const{data}=await sb.storage.from('proofs').createSignedUrl(path,3600);
   return data?`<img class="proof" loading="lazy" decoding="async" src="${data.signedUrl}" alt="Captura" data-z="${data.signedUrl}">`:'<p class="mut">No se pudo cargar la captura.</p>'}
 const EVC=new Map();
-const FORENSE_URL='https://tororo-analisis.lazaromichelfn.workers.dev';   /* pega aquí la URL de tu Worker tororo-forense, p. ej. https://tororo-forense.TU-USUARIO.workers.dev */
+const FORENSE_URL='https://api.tororo.trade';   /* pega aquí la URL de tu Worker tororo-forense, p. ej. https://tororo-forense.TU-USUARIO.workers.dev */
 const FORENSE_DESDE='2026-11-10';   /* operaciones anteriores a esta fecha no se avisan por "sin análisis" */
 async function forense(orderId,role,file){
   if(!FORENSE_URL||String(orderId).startsWith('trade/')||!['buyer','mediation','evidence'].includes(role))return;
@@ -2738,7 +2738,7 @@ async function ocrBlob(blob){
   try{const r=await _race(w.recognize(img),60000);return r.data.text||''}
   catch(e){dropTW();throw e}
   finally{clearTimeout(_twIdle);_twIdle=setTimeout(dropTW,120000)}}   /* libera memoria si nadie lo usa en 2 min */
-const AI_URL='https://tororo-analisis.lazaromichelfn.workers.dev';
+const AI_URL='https://api.tororo.trade';
 const AIC=new Map();   /* resultados de la revisión avanzada ya hechos (por captura) */
 const aiAdvCard=d=>{
   const ic={ok:'✅',warn:'⚠️',na:'➖'},
