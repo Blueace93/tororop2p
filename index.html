@@ -642,6 +642,49 @@ html[data-theme=light] .dc-sum{background:#fff1d6}
 @keyframes dcin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.dc-b,.dc-card{animation:none}.dc-chat{scroll-behavior:auto}}
 </style>
+<style id="botcss">
+.fab-m#fabm{font-size:26px;position:relative}
+#fabbd{display:none;position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--bad);color:#fff;font:700 11px/1 system-ui,sans-serif;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--bg);font-style:normal;animation:botpulse 1.8s ease-in-out infinite}
+@keyframes botpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+#botp{display:none;position:fixed;left:12px;right:12px;margin:0 0 0 auto;max-width:410px;bottom:calc(96px + env(safe-area-inset-bottom));height:min(620px,calc(100vh - 200px));height:min(620px,calc(100dvh - 200px));z-index:9;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 80px -20px #000,0 0 0 1px rgba(255,255,255,.03);overflow:hidden}
+#botp.show{display:flex;animation:pop .22s cubic-bezier(.2,.9,.3,1.2)}
+#botp .bh{display:flex;align-items:center;gap:11px;padding:13px 14px;background:var(--g);color:#fff}
+#botp .bav{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:21px;position:relative;flex:none}
+#botp .bav:after{content:"";position:absolute;right:0;bottom:0;width:11px;height:11px;border-radius:50%;background:#34d399;border:2px solid #5b72ff}
+#botp .bh b{display:block;font-size:15px;line-height:1.2}
+#botp .bh small{display:block;opacity:.88;font-size:11.5px;line-height:1.3}
+#botp .bh button{margin-left:auto;flex:none;border:0;background:rgba(255,255,255,.18);color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px}
+#botm{flex:1;min-height:0;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.bm{max-width:88%;align-self:flex-start;padding:10px 13px;border-radius:18px 18px 18px 6px;background:var(--card2);font-size:14px;line-height:1.42;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.bm.nw{animation:botin .24s ease-out both}
+@keyframes botin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bm.me{align-self:flex-end;background:var(--g);color:#fff;border-radius:18px 18px 6px 18px}
+.bm.nt{background:linear-gradient(135deg,rgba(245,185,74,.2),rgba(245,185,74,.07));border:1px solid rgba(245,185,74,.5)}
+.bm .bl{font-size:10.5px;font-weight:800;color:var(--warn);letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.bm.bt{display:flex;gap:5px;padding:13px 15px;white-space:normal}
+.bm.bt i{width:7px;height:7px;border-radius:50%;background:var(--mut);animation:botdot 1s infinite}
+.bm.bt i:nth-child(2){animation-delay:.15s}.bm.bt i:nth-child(3){animation-delay:.3s}
+@keyframes botdot{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+.bm .bc{margin-top:9px;padding:8px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);white-space:normal}
+.bm .bc div{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0}
+.bm .bc span{color:var(--mut);flex:none}.bm .bc b{text-align:right;overflow-wrap:anywhere}
+.bm .bo{display:flex;flex-direction:column;gap:6px;margin-top:9px;white-space:normal}
+.bm .bo button{text-align:left;border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:12px;padding:9px 11px;font:inherit;font-size:13px;cursor:pointer}
+.bm .bg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px;white-space:normal}
+.bm .bg button{border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:14px;padding:11px 4px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.2}
+.bm .bg em{font-style:normal;font-size:21px}
+.bm .bg button:active,.bm .bo button:active{transform:scale(.97)}
+#botq{display:flex;gap:6px;padding:6px 12px 9px;overflow-x:auto;flex:none;scrollbar-width:none}
+#botq::-webkit-scrollbar{display:none}
+#botq .chip{flex:none;white-space:nowrap}
+#botq .chip.bact{background:var(--acc);border-color:var(--acc);color:#fff}
+#botq .chip.cn{border-color:var(--bad);color:var(--bad)}
+#botp .bi{display:flex;gap:8px;padding:9px 12px 6px;border-top:1px solid var(--line)}
+#botp .bi input{flex:1;min-width:0;padding:11px 15px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
+#botp .bi button{width:44px;height:44px;flex:none;border:0;border-radius:50%;background:var(--g);color:#fff;font-size:17px;cursor:pointer}
+#botp .bn{font-size:11px;color:var(--mut);text-align:center;padding:0 12px 9px}
+html.lite #fabbd,html.lite .bm.nw,html.lite .bm.bt i,html.lite #botp.show{animation:none!important}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
@@ -988,14 +1031,362 @@ const cIco=(k,z=34)=>`<span class="ci" style="width:${z}px;height:${z}px"><svg v
 const walletCard=full=>`<div class="wal"><div class="wal-h"><span class="wal-t">Mi billetera</span>${full?'':'<a href="#" id="tw" class="wal-a">Depositar / retirar →</a>'}</div>
  <div class="wal-main">${cIco('USDT',50)}<div><div class="wal-l">${full?'Disponible · ':''}USDT <span>Tether</span></div><div class="wal-b">${n(S.wallet?.available,2)}</div></div>${(S.wallet?.locked>0)?`<div class="wal-lk">🔒 ${n(S.wallet.locked,2)} en ofertas</div>`:''}</div></div>`;
 /* ---- Botones flotantes ---- */
-const updFab=v=>{const f=$('fab');if(!f)return;f.classList.remove('open');if($('fabg'))$('fabg').style.display='none';f.classList.toggle('show',v==='market'||v==='wallet')};
+const updFab=v=>{const f=$('fab');if(!f)return;f.classList.remove('open');botClose();f.classList.toggle('show',v==='market'||v==='wallet')};
 const toEl=id=>{let k=0;const t=setInterval(()=>{const e=$(id);if(e||++k>25){clearInterval(t);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})}},120)};
+/* ---------- Asistente: responde, hace gestiones por ti y muestra tus avisos ---------- */
+const BOT={msgs:[],ai:0,aiFail:0,busy:false,built:false,fl:null,unread:0};
+const botNorm=t=>' '+String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' ';
+const botWa=()=>String((S.settings&&S.settings.whatsapp)||CFG.whatsapp||'').replace(/\D/g,'');
+const botSay=(t,o)=>{BOT.msgs.push(Object.assign({t:t},o||{}));if(BOT.msgs.length>60)BOT.msgs.splice(0,BOT.msgs.length-60)};
+const botNum=t=>{const m=String(t).replace(/,/g,'.').match(/\d+(\.\d+)?/);return m?+m[0]:NaN};
+const botMsk=c=>'···· '+String(c||'').replace(/\D/g,'').slice(-4);
+const botCl=c=>c==='Saldo Clásica'?'Saldo Clásica (USD)':c;
+const botCur=raw=>{const t=botNorm(raw);return/ (clasica|usd|dolar|dolares) /.test(t)?'Saldo Clásica':/ movil /.test(t)?'Saldo Móvil':/ mlc /.test(t)?'MLC':/ (cup|pesos) /.test(t)?'CUP':null};
+const botMed=c=>{const a=(S.offers||[]).filter(o=>parseM(o.methods).c===c).map(o=>Number(o.price_cup)||0).filter(x=>x>0).sort((x,y)=>x-y);if(a.length<3)return 0;const h=a.length>>1;return a.length%2?a[h]:(a[h-1]+a[h])/2};
+const BOT_ACTS={
+  sell:['💰 Vender USDT',()=>botDo('sell','Vender USDT'),1],
+  card:['💳 Agregar tarjeta',()=>botDo('card','Agregar tarjeta'),1],
+  breq:['📝 Publicar solicitud de compra',()=>botDo('breq','Solicitud de compra'),1],
+  ops:['🧾 Mis operaciones en curso',()=>botDo('ops','Mis operaciones'),1],
+  cancel:['❌ Cancelar una oferta',()=>botDo('cancel','Cancelar una oferta'),1],
+  mkt:['🛒 Ver el Mercado',()=>go('market')],
+  dep:['⬇️ Ir a Depositar',()=>{go('wallet');toEl('depcard')}],
+  wit:['⬆️ Ir a Retirar',()=>{go('wallet');toEl('wcard')}],
+  ord:['🧾 Ir a Operaciones',()=>go('orders')],
+  kyc:['🪪 Ir a mi Perfil',()=>go('profile')],
+  ref:['🎁 Mis referidos',()=>go('refs')],
+  sec:['🛡️ Seguridad',()=>go('sec')],
+  help:['❓ Ayuda completa',()=>go('help')],
+  tuto:['▶ Ver el tutorial',()=>showTuto(0)],
+  chat:['💬 Abrir chats',()=>go('chat')],
+  ann:['📢 Ver anuncios',()=>go('ann')],
+  notifs:['🔔 Ver avisos',()=>go('notifs')],
+  adm:['🛡️ Panel de admin',()=>go('admin')],
+  wa:['💬 Hablar con soporte',()=>{const w=botWa();if(w)window.open('https://wa.me/'+w,'_blank','noopener')}]
+};
+const BOT_MENU=[['💰','Vender USDT','sell'],['💳','Agregar tarjeta','card'],['📝','Pedir compra','breq'],['🧾','Mis operaciones','ops'],['👛','Mi saldo','bal'],['❓','Ayuda','help']];
+const BOT_SUG=[['Vender USDT','do:sell'],['Agregar tarjeta','do:card'],['Mi saldo','mi saldo'],['Mis operaciones','do:ops'],['Cómo comprar','¿Cómo compro USDT?'],['Comisiones','¿Qué comisiones hay?'],['Soporte','hablar con soporte']];
+/* k: raíces de palabras (al inicio de palabra); "=" delante = palabra exacta */
+const BOT_INTENTS=[
+  {k:['compr','=buy'],q:/compro usdt/i,a:['mkt','breq']},
+  {k:['vend','public','anunci','ofert'],q:/vendo usdt/i,a:['sell']},
+  {k:['me pagaron','me pagan','pago recib','confirmar pago','no he recibido','liber'],q:/cuando me pagan/i,a:['ord']},
+  {k:['no confirma','no responde','mediaci','disput','reclam','estaf','ya pague'],q:/no confirma/i,a:['ord']},
+  {k:['a tiempo','30 minutos','se cancel','cancela sola','expir'],q:/no pago a tiempo/i,a:['mkt']},
+  {k:['=kyc','verific','identidad','carnet','selfie'],q:/kyc/i,a:['kyc']},
+  {k:['deposit','=txid','recarg','poner saldo'],q:/deposito usdt/i,a:['dep']},
+  {k:['retir','sacar','demora','tarda'],q:/demora un retiro/i,a:['wit']},
+  {k:['comisi','cobran','=fee','=fees'],q:/comisiones/i,a:[]},
+  {k:['referid','invit','amigo'],q:/referidos/i,a:['ref']},
+  {k:['=pin','dos pasos','=2fa','segur','protej','contrasena','=clave'],q:/protejo/i,a:['sec']},
+  {k:['estrella','calific','reputaci'],q:/estrellas/i,a:[]}
+];
+/* ¿Pide ejecutar algo? (si pregunta "cómo…", se explica en vez de ejecutar) */
+function botIntent(q){
+  const t=botNorm(q),ask=/^ (como|que|cual|cuales|cuanto|cuanta|donde|cuando|por que|puedo|se puede|hay|existe) /.test(t);
+  const first=t.trim().split(' ')[0],w=t.trim().split(' ').length;
+  const want=/ (quier|quisier|necesit|dese|gustaria|ayudame|ayudas|puedes) /.test(t)||['pon','ponme','crea','creame','publica','publicame','haz','hazme','vende','vendeme','agrega','agregame','anade','registra','registrame','guarda','guardame','cancela','cancelame','elimina','quita','borra','solicito'].includes(first);
+  if(/ (mis operaciones|operaciones activas|operaciones en curso|ordenes activas|mis ordenes|estado de mis|que operaciones tengo|tengo operaciones) /.test(t))return{k:'ops'};
+  if(!ask&&(want||w<=4)&&/ (cancel|elimin|quit|borr|despublic)\w* .*(oferta|anuncio|publicacion|orden de venta)/.test(t))return{k:'cancel'};
+  if(!ask&&(want||w<=3)&&/ (agreg|anad|registr|guard|nueva|crear|crea|poner|pon)\w* .*tarjeta/.test(t))return{k:'card'};
+  if(/ solicitud(es)? de compra | (publicar|crear|hacer|poner|pon|crea|haz) .*solicitud /.test(t))return{k:'breq'};
+  if(!ask&&(want||w<=3)&&/ (vender|vendo|vende|venta|publicar|publica|poner|pon|ponme|crear|crea|hacer|haz) /.test(t)&&/ (usdt|oferta|anuncio|orden|venta|vender|vendo|vende) /.test(t)){
+    const pre={},r=String(q).replace(/,/g,'.');
+    const ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];
+    const c=botCur(' '+r+' ');
+    if(c){pre.c=c;const mp=r.match(/(?:\ba\b|\ben\b|\bpor\b)\s*(\d+(?:\.\d+)?)\s*(?:cup|mlc|usd|clasica|clásica|movil|móvil|pesos)/i);if(mp)pre.p=+mp[1]}
+    return{k:'sell',pre}}
+  return null}
+function botReply(q){
+  const t=botNorm(q),m=k=>k[0]==='='?t.includes(' '+k.slice(1)+' '):t.includes(' '+k);
+  const nm=(S.profile&&S.profile.username)||'';
+  if(/^ (hola|buenas|buenos dias|buen dia|hey|saludos|que tal)( |$)/.test(t))return{a:`¡Hola${nm?' '+nm:''}! 👋 ¿En qué te ayudo?`,acts:['sell','dep','wit']};
+  if(/ (gracias|thanks)( |$)/.test(t))return{a:'¡De nada! Si necesitas algo más, aquí estoy 🙂',acts:[]};
+  if(m('=saldo')||m('cuanto tengo')||m('mi billetera')||m('=disponible')){
+    const w=S.wallet||{},av=Number(w.available||0),lk=Number(w.locked||0);
+    return{a:`Tienes ${n(av,2)} USDT disponibles`+(lk>0?` y ${n(lk,2)} USDT bloqueados en ofertas u operaciones en curso.`:'.'),acts:['sell','dep','wit']}}
+  if(m('aviso')||m('notificacion')||m('=alertas')||m('novedades'))
+    return{a:S.unread?`Tienes ${S.unread} aviso${S.unread>1?'s':''} sin leer.`:'No tienes avisos sin leer.',acts:['notifs']};
+  if(m('soporte')||m('=humano')||m('=persona')||m('=agente')||m('=whatsapp')||m('=contacto')||m('administrador')||m('hablar con'))
+    return{a:(botWa()?'Si necesitas hablar con una persona, escríbenos por WhatsApp. ':'')+'Si el problema es con una operación, entra en ella y toca “Solicitar mediación”: el administrador lo revisa.',acts:botWa()?['wa','ord']:['ord']};
+  let best=null,bs=0;
+  for(const it of BOT_INTENTS){let sc=0;for(const k of it.k)if(m(k))sc+=k.includes(' ')?2:1;if(sc>bs){bs=sc;best=it}}
+  if(best){const f=FAQ().find(([x])=>best.q.test(x));if(f)return{a:f[1],acts:best.a}}
+  return null}
+/* Si la pregunta no está en la ayuda, intenta con el Worker (/assistant). Si no existe o falla, no pasa nada. */
+async function botAI(q){
+  if(BOT.aiFail>=2||BOT.ai>=15)return null;
+  BOT.ai++;
+  const hist=BOT.msgs.filter(x=>!x.typing&&!x.n&&x.t).slice(-7,-1).map(x=>({role:x.me?'user':'assistant',text:String(x.t).slice(0,300)}));
+  const r=await fraudCheck('/assistant',{question:q,history:hist,faq:FAQ().map(([a,b])=>({q:a,a:b})),app:APP_NAME},20000);
+  const a=r&&typeof r.answer==='string'?r.answer.trim():'';
+  if(!a){BOT.aiFail++;return null}
+  BOT.aiFail=0;return a.slice(0,900)}
+/* ----- Gestiones guiadas ----- */
+async function botFlowStart(k,pre){
+  if(k==='sell'){
+    if(needKyc()){botSay('Para publicar ofertas primero debes verificar tu identidad (KYC), una sola vez.',{acts:['kyc']});return}
+    BOT.fl={k,s:'',d:Object.assign({m:[]},pre||{}),ch:[]};return botSellNext()}
+  if(k==='card'){BOT.fl={k,s:'',d:{},ch:[]};return botCardNext()}
+  if(k==='breq'){BOT.fl={k,s:'',d:{},ch:[]};return botBreqNext()}
+  if(k==='cancel')return botCancelStart();
+  if(k==='ops')return botOps()}
+const botMetChips=()=>{const f=BOT.fl;f.ch=METHODS.map(x=>[(f.d.m.includes(x)?'✓ ':'')+x,'m:'+x]).concat([['Listo ➜','m:ok']])};
+function botMetToggle(x){const f=BOT.fl,i=f.d.m.indexOf(x);if(i<0)f.d.m.push(x);else f.d.m.splice(i,1);botMetChips();botDraw()}
+async function botSellNext(){
+  const f=BOT.fl,d=f.d,fee=FPO(),av=Number((S.wallet&&S.wallet.available)||0),mx=Math.floor(av/(1+fee/100)*100)/100;
+  if(!(d.a>0)){
+    if(mx<=0){BOT.fl=null;return botSay('No tienes USDT disponibles para publicar una oferta. Primero deposita.',{acts:['dep']})}
+    f.s='amt';f.ch=[['Máx. '+n(mx,2),String(mx)]];
+    return botSay(`¿Cuántos USDT quieres vender? Puedes publicar hasta ${n(mx,2)} USDT${fee?` (incluye la comisión de ${fee}%)`:''}.`)}
+  if(d.a>mx){delete d.a;return botSellNext()}
+  if(!d.c){f.s='cur';f.ch=CURS.map(c=>[botCl(c),c]);return botSay('¿En qué moneda quieres cobrar?')}
+  if(!(d.p>0)){f.s='price';const md=botMed(d.c);f.ch=md?[['Usar '+mny(md,d.c),String(md)]]:[];
+    return botSay(`¿A qué precio por 1 USDT (en ${d.c})?`+(md?` El precio medio del mercado ahora es ${mny(md,d.c)} ${d.c}.`:''))}
+  if(!d.mok){f.s='met';botMetChips();return botSay('¿Qué métodos de pago aceptas? Toca los que quieras y luego “Listo”.')}
+  if(d.c==='Saldo Móvil'){
+    if(!d.ph){f.s='ph';f.ch=[];return botSay('¿Cuál es tu número de teléfono para recibir el saldo? Solo lo verá quien te compre.')}
+  }else{
+    if(!d.card){
+      if(!d.pick){const cs=(await loadCards()).filter(x=>x.currency===d.c);d.pick=1;
+        if(cs.length){f.s='pick';f.ch=cs.map(x=>['💳 '+(x.alias||x.bank)+' '+botMsk(x.card_number),'c:'+x.id]).concat([['✍️ Otra tarjeta','c:new']]);return botSay('¿A qué tarjeta quieres recibir el pago?')}}
+      if(!d.bank){f.s='bank';f.ch=[];return botSay('¿De qué banco es tu tarjeta? (Ej: BPA, Metropolitano, BANDEC)')}
+      f.s='cardn';f.ch=[];return botSay('Escribe el número de tu tarjeta. No lo mostraré en el chat.')}
+    if(!d.ph){f.s='ph';f.ch=[];return botSay('¿Cuál es tu número de teléfono para confirmar el pago?')}
+    if(!d.saved&&d.sv===undefined){
+      const dg=String(d.card).replace(/\D/g,'');
+      if((S.cards||[]).some(x=>String(x.card_number).replace(/\D/g,'')===dg))d.sv=0;
+      else{f.s='sv';f.ch=[['Sí, guardarla','sv:1'],['No','sv:0']];return botSay('¿Quieres guardar esta tarjeta en Mis tarjetas para usarla la próxima vez?')}}}
+  f.s='ok';f.ch=[['✅ Publicar oferta','ok'],['✖ Cancelar','no']];
+  const fe=rnd(d.a*fee/100,4);
+  botSay('Revisa tu oferta antes de publicarla:',{card:[['Vendes',n(d.a,4)+' USDT'],['Precio',mny(d.p,d.c)+' '+d.c+' por USDT'],['Recibirás',mny(d.a*d.p,d.c)+' '+d.c],['Se retendrán',n(d.a+fe,4)+' USDT'+(fe?' (comisión '+fee+'%)':'')],['Métodos',d.m.join(', ')],d.c!=='Saldo Móvil'?['Tarjeta',(d.bank||'')+' '+botMsk(d.card)]:null,['Teléfono',d.ph]].filter(Boolean)})}
+async function botSellIn(x,raw){
+  const f=BOT.fl,d=f.d,fee=FPO(),av=Number((S.wallet&&S.wallet.available)||0),mx=Math.floor(av/(1+fee/100)*100)/100;
+  const bad=m=>botSay(m+' (o toca Cancelar para salir).'),nx=botNorm(x);
+  switch(f.s){
+    case 'amt':{const a=botNum(x);if(!(a>0))return bad('Necesito un número de USDT');if(a>mx)return bad(`Con tu saldo puedes publicar hasta ${n(mx,2)} USDT`);d.a=a;break}
+    case 'cur':{const c=botCur(x)||CURS.find(k=>k===x);if(!c)return bad('Elige una de las monedas');d.c=c;break}
+    case 'price':{const p=botNum(x);if(!(p>0))return bad('Necesito un precio válido');d.p=p;break}
+    case 'met':{
+      if(x==='m:ok'||/ (listo|ok|ya|continuar|siguiente) /.test(nx)){if(!d.m.length)return bad('Elige al menos un método de pago');d.mok=1;break}
+      const mm=METHODS.find(k=>botNorm(k)===botNorm(x.replace(/^m:/,'')));if(mm){botMetToggle(mm);return}
+      return bad('Elige un método con los botones')}
+    case 'pick':{
+      if(x==='c:new'){d.pick=1;break}
+      const cd=(S.cards||[]).find(k=>'c:'+k.id===x);if(!cd)return bad('Elige una tarjeta con los botones');
+      d.card=cd.card_number;d.bank=cd.bank;if(cd.phone)d.ph=cd.phone;d.saved=1;break}
+    case 'bank':{const b=x.replace(/[|]/g,' ').replace(/\s+/g,' ').trim();if(b.length<2||b.length>40)return bad('Escribe el nombre del banco');d.bank=b;break}
+    case 'cardn':{if(x.replace(/\D/g,'').length<12)return bad('Escribe el número completo de la tarjeta');d.card=x.replace(/\s+/g,' ').trim();break}
+    case 'ph':{if(x.replace(/\D/g,'').length<8)return bad('Escribe un número de teléfono válido');d.ph=x.trim();break}
+    case 'sv':{d.sv=(x==='sv:1'||/ (si|claro|dale|ok) /.test(nx))?1:0;break}
+    case 'ok':{
+      if(x==='no'||/ (no|cancelar) /.test(nx)){BOT.fl=null;return botSay('Listo, no publiqué nada.')}
+      if(x!=='ok'&&!/ (si|confirmo|publicar|dale|ok) /.test(nx))return bad('Toca “Publicar oferta” para confirmar');
+      return botSellGo()}
+  }
+  return botSellNext()}
+async function botSellGo(){
+  const f=BOT.fl,d=f.d,c=d.c,fee=FPO();
+  try{
+    kycChk();
+    const fe=rnd(d.a*fee/100,4),av=Number((S.wallet&&S.wallet.available)||0);
+    if(d.a+fe>av)throw new Error(`Necesitas ${n(d.a+fe,4)} USDT (${n(d.a,4)} + comisión ${fee}%)`);
+    const card=c!=='Saldo Móvil'?String(d.card||'').trim():'',ph=String(d.ph||'').trim(),det=(card?'Tarjeta: '+card+' · ':'')+'Teléfono: '+ph;
+    if(await payDup(card,ph))throw new Error('Este número de cobro ya está registrado por otro usuario.');
+    await rpc('create_offer',{p_amount:d.a,p_price:d.p,p_methods:d.m.join(', ')+SEP+c+(card&&d.bank?BSEP+d.bank:''),p_details:det});
+    if(card&&d.sv){try{await sb.from('user_cards').insert({currency:c,bank:d.bank,card_number:card,phone:ph});S.cards=null}catch(e){}}
+    BOT.fl=null;loadBal().catch(()=>{});if(S.view==='market')loadOffers(NAV);
+    botSay('✅ ¡Oferta publicada! Ya aparece en el Mercado.',{acts:['mkt','cancel']})
+  }catch(e){
+    botSay('⚠️ No pude publicarla: '+String((e&&e.message)||e).slice(0,200));
+    f.s='ok';f.ch=[['✅ Publicar oferta','ok'],['✖ Cancelar','no']]}}
+/* Tarjeta */
+async function botCardNext(){
+  const f=BOT.fl,d=f.d;
+  if(!d.c){f.s='cur';f.ch=['CUP','MLC','Saldo Clásica'].map(c=>[botCl(c),c]);return botSay('¿Qué tipo de tarjeta quieres guardar?')}
+  if(!d.bank){f.s='bank';f.ch=[];return botSay('¿De qué banco es? (Ej: BPA, Metropolitano, BANDEC)')}
+  if(!d.card){f.s='cardn';f.ch=[];return botSay('Escribe el número de la tarjeta. No lo mostraré en el chat.')}
+  if(d.ph===undefined){f.s='ph';f.ch=[['Omitir','__skip']];return botSay('¿Teléfono para confirmar los pagos? (opcional)')}
+  if(d.al===undefined){f.s='al';f.ch=[['Omitir','__skip']];return botSay('¿Con qué nombre quieres reconocerla? Ej: Mi BPA (opcional)')}
+  f.s='ok';f.ch=[['✅ Guardar tarjeta','ok'],['✖ Cancelar','no']];
+  botSay('Revisa los datos:',{card:[['Tipo',botCl(d.c)],['Banco',d.bank],['Tarjeta',botMsk(d.card)],d.ph?['Teléfono',d.ph]:null,d.al?['Nombre',d.al]:null].filter(Boolean)})}
+async function botCardIn(x,raw){
+  const f=BOT.fl,d=f.d,bad=m=>botSay(m+' (o toca Cancelar para salir).'),nx=botNorm(x);
+  switch(f.s){
+    case 'cur':{const c=botCur(x);if(!c||c==='Saldo Móvil')return bad('Elige CUP, MLC o Saldo Clásica');d.c=c;break}
+    case 'bank':{const b=x.replace(/[|]/g,' ').replace(/\s+/g,' ').trim();if(b.length<2||b.length>40)return bad('Escribe el nombre del banco');d.bank=b;break}
+    case 'cardn':{if(x.replace(/\D/g,'').length<12)return bad('Escribe el número completo de la tarjeta');d.card=x.replace(/\s+/g,' ').trim().slice(0,23);break}
+    case 'ph':{if(x==='__skip'||/ (omitir|no|ninguno) /.test(nx)){d.ph='';break}if(x.replace(/\D/g,'').length<8)return bad('Escribe un teléfono válido u omítelo');d.ph=x.trim().slice(0,20);break}
+    case 'al':{if(x==='__skip'||/ (omitir|no|ninguno) /.test(nx)){d.al='';break}d.al=x.trim().slice(0,30);break}
+    case 'ok':{
+      if(x==='no'||/ (no|cancelar) /.test(nx)){BOT.fl=null;return botSay('Listo, no guardé nada.')}
+      if(x!=='ok'&&!/ (si|confirmo|guardar|dale|ok) /.test(nx))return bad('Toca “Guardar tarjeta” para confirmar');
+      return botCardGo()}
+  }
+  return botCardNext()}
+async function botCardGo(){
+  const f=BOT.fl,d=f.d;
+  try{
+    const dg=String(d.card).replace(/\D/g,'');
+    if((await loadCards()).some(x=>String(x.card_number).replace(/\D/g,'')===dg))throw new Error('Esa tarjeta ya está guardada');
+    if(await payDup(d.card,d.ph))throw new Error('Este número de cobro ya está registrado por otro usuario.');
+    const q=await sb.from('user_cards').insert({currency:d.c,bank:d.bank,card_number:d.card,phone:d.ph||'',alias:d.al||''});
+    if(q.error)throw new Error(friendly(q.error));
+    await loadCards(true);BOT.fl=null;
+    botSay('✅ Tarjeta guardada. La podrás elegir al publicar una oferta de venta.',{acts:['sell']})
+  }catch(e){
+    botSay('⚠️ No pude guardarla: '+String((e&&e.message)||e).slice(0,200));
+    f.s='ok';f.ch=[['✅ Guardar tarjeta','ok'],['✖ Cancelar','no']]}}
+/* Solicitud de compra */
+async function botBreqNext(){
+  const f=BOT.fl,d=f.d;
+  if(!(d.a>0)){f.s='amt';f.ch=[];return botSay('¿Cuántos USDT quieres comprar?')}
+  if(!d.c){f.s='cur';f.ch=CURS.map(c=>[botCl(c),c]);return botSay('¿Con qué moneda pagarás?')}
+  f.s='ok';f.ch=[['✅ Publicar solicitud','ok'],['✖ Cancelar','no']];
+  botSay('Se publicará esta solicitud para que los vendedores la vean:',{card:[['Quieres comprar',n(d.a,4)+' USDT'],['Pagarás con',botCl(d.c)]]})}
+async function botBreqIn(x,raw){
+  const f=BOT.fl,d=f.d,bad=m=>botSay(m+' (o toca Cancelar para salir).'),nx=botNorm(x);
+  switch(f.s){
+    case 'amt':{const a=botNum(x);if(!(a>0))return bad('Necesito un número de USDT');d.a=a;break}
+    case 'cur':{const c=botCur(x)||CURS.find(k=>k===x);if(!c)return bad('Elige una de las monedas');d.c=c;break}
+    case 'ok':{
+      if(x==='no'||/ (no|cancelar) /.test(nx)){BOT.fl=null;return botSay('Listo, no publiqué nada.')}
+      if(x!=='ok'&&!/ (si|confirmo|publicar|dale|ok) /.test(nx))return bad('Toca “Publicar solicitud” para confirmar');
+      try{await rpc('buy_req_create',{p_amount:d.a,p_currency:d.c});BOT.fl=null;
+        return botSay('✅ Solicitud publicada. Los vendedores la verán en el Mercado.',{acts:['mkt']})}
+      catch(e){return botSay('⚠️ No pude publicarla: '+String((e&&e.message)||e).slice(0,200))}}
+  }
+  return botBreqNext()}
+/* Cancelar oferta */
+async function botCancelStart(){
+  let l=null;
+  try{const{data}=await sb.from('offers').select('id,amount,price_cup,methods').eq('seller_id',S.user.id).eq('status','open').order('created_at',{ascending:false}).limit(6);l=data}catch(e){}
+  if(!l)throw new Error('No pude cargar tus ofertas');
+  if(!l.length){BOT.fl=null;return botSay('No tienes ofertas publicadas ahora mismo.',{acts:['sell']})}
+  BOT.fl={k:'cancel',s:'pick',d:{},ch:l.map(o=>{const c=parseM(o.methods).c;return['❌ '+n(o.amount,2)+' USDT · '+mny(o.price_cup,c)+' '+c,'o:'+o.id]}),ofs:l};
+  botSay('¿Cuál oferta quieres cancelar? Los USDT bloqueados vuelven a tu saldo.')}
+async function botCancelIn(x,raw){
+  const f=BOT.fl,d=f.d,nx=botNorm(x);
+  if(f.s==='pick'){
+    const o=(f.ofs||[]).find(k=>'o:'+k.id===x);
+    if(!o)return botSay('Elige una oferta con los botones (o toca Cancelar para salir).');
+    d.o=o;f.s='ok';f.ch=[['✅ Sí, cancelarla','ok'],['✖ No','no']];const c=parseM(o.methods).c;
+    return botSay('Se cancelará esta oferta:',{card:[['Cantidad',n(o.amount,2)+' USDT'],['Precio',mny(o.price_cup,c)+' '+c]]})}
+  if(x==='no'||/ (no|cancelar) /.test(nx)){BOT.fl=null;return botSay('Listo, no cancelé nada.')}
+  if(x!=='ok'&&!/ (si|confirmo|dale|ok) /.test(nx))return botSay('Toca “Sí, cancelarla” para confirmar.');
+  const id=d.o.id;
+  try{
+    try{await rpc('cancel_offer',{p_offer:id})}catch(e){if(/Could not find the function|schema cache/i.test(String(e&&e.message)))await rpc('cancel_offer',{p_id:id});else throw e}
+    S.offers=(S.offers||[]).filter(k=>k.id!==id);BOT.fl=null;loadBal().catch(()=>{});
+    if(S.view==='market'){drawOffers();loadOffers(NAV)}
+    botSay('✅ Oferta cancelada. Tus USDT vuelven a estar disponibles.',{acts:['sell']})
+  }catch(e){botSay('⚠️ No pude cancelarla: '+String((e&&e.message)||e).slice(0,200))}}
+/* Operaciones en curso */
+async function botOps(){
+  const{data,error}=await sb.from('orders').select('id,seller_id,buyer_id,amount,status').or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).in('status',['awaiting_payment','payment_sent','seller_confirmed','disputed']).order('created_at',{ascending:false}).limit(6);
+  if(error||!data)throw new Error('No pude cargar tus operaciones');
+  BOT.fl=null;
+  if(!data.length)return botSay('No tienes operaciones en curso ahora mismo. 🎉',{acts:['mkt','sell']});
+  botSay(`Tienes ${data.length} operación${data.length>1?'es':''} en curso. Toca una para abrirla:`,{ops:data.map(o=>({id:o.id,t:(o.buyer_id===S.user.id?'Compras ':'Vendes ')+n(o.amount,2)+' USDT · '+((STATUS[o.status]||[o.status])[0])}))})}
+async function botFlowIn(x,raw){
+  const f=BOT.fl;
+  if(x==='__x'){BOT.fl=null;return botSay('Listo, cancelé la gestión. ¿Algo más?')}
+  if(f.k==='sell')return botSellIn(x,raw);
+  if(f.k==='card')return botCardIn(x,raw);
+  if(f.k==='breq')return botBreqIn(x,raw);
+  if(f.k==='cancel')return botCancelIn(x,raw)}
+/* ----- Conversación ----- */
+async function botBusy(fn,label){
+  if(BOT.busy)return;BOT.busy=true;
+  if(label)BOT.msgs.push({me:1,t:label});
+  const ty={typing:1};BOT.msgs.push(ty);botDraw();
+  try{await fn()}catch(e){botSay('No pude completar eso: '+String((e&&e.message)||e).slice(0,160))}
+  const i=BOT.msgs.indexOf(ty);if(i>-1)BOT.msgs.splice(i,1);
+  BOT.busy=false;botDraw()}
+const botDo=(k,label)=>botBusy(()=>botFlowStart(k),label);
+async function botFree(q){
+  const it=botIntent(q);
+  if(it)return botFlowStart(it.k,it.pre);
+  const out=botReply(q);
+  if(out){await new Promise(r=>setTimeout(r,300));return botSay(out.a,{acts:out.acts})}
+  const ai=await botAI(q);
+  botSay(ai||'No estoy seguro de eso 🤔. Prueba con otra pregunta o mira la Ayuda completa.'+(ai?'':(botWa()?' También puedes escribir a soporte por WhatsApp.':'')),{acts:ai?[]:['help'].concat(botWa()?['wa']:[])})}
+function botSend(q,val){
+  q=String(q||'').trim().slice(0,300);if(!q||BOT.busy)return;
+  const fl=BOT.fl,mask=fl&&fl.s==='cardn'&&val===undefined;
+  BOT.msgs.push({me:1,t:mask?'💳 '+botMsk(q):q});
+  return botBusy(async()=>{
+    if(fl){
+      if(val===undefined&&/^ (cancelar|salir|cancel|olvidalo|no quiero) $/.test(botNorm(q))){BOT.fl=null;return botSay('Listo, cancelé la gestión. ¿Algo más?')}
+      return botFlowIn(val!==undefined?String(val):q,q)}
+    return botFree(q)})}
+/* Avisos de la web: sysNotify() los manda aquí; no hay consultas extra */
+function botNotifActs(t){
+  t=botNorm(t);
+  if(/ (privad|chat|mensaje|escrib)/.test(t))return['chat'];
+  if(/ anunci/.test(t))return['ann'];
+  if(/ solicitudes pendientes|panel de admin/.test(t))return(S.profile&&(S.profile.is_admin||S.profile.is_staff))?['adm']:['notifs'];
+  if(/ (administrador|admin|prueba|mediaci|pago|compr|vend|operaci|oferta|orden|comprobante|solicitud|tom)/.test(t))return['ord','notifs'];
+  return['notifs']}
+function botNotify(title,body,act){
+  const t=String(title||'').trim()+(body?'\n'+String(body).trim():'');if(!t.trim())return;
+  const last=[...BOT.msgs].reverse().find(x=>x.n);
+  if(last&&last.t===t&&Date.now()-last.ts<8000)return;
+  botSay(t.slice(0,300),{n:1,ts:Date.now(),acts:act?[act]:botNotifActs(t)});
+  const open=$('botp')&&$('botp').classList.contains('show');
+  if(open)botDraw();else{BOT.unread++;botBadge()}}
+function botBadge(){const b=$('fabbd');if(!b)return;b.textContent=BOT.unread>9?'9+':String(BOT.unread);b.style.display=BOT.unread?'flex':'none'}
+/* ----- Pantalla ----- */
+function botHtml(x,i,a){
+  if(x.typing)return'<div class="bm bt"><i></i><i></i><i></i></div>';
+  let h=`<div class="bm${x.me?' me':''}${x.n?' nt':''}${i===a.length-1?' nw':''}">`;
+  if(x.n)h+='<div class="bl">🔔 Aviso</div>';
+  h+=esc(x.t);
+  if(x.card)h+='<div class="bc">'+x.card.map(([k,v])=>`<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')+'</div>';
+  if(x.ops)h+='<div class="bo">'+x.ops.map(o=>`<button type="button" data-op="${esc(o.id)}">${esc(o.t)} ➜</button>`).join('')+'</div>';
+  if(x.menu)h+='<div class="bg">'+BOT_MENU.map(([ic,l,k])=>`<button type="button" data-mn="${k}"><em>${ic}</em>${esc(l)}</button>`).join('')+'</div>';
+  return h+'</div>'}
+function botDraw(){
+  const m=$('botm'),qb=$('botq');if(!m||!qb)return;
+  m.innerHTML=BOT.msgs.map(botHtml).join('');
+  let h='';
+  if(BOT.fl)h=(BOT.fl.ch||[]).map(([l,v])=>`<button type="button" class="chip" data-fv="${esc(v)}" data-fl="${esc(l)}">${esc(l)}</button>`).join('')+'<button type="button" class="chip cn" data-fv="__x" data-fl="Cancelar">✖ Cancelar</button>';
+  else{
+    const last=[...BOT.msgs].reverse().find(x=>!x.me&&!x.typing);
+    const acts=((last&&last.acts)||[]).filter(k=>BOT_ACTS[k]&&(k!=='wa'||botWa()));
+    h=acts.map(k=>`<button type="button" class="chip bact" data-a="${k}">${BOT_ACTS[k][0]}</button>`).join('')+BOT_SUG.map(([l,q])=>`<button type="button" class="chip" data-q="${esc(q)}" data-ql="${esc(l)}">${esc(l)}</button>`).join('')}
+  qb.innerHTML=h;
+  const bi=$('boti');if(bi)bi.placeholder=BOT.fl?'Escribe tu respuesta…':'Escribe tu pregunta…';
+  m.scrollTop=m.scrollHeight}
+function botBuild(){
+  if(BOT.built&&$('botp'))return;BOT.built=true;
+  const d=document.createElement('div');d.id='botp';d.setAttribute('role','dialog');d.setAttribute('aria-label','Asistente');
+  d.innerHTML=`<div class="bh"><span class="bav">🤖</span><div><b>Asistente de ${esc(APP_NAME)}</b><small>Responde dudas y hace gestiones por ti</small></div><button type="button" id="botx" aria-label="Cerrar">✕</button></div><div id="botm"></div><div id="botq"></div><div class="bi"><input id="boti" maxlength="300" placeholder="Escribe tu pregunta…" enterkeyhint="send" autocomplete="off"><button type="button" id="bots" aria-label="Enviar">➤</button></div><div class="bn">🔒 Nunca te pediremos tu contraseña ni tu PIN.</div>`;
+  document.body.appendChild(d);
+  $('botx').onclick=botClose;
+  const sendIn=()=>{const i=$('boti'),v=i.value;i.value='';botSend(v)};
+  $('bots').onclick=sendIn;$('boti').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sendIn()}};
+  $('botq').onclick=e=>{
+    const c=e.target.closest('button');if(!c)return;
+    if(c.dataset.a){const a=BOT_ACTS[c.dataset.a];if(!a[2])botClose();a[1]();return}
+    if(c.dataset.q){const q=c.dataset.q;if(q.startsWith('do:')){const k=q.slice(3);BOT_ACTS[k][1]()}else botSend(q);return}
+    if(c.dataset.fv!==undefined){const v=c.dataset.fv,f=BOT.fl;
+      if(f&&f.s==='met'&&v.startsWith('m:')&&v!=='m:ok'){botMetToggle(v.slice(2));return}
+      botSend(c.dataset.fl,v)}};
+  $('botm').onclick=e=>{
+    const o=e.target.closest('[data-op]');if(o){botClose();go('order',o.dataset.op);return}
+    const mn=e.target.closest('[data-mn]');if(!mn)return;const k=mn.dataset.mn;
+    if(k==='bal')botSend('mi saldo');else if(k==='help'){botClose();go('help')}else BOT_ACTS[k][1]()};
+  if(!window._botEsc){window._botEsc=1;addEventListener('keydown',e=>{if(e.key==='Escape')botClose()});
+    if(window.visualViewport)visualViewport.addEventListener('resize',()=>{const p=$('botp');if(!p||!p.classList.contains('show'))return;const kb=innerHeight-visualViewport.height-visualViewport.offsetTop;p.style.bottom=kb>80?(kb+8)+'px':''})}
+  if(!BOT.msgs.length){const nm=(S.profile&&S.profile.username)||'';
+    botSay(`¡Hola${nm?' '+nm:''}! 👋 Soy el asistente de ${APP_NAME}. Respondo tus dudas y hago gestiones por ti. ¿Qué necesitas?`,{menu:1})}}
+function botOpen(){botBuild();$('botp').classList.add('show');const g=$('fabg'),b=$('fabi');if(g)g.style.display='block';if(b)b.textContent='✕';BOT.unread=0;botBadge();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
+function botClose(){const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),b=$('fabi');if(g)g.style.display='none';if(b)b.textContent='🤖'}
+function botToggle(){const p=$('botp');if(p&&p.classList.contains('show'))botClose();else botOpen()}
 function bindFab(){
   const f=$('fab'),g=$('fabg'),up=$('up');if(!f)return;
-  const set=o=>{f.classList.toggle('open',o);g.style.display=o?'block':'none'};
-  $('fabm').onclick=()=>set(!f.classList.contains('open'));g.onclick=()=>set(false);
-  f.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{set(false);const a=b.dataset.fa;
-    if(a==='pub'){S.openSell=1;go('market')}else{go('wallet');toEl(a==='dep'?'depcard':'wcard')}});
+  $('fabm').onclick=botToggle;g.onclick=botClose;
   if(!window._scr){window._scr=1;let tk=0;addEventListener('scroll',()=>{if(tk)return;tk=1;requestAnimationFrame(()=>{tk=0;const u=$('up');if(u)u.classList.toggle('show',window.scrollY>480)})},{passive:true})}up.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
   updFab(S.view)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-sc],[data-gv]');if(!b)return;if(b.dataset.sc){const t=$(b.dataset.sc);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})}else go(b.dataset.gv)});
@@ -1064,7 +1455,7 @@ function render(){
   const admin=S.profile?.is_admin||S.profile?.is_staff;
   $app.innerHTML=`<header>${brand(30)}<span class="hr"><button class="pill" id="bal" aria-label="Billetera">${cIco('USDT',24)}<span id="hb">${n(S.wallet?.available,2)}</span><small>USDT</small><i class="plus">+</i></button><button class="ib" id="bell" aria-label="Operaciones">${IC.bell}</button><button class="ib" id="thm" aria-label="Modo nocturno"></button><a href="#" id="av" style="display:flex">${avatar(36)}</a></span></header>
     <main id="main"></main>${(S.settings.whatsapp||CFG.whatsapp)?`<a class="wa" aria-label="Soporte por WhatsApp" href="https://wa.me/${esc(S.settings.whatsapp||CFG.whatsapp)}" target="_blank" rel="noopener">💬 Soporte</a>`:''}
-    <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><div class="fab-items"><button data-fa="pub"><span>Publicar anuncio</span><i>📣</i></button><button data-fa="dep"><span>Depositar</span><i>⬇️</i></button><button data-fa="wit"><span>Retirar</span><i>⬆️</i></button></div><button class="fab-m" id="fabm" aria-label="Acciones rápidas">+</button></div><button class="up" id="up" aria-label="Subir">↑</button>
+    <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><button class="fab-m" id="fabm" aria-label="Asistente de ayuda"><span id="fabi">🤖</span><i id="fabbd"></i></button></div><button class="up" id="up" aria-label="Subir">↑</button>
     <nav><button data-v="market">${IC.market}Mercado</button>
     <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
     <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
@@ -1352,7 +1743,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('messag
 
 /* ---------- Notificaciones ---------- */
 async function sysNotify(title,body){
-  toast('🔔 '+title);ding();
+  toast('🔔 '+title);ding();try{botNotify(title,body)}catch(e){}
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
     if(reg)await reg.showNotification(title,{body,icon:'icon-192.png',vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
@@ -2535,7 +2926,7 @@ async function pcSummary(){
     const x=r.data||{},inv=Number(x.invites)||0;let t=(Number(x.unread)||0)+inv;
     if(inv>0&&!S.pcxOff){try{const c=await rpc('pc_cancelled');t-=Math.min(inv,((c&&c.theirs)||[]).length)}catch(e){if(/pc_cancelled|does not exist|schema cache|Could not find/i.test(e.message))S.pcxOff=true}}
     t=Math.max(0,t);
-    if(S.pcN!=null&&t>S.pcN&&S.view!=='pcon'){chatDing();toast('🔒 Tienes algo nuevo en tus chats privados')}
+    if(S.pcN!=null&&t>S.pcN&&S.view!=='pcon'){chatDing();toast('🔒 Tienes algo nuevo en tus chats privados');try{botNotify('Tienes algo nuevo en tus chats privados','Alguien te escribió o te pidió un chat privado.','chat')}catch(e){}}
     S.pcN=t;S.pcUnread=Math.min(99,t);updChatBd();if(inv>0)setTimeout(checkPcPopup,400)}
   catch(e){}finally{PCB=false}}
 let PCP=false;
