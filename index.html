@@ -741,14 +741,14 @@ async function netFetch(url,opt={}){
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:netFetch}});
 /* ---- Antifraude (Worker tororo-analisis) ---- */
 const FRAUD_URL='https://api.tororo.trade';
-async function fraudCheck(endpoint,body){
+async function fraudCheck(endpoint,body,ms){
   try{
     const{data:{session}}=await sb.auth.getSession();
     if(!session)return null;
-    const c=new AbortController(),t=setTimeout(()=>c.abort(),6000);
+    const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||6000);
     try{
       const r=await fetch(FRAUD_URL+endpoint,{method:'POST',headers:{'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body||{}),signal:c.signal});
-      if(!r.ok)return null;
+      if(!r.ok){console.warn('[antifraude]',endpoint,r.status);return null}
       return await r.json();
     }finally{clearTimeout(t)}
   }catch(e){return null}
@@ -761,6 +761,90 @@ async function payDup(...vals){
     if(ck&&ck.exists===true)return true;
   }
   return false}
+/* contenido: devuelve false solo si el Worker dice safe===false (si falla, deja pasar) */
+const FC_BAD='Este contenido no está permitido. Cambia el texto e inténtalo de nuevo.';
+async function contentOK(text){
+  const t=String(text||'').trim();
+  if(t.length<3)return true;
+  const r=await fraudCheck('/check-content',{text:t.slice(0,2000)},4000);
+  if(r&&r.safe===false){console.warn('[antifraude] contenido bloqueado',r.categories,r.summary);return false}
+  return true}
+/* imágenes: categoría declarada según el rol con que se sube (cámbialas aquí si tu Worker usa otros nombres) */
+const IMG_CAT={buyer:'payment_proof',mediation:'account_movements',sellerdeny:'account_movements',evidence:'evidence'};
+async function imageCheck(path,role,orderId){
+  try{
+    const r=await fraudCheck('/check-image',{image_path:path,declared_category:IMG_CAT[role]||role,order_id:orderId},20000);
+    if(!r)return;
+    if(r.duplicate_found||r.matches_declared===false){
+      console.warn('[antifraude] imagen sospechosa',r);
+      toast(r.duplicate_found?'⚠️ Esta captura parece repetida de otra operación. El administrador podrá revisarla.':'⚠️ La imagen no parece un comprobante válido. El administrador podrá revisarla.','err')}
+  }catch(e){}}
+/* chat: avisa si la conversación tiene riesgo medio/alto */
+const CHATRISK={};
+async function chatRisk(oid,msgs){
+  try{
+    if(!msgs||msgs.length<3)return;
+    const m=msgs.slice(-30),key=oid+':'+m.length+':'+String(m[m.length-1].text).slice(0,40),c=CHATRISK[oid]||{};
+    if(c.key===key||Date.now()-(c.t||0)<20000)return;
+    CHATRISK[oid]={key,t:Date.now()};
+    const r=await fraudCheck('/check-chat',{messages:m});
+    if(r){(FCP[oid]=FCP[oid]||{imgs:{}}).chat=r;fraudRender(oid)}
+    if(!r||!(r.risk_level==='alto'||r.risk_level==='medio'))return;
+    console.warn('[antifraude] chat',r);
+    const box=$('chatbox');if(!box||!box.parentNode)return;
+    let b=$('chatRisk');
+    if(!b){box.insertAdjacentHTML('beforebegin','<div class="warnbox" id="chatRisk"></div>');b=$('chatRisk')}
+    b.className='warnbox'+(r.risk_level==='alto'?' bad':'');
+    b.innerHTML='⚠️ <b>Posible riesgo en esta conversación</b>'+(r.summary?'<br>'+esc(r.summary):'');
+  }catch(e){}}
+/* perfil parecido a otros (se registra en consola; ver nota sobre revisión admin) */
+async function profileCheck(){
+  try{
+    const p=S.profile||{},txt=[p.username,p.full_name].filter(Boolean).join(' ').trim();
+    if(txt.length<3)return;
+    const r=await fraudCheck('/check-profile-similarity',{profile_text:txt});
+    if(r&&(r.risk_level==='alto'||r.risk_level==='medio'))console.warn('[antifraude] perfil parecido a otros',r.risk_level,r.similar_profiles);
+  }catch(e){}}
+/* panel antifraude para admin/staff dentro de la sala de mediación */
+const FCP={};
+const fcLvl=l=>({alto:'bad',medio:'warn',bajo:'ok'}[l]||'');
+const fcFlag=f=>esc(typeof f==='string'?f:(f&&(f.text||f.type))||'');
+function fraudRender(oid){
+  const box=$('fraudBox'),st=FCP[oid];if(!box||!st)return;
+  const c=st.chat;
+  let h='<div class="card"><h3>🛡️ Antifraude (solo admin)</h3>';
+  h+='<div class="row"><span>💬 Chat</span>'+(c?`<span class="tag ${fcLvl(c.risk_level)}">${esc(c.risk_level||'?')}</span>`:'<span class="mut">sin análisis</span>')+'</div>';
+  if(c&&c.summary)h+=`<div class="mut" style="margin:4px 0">${esc(c.summary)}</div>`;
+  ((c&&c.flags)||[]).slice(0,6).forEach(f=>{h+=`<div class="mut">• ${fcFlag(f)}</div>`});
+  Object.values(st.imgs||{}).forEach(x=>{const r=x.res,bad=r&&(r.duplicate_found||r.matches_declared===false),cf=r&&r.confidence!=null?Number(r.confidence):null;
+    h+=`<div class="row" style="margin-top:6px"><span>🖼️ ${esc(x.label)}</span>`+(r?`<span class="tag ${bad?'bad':'ok'}">${r.duplicate_found?'duplicada':r.matches_declared===false?'no coincide':'ok'}</span>`:`<span class="mut">${x.done?'sin resultado':'analizando…'}</span>`)+'</div>';
+    if(r)h+=`<div class="mut">${esc(r.classification||'')}${cf!=null&&!isNaN(cf)?' · confianza '+Math.round(cf<=1?cf*100:cf)+'%':''}</div>`});
+  box.innerHTML=h+'</div>'}
+async function fcImgScan(o){
+  try{
+    const st=FCP[o.id]=FCP[o.id]||{imgs:{}},list=[];
+    if(o.buyer_proof)list.push([o.buyer_proof,'Captura del comprador',IMG_CAT.buyer]);
+    if(o.mediation_proof)list.push([o.mediation_proof,'Movimientos del comprador (mediación)',IMG_CAT.mediation]);
+    if(o.seller_proof)list.push([o.seller_proof,'Captura del vendedor',IMG_CAT.sellerdeny]);
+    (st.ms||[]).forEach(x=>{const m=/\[img:([^\]]+)\]/.exec(String(x.body||''));if(m)list.push([m[1],'Prueba en el chat',IMG_CAT.evidence])});
+    for(const[pa,label,cat] of list.slice(0,10)){
+      if(st.imgs[pa])continue;
+      st.imgs[pa]={label,done:false,res:null};fraudRender(o.id);
+      const r=await fraudCheck('/check-image',{image_path:pa,declared_category:cat,order_id:o.id},20000);
+      st.imgs[pa].res=r;st.imgs[pa].done=true;fraudRender(o.id);
+    }
+  }catch(e){}}
+function fcStore(o,ms){
+  const p=S.profile||{};if(!(p.is_admin||p.is_staff))return;
+  const st=FCP[o.id]=FCP[o.id]||{imgs:{}};st.ms=ms;if($('fraudBox'))fcImgScan(o)}
+/* voz: listo para usar cuando exista grabación de audios en el chat; devuelve {transcription,risk_level,flags} o null */
+async function voiceCheck(audioPath){
+  try{
+    const r=await fraudCheck('/check-voice',{audio_path:audioPath},30000);
+    if(!r)return null;
+    if(r.risk_level==='alto'){console.warn('[antifraude] audio de riesgo alto',r);toast('⚠️ Alerta en el audio: '+(r.transcription||'').slice(0,120),'err')}
+    return r;
+  }catch(e){return null}}
 const $app=document.getElementById('app'),$=id=>document.getElementById(id),main=()=>$('main');
 const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',sort:'asc',mine:false},of:'all',active:0};
 let NAV=0,POLL=null,NP=null;
@@ -1378,6 +1462,7 @@ async function uploadProof(orderId,role,file){
   const{error}=await sb.storage.from('proofs').upload(path,file,{contentType:file.type});
   if(error)throw new Error(friendly(error));
   if(role==='buyer'||role==='mediation')try{await sb.from('proof_hashes').insert({order_id:orderId,role,phash:await aHash(file),user_id:S.user.id})}catch(e){}
+  if(IMG_CAT[role])imageCheck(path,role,orderId);
   return path}
 const stepIdx=s=>({awaiting_payment:0,payment_sent:1,seller_confirmed:2,released:3}[s]??-1);
 function uploader(btnId,label,cls){
@@ -1500,7 +1585,7 @@ async function viewOrder(){
     act(ev.target,async()=>{const p=await uploadProof(o.id,'mediation',f);await rpc('request_mediation',{p_order:o.id,p_ref:ref,p_path:p});try{await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Mediación solicitada] Referencia del pago: '+ref+'. Adjunté la captura de mis últimas operaciones.'})}catch(e){}await reload()},'Mediación solicitada: el administrador la revisará')};
   if($('evB'))$('evB').onclick=async ev=>{const m=await ask('Subir una prueba',`<p class="mut">Sube una captura y explica qué demuestra. La verán el administrador y la otra parte en el chat de mediación.</p><label>Imagen</label><input type="file" id="evF" accept="image/*"><label>¿Qué demuestra? (opcional)</label><textarea id="evT" rows="3" maxlength="400" placeholder="Ej: ${isBuyer?'mis últimas operaciones, donde aparece el pago':'movimientos de mi cuenta de hoy, donde no aparece el pago'}"></textarea>`,'Enviar prueba','ok');
     if(!m)return;const f=m.querySelector('#evF').files[0],tx=m.querySelector('#evT').value.trim();m.remove();if(!f)return toast('Elige la imagen de la prueba y vuelve a intentarlo','err');
-    act(ev.target,async()=>{const p=await uploadProof(o.id,'evidence',f);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Prueba] '+(tx?tx+' ':'')+'[img:'+p+']'});if(error)throw error;await reload()},'Prueba enviada: el administrador y la otra parte ya pueden verla')};
+    act(ev.target,async()=>{if(tx&&!await contentOK(tx))throw new Error(FC_BAD);const p=await uploadProof(o.id,'evidence',f);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Prueba] '+(tx?tx+' ':'')+'[img:'+p+']'});if(error)throw error;await reload()},'Prueba enviada: el administrador y la otra parte ya pueden verla')};
   if($('cancel'))$('cancel').onclick=async ev=>{const m=await ask('Cancelar operación','<p>¿Seguro que quieres cancelarla?</p>','Sí, cancelar','bad');if(!m)return;m.remove();
     act(ev.target,async()=>{await rpc('cancel_order',{p_order:o.id});go('orders')},'Operación cancelada')};
   if($('disp'))$('disp').onclick=async ev=>{
@@ -1508,7 +1593,7 @@ async function viewOrder(){
       <label>Motivo</label><select id="rs"><option>No recibí el pago</option><option>El monto no coincide</option><option>La captura parece falsa</option><option>El vendedor/comprador no responde</option><option>Otro</option></select>
       <label>Explica lo ocurrido</label><textarea id="rd" rows="3"></textarea>`,'Enviar al administrador','bad');
     if(!m)return;const txt=`[Disputa] ${m.querySelector('#rs').value}. ${m.querySelector('#rd').value.trim()}`;m.remove();
-    act(ev.target,async()=>{await rpc('open_dispute',{p_order:o.id});await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:txt});await reload()},'Disputa abierta: el administrador ya puede verla')};
+    act(ev.target,async()=>{if(!await contentOK(txt))throw new Error(FC_BAD);await rpc('open_dispute',{p_order:o.id});await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:txt});await reload()},'Disputa abierta: el administrador ya puede verla')};
   const adm=(id,fn,q,msg,cls)=>{if($(id))$(id).onclick=async ev=>{const m=await ask('Confirmar',`<p>${q}</p>`,'Confirmar',cls);if(!m)return;m.remove();act(ev.target,async()=>{await rpc(fn,{p_order:o.id});await reload()},msg)}};
   adm('rel','admin_release','¿Liberar los USDT al comprador? No se puede deshacer.','USDT liberados','ok');
   adm('ref','admin_refund','¿Devolver los USDT al vendedor?','Devuelto al vendedor','bad');
@@ -1555,6 +1640,8 @@ async function viewOrder(){
     if(!ms.length&&!med)return box.innerHTML='';
     const sig=ms.length+':'+(ms[ms.length-1]?.id||'')+':'+dcF+':'+(fin_?1:0);
     if(!force&&sig===dcSig&&box.querySelector('.dc'))return;dcSig=sig;
+    fcStore(o,ms);
+    chatRisk(o.id,ms.filter(x=>dcParse(x).k!=='ai').map(x=>({sender:DCR(x.sender_id),text:String(x.body||'').replace(/\[img:[^\]]*\]/g,'').slice(0,500)})));
     const open=med&&!fin_&&canChat,keep=box.querySelector('#cm')?.value||'',wasF=document.activeElement?.id==='cm',old=box.querySelector('#cl'),stick=!old||old.scrollHeight-old.scrollTop-old.clientHeight<80;
     const myR=DCR(S.user.id),adm_=admin||staff,reqs=dcState(ms),pend=reqs.filter(r=>r.need.includes(myR)&&!r.done[myR]);
     const nProof=ms.filter(x=>dcParse(x).k==='proof').length,nReqOpen=reqs.filter(r=>r.need.some(k=>!r.done[k])).length;
@@ -1589,14 +1676,14 @@ async function viewOrder(){
     cl.querySelectorAll('img[data-ev]').forEach(async im=>{const pa=im.dataset.ev;let u=EVC.get(pa);if(!u){const{data}=await sb.storage.from('proofs').createSignedUrl(pa,3600);u=data&&data.signedUrl;if(u)EVC.set(pa,u)}if(u){im.onload=()=>{if(stick)cl.scrollTop=cl.scrollHeight};im.src=u;im.onclick=()=>zoom(u)}});
     if(!open)return;
     KB.fit($('cm'));if(wasF){const t=$('cm');t.focus();try{t.setSelectionRange(t.value.length,t.value.length)}catch(_){}}
-    const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';KB.fit($('cm'));toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat(true)},null,true);
+    const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';KB.fit($('cm'));toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}if(!await contentOK(b))throw new Error(FC_BAD);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat(true)},null,true);
     $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();go_()}};
     const upl=async(hint)=>{const pr=ask('Subir captura de prueba',`<p class="mut">${hint?'📌 '+esc(hint)+'<br>':''}Elige una o varias imágenes (máx. 4). La verán el administrador y la otra parte.</p><input type="file" id="dcF" accept="image/*" multiple><div class="dc-pv" id="dcPv"></div><label>Descripción (opcional)</label><textarea id="dcT" rows="2" maxlength="300" placeholder="Ej: mis últimas operaciones, donde aparece el pago"></textarea>`,'Enviar','ok');
       const mm=[...document.querySelectorAll('.ov')].pop(),fi=mm&&mm.querySelector('#dcF');
       if(fi)fi.onchange=()=>{const pv=mm.querySelector('#dcPv');pv.innerHTML='';[...fi.files].slice(0,4).forEach(f=>{const im=document.createElement('img');im.src=URL.createObjectURL(f);im.onload=()=>URL.revokeObjectURL(im.src);pv.appendChild(im)})};
       const m=await pr;if(!m)return;const fs_=[...m.querySelector('#dcF').files].slice(0,4),tx=m.querySelector('#dcT').value.trim();m.remove();
       if(!fs_.length)return toast('Elige al menos una imagen y vuelve a intentarlo','err');
-      act($('dcAtt')||$('cs'),async()=>{for(const f of fs_){const pa=await uploadProof(o.id,'evidence',f);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Prueba] '+(tx?tx+' ':'')+'[img:'+pa+']'});if(error)throw error}await drawChat(true)},fs_.length>1?'Pruebas enviadas':'Prueba enviada',true)};
+      act($('dcAtt')||$('cs'),async()=>{if(tx&&!await contentOK(tx))throw new Error(FC_BAD);for(const f of fs_){const pa=await uploadProof(o.id,'evidence',f);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Prueba] '+(tx?tx+' ':'')+'[img:'+pa+']'});if(error)throw error}await drawChat(true)},fs_.length>1?'Pruebas enviadas':'Prueba enviada',true)};
     $('dcAtt').onclick=()=>upl('');
     if($('dcDo'))$('dcDo').onclick=()=>upl(pend[0].text);
     if($('dcRe'))$('dcRe').onclick=()=>$('anaB')&&$('anaB').click();
@@ -1619,6 +1706,7 @@ async function viewOrder(){
       catch(e){toast('No se pudo analizar: '+friendly(e),'err')}finally{S._ana=null;if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🤖 Analizar capturas de nuevo'}}};
     $('chatbox').insertAdjacentHTML('afterend','<button class="b gh w" id="anaB" style="margin-top:8px">🤖 Analizar capturas de nuevo</button>');
     $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200);
+    $('chatbox').insertAdjacentHTML('afterend','<div id="fraudBox"></div>');fraudRender(o.id);fcImgScan(o);
     if(o.buyer_proof&&!$('sAI2')){$('anaB').insertAdjacentHTML('afterend','<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>');advAI(o)}}
   if(o.status==='released'&&(isBuyer||isSeller))drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);
   /* actualización automática */
@@ -1836,7 +1924,7 @@ async function viewProfile(){
     const[a,b,c]=['k1','k2','k3'].map(i=>$(i).files[0]);
     if(!a||!b||!c)throw new Error('Sube las 3 fotos: frente, reverso y selfie con el carnet');
     const pa=await upImg('kyc','front',a,6),pb=await upImg('kyc','back',b,6),pc=await upImg('kyc','selfie',c,6);
-    await rpc('submit_kyc',{p_name:nm,p_id:id,p_front:pa,p_back:pb,p_selfie:pc});await loadMe();viewProfile()},'Verificación enviada');
+    await rpc('submit_kyc',{p_name:nm,p_id:id,p_front:pa,p_back:pb,p_selfie:pc});await loadMe();profileCheck();viewProfile()},'Verificación enviada');
 }
 
 /* ---------- Mejoras: más herramientas, reputación, historial, referidos, alertas, calculadora, métodos, seguridad, ayuda ---------- */
@@ -1978,7 +2066,7 @@ async function afterLogin(){
   const uid=S.user.id;
   if(!sessionStorage.getItem('fc_'+uid)){sessionStorage.setItem('fc_'+uid,'1');
     fraudCheck('/register-session').then(()=>fraudCheck('/check-suspicious')).then(r=>{
-      if(r&&r.risk_level==='alto')console.warn('[antifraude] riesgo alto',r.flags)}).catch(()=>{})}
+      if(r&&r.risk_level==='alto')console.warn('[antifraude] riesgo alto',r.flags)}).catch(()=>{});profileCheck()}
   try{const pr=lsGet('pending_ref'),young=Date.now()-new Date(S.user.created_at)<7*864e5&&!lsGet('refchk_'+uid);
     if(pr||young){await sb.rpc('claim_referral',{p_code:pr||null});lsSet('refchk_'+uid,'1');try{localStorage.removeItem('pending_ref')}catch(e){}}}catch(e){}
   await loadPin();
