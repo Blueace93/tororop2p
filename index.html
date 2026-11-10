@@ -787,7 +787,7 @@ async function chatRisk(oid,msgs){
     const m=msgs.slice(-30),key=oid+':'+m.length+':'+String(m[m.length-1].text).slice(0,40),c=CHATRISK[oid]||{};
     if(c.key===key||Date.now()-(c.t||0)<20000)return;
     CHATRISK[oid]={key,t:Date.now()};
-    const r=await fraudCheck('/check-chat',{messages:m});
+    const r=await fraudCheck('/check-chat',{messages:m,order_id:oid});
     if(r){(FCP[oid]=FCP[oid]||{imgs:{}}).chat=r;fraudRender(oid)}
     if(!r||!(r.risk_level==='alto'||r.risk_level==='medio'))return;
     console.warn('[antifraude] chat',r);
@@ -819,7 +819,33 @@ function fraudRender(oid){
   Object.values(st.imgs||{}).forEach(x=>{const r=x.res,bad=r&&(r.duplicate_found||r.matches_declared===false),cf=r&&r.confidence!=null?Number(r.confidence):null;
     h+=`<div class="row" style="margin-top:6px"><span>🖼️ ${esc(x.label)}</span>`+(r?`<span class="tag ${bad?'bad':'ok'}">${r.duplicate_found?'duplicada':r.matches_declared===false?'no coincide':'ok'}</span>`:`<span class="mut">${x.done?'sin resultado':'analizando…'}</span>`)+'</div>';
     if(r)h+=`<div class="mut">${esc(r.classification||'')}${cf!=null&&!isNaN(cf)?' · confianza '+Math.round(cf<=1?cf*100:cf)+'%':''}</div>`});
+  if(st.flags&&st.flags.length){
+    h+='<div class="mut" style="margin-top:10px"><b>📋 Alertas guardadas</b></div>';
+    st.flags.forEach(x=>{const who=x.user_id&&x.user_id===st.buyer?' · comprador':x.user_id&&x.user_id===st.seller?' · vendedor':'';
+      h+=`<div class="row" style="margin-top:4px"><span>${esc(FFK[x.kind]||x.kind)}${who}</span><span class="tag ${fcLvl(x.level)}">${esc(x.level)}</span></div>`+(x.summary?`<div class="mut">${esc(x.summary)}</div>`:'')+`<div class="mut" style="font-size:11px">${when(x.created_at)}</div>`})}
   box.innerHTML=h+'</div>'}
+const FFK={suspicious:'Actividad sospechosa',chat:'Chat',content:'Texto bloqueado',profile:'Perfil parecido',voice:'Audio',proof:'Captura de pago',payment:'Número de cobro',image:'Imagen'};
+async function fcFlagsLoad(o){
+  try{
+    const st=FCP[o.id]=FCP[o.id]||{imgs:{}};st.buyer=o.buyer_id;st.seller=o.seller_id;
+    const{data,error}=await sb.from('fraud_flags').select('kind,level,summary,created_at,user_id').or(`order_id.eq.${o.id},user_id.in.(${o.buyer_id},${o.seller_id})`).order('created_at',{ascending:false}).limit(12);
+    st.flags=error?null:(data||[]);fraudRender(o.id);
+  }catch(e){}}
+/* lista de alertas pendientes en Riesgo y bloqueos */
+async function loadFraudFlags(){
+  const box=$('ffBox');if(!box)return;
+  box.innerHTML=skel(1);
+  const{data,error}=await sb.from('fraud_flags').select('id,created_at,user_id,order_id,kind,level,summary').eq('reviewed',false).in('level',['alto','medio']).order('created_at',{ascending:false}).limit(40);
+  if(!$('ffBox'))return;
+  if(error){box.innerHTML='<div class="warnbox">🛡️ Alertas antifraude: falta crear la tabla <b>fraud_flags</b> en Supabase.</div>';return}
+  const L=data||[],ids=[...new Set(L.map(x=>x.user_id).filter(Boolean))],nm={};
+  if(ids.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',ids);(pp||[]).forEach(q=>nm[q.id]=q.username)}
+  if(!$('ffBox'))return;
+  box.innerHTML=`<h4 style="margin:0 0 6px">🛡️ Alertas antifraude (${L.length})</h4>`+(L.length?L.map(x=>`<div class="card ${x.level==='alto'?'hl':''}"><div class="row"><b>${esc(FFK[x.kind]||x.kind)}${x.user_id?' · @'+esc(nm[x.user_id]||'?'):''}</b><span class="tag ${fcLvl(x.level)}">${esc(x.level)}</span></div><div class="mut">${esc(x.summary||'')}</div><div class="row" style="margin-top:6px"><span class="mut">${when(x.created_at)}</span><span>${x.order_id?`<button class="b gh sm" data-ffo="${esc(x.order_id)}">Ver operación</button> `:''}<button class="b gh sm" data-ffr="${x.id}">Revisada</button></span></div></div>`).join(''):'<div class="card mut">Sin alertas antifraude pendientes.</div>')+'<div style="height:10px"></div>';
+  box.querySelectorAll('[data-ffo]').forEach(b=>b.onclick=()=>go('order',b.dataset.ffo));
+  box.querySelectorAll('[data-ffr]').forEach(b=>b.onclick=async()=>{b.disabled=true;
+    const{error:e}=await sb.from('fraud_flags').update({reviewed:true,reviewed_by:S.user.id,reviewed_at:new Date().toISOString()}).eq('id',b.dataset.ffr);
+    if(e){b.disabled=false;toast('No se pudo marcar como revisada','err')}else loadFraudFlags()})}
 async function fcImgScan(o){
   try{
     const st=FCP[o.id]=FCP[o.id]||{imgs:{}},list=[];
@@ -1706,7 +1732,7 @@ async function viewOrder(){
       catch(e){toast('No se pudo analizar: '+friendly(e),'err')}finally{S._ana=null;if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🤖 Analizar capturas de nuevo'}}};
     $('chatbox').insertAdjacentHTML('afterend','<button class="b gh w" id="anaB" style="margin-top:8px">🤖 Analizar capturas de nuevo</button>');
     $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200);
-    $('chatbox').insertAdjacentHTML('afterend','<div id="fraudBox"></div>');fraudRender(o.id);fcImgScan(o);
+    $('chatbox').insertAdjacentHTML('afterend','<div id="fraudBox"></div>');fraudRender(o.id);fcImgScan(o);fcFlagsLoad(o);
     if(o.buyer_proof&&!$('sAI2')){$('anaB').insertAdjacentHTML('afterend','<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>');advAI(o)}}
   if(o.status==='released'&&(isBuyer||isSeller))drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);
   /* actualización automática */
@@ -3192,11 +3218,12 @@ async function adminRisk(my){
   const KN={shared_address:'Dirección de retiro compartida',pass_through:'Cuenta puente',new_high_volume:'Cuenta nueva con volumen alto',circular:'Operaciones circulares',many_addresses:'Varias direcciones de retiro',shared_payment:'Datos de pago compartidos'};
   if(B.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',B.map(x=>x.user_id));(pp||[]).forEach(p=>bn[p.id]=p.username)}
   const bt=(id,nm)=>BS.has(id)?`<button class="b gh sm" data-ub="${id}">🔓 Desbloquear</button>`:`<button class="b sm" data-bk="${id}" data-bn="${esc(nm)}">🚫 Bloquear</button>`;
-  box.innerHTML=`<div class="card"><label>Buscar usuario para bloquear</label><input id="rkq" placeholder="Nombre de usuario…" maxlength="40" autocomplete="off"><div id="rkres"></div></div>`
+  box.innerHTML=`<div id="ffBox"></div><div class="card"><label>Buscar usuario para bloquear</label><input id="rkq" placeholder="Nombre de usuario…" maxlength="40" autocomplete="off"><div id="rkres"></div></div>`
     +(L.length?L.map(x=>`<div class="card ${x.puntos>=60?'hl':''}"><div class="row"><b>@${esc(x.username||'?')}</b><span class="tag wa">${x.puntos} pts</span></div><div class="mut">${esc(x.full_name||'')} · KYC: ${esc(x.kyc_status||'—')} · cuenta del ${when(x.cuenta_creada)}</div><div class="mut">${(x.senales||[]).map(k=>esc(KN[k]||k)).join(' · ')}</div><div class="row" style="margin-top:8px">${bt(x.user_id,x.username||'')}<button class="b gh sm" data-rv="${x.user_id}">Marcar revisada</button></div></div>`).join(''):'<div class="card mut">Sin cuentas con señales de riesgo.</div>')
     +`<h4 style="margin:12px 0 6px">🚫 Bloqueados (${B.length})</h4>`
     +(B.length?B.map(x=>`<div class="card"><div class="row"><b>@${esc(bn[x.user_id]||'?')}</b>${bt(x.user_id,bn[x.user_id]||'')}</div><div class="mut">${esc(x.reason||'Sin motivo')} · ${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">No hay usuarios bloqueados.</div>')
     +'<button class="b gh w" id="riskRe">Volver a escanear</button>';
+  loadFraudFlags();
   let T;const q=$('rkq');
   q.oninput=()=>{clearTimeout(T);T=setTimeout(async()=>{
     const v=q.value.trim().replace(/[%_,()]/g,''),r=$('rkres');if(!r)return;if(v.length<2){r.innerHTML='';return}
