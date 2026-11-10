@@ -739,6 +739,28 @@ async function netFetch(url,opt={}){
     catch(e){clearTimeout(t);last=e;if(opt.signal&&opt.signal.aborted)throw e;if(i<tries-1)await sleep(600*(i+1))}}
   throw last}
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:netFetch}});
+/* ---- Antifraude (Worker tororo-analisis) ---- */
+const FRAUD_URL='https://tororo-analisis.lazaromichelfn.workers.dev';
+async function fraudCheck(endpoint,body){
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    if(!session)return null;
+    const c=new AbortController(),t=setTimeout(()=>c.abort(),6000);
+    try{
+      const r=await fetch(FRAUD_URL+endpoint,{method:'POST',headers:{'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body||{}),signal:c.signal});
+      if(!r.ok)return null;
+      return await r.json();
+    }finally{clearTimeout(t)}
+  }catch(e){return null}
+}
+async function payDup(...vals){
+  for(const v of vals){
+    const a=String(v||'').replace(/\D/g,'');
+    if(a.length<8)continue;
+    const ck=await fraudCheck('/check-payment',{payment_account:a});
+    if(ck&&ck.exists===true)return true;
+  }
+  return false}
 const $app=document.getElementById('app'),$=id=>document.getElementById(id),main=()=>$('main');
 const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',sort:'asc',mine:false},of:'all',active:0};
 let NAV=0,POLL=null,NP=null;
@@ -1016,6 +1038,7 @@ async function viewMarket(){
     if(c!=='Saldo Móvil'&&!card)throw new Error('Indica el número de tarjeta donde recibirás el pago');
     if(!ph)throw new Error('Indica tu número de teléfono');
     if(!d)throw new Error('Indica los datos donde recibirás el pago');
+    if(await payDup(card,ph))throw new Error('Este número de cobro ya está registrado por otro usuario.');
     await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c+(c!=='Saldo Móvil'&&bank?BSEP+bank:''),p_details:d});
     if(c!=='Saldo Móvil'&&$('osv')&&$('osv').checked&&!$('ocs').value){try{const dg=card.replace(/\D/g,'');if(!(S.cards||[]).some(x=>x.card_number.replace(/\D/g,'')===dg)){await sb.from('user_cards').insert({currency:c,bank,card_number:card,phone:ph});S.cards=null}}catch(e){}}
     S.mt='s';await loadBal();viewMarket()},'Oferta publicada');
@@ -1851,6 +1874,7 @@ async function bindCards(my){
     const row={currency:$('tc').value,bank:$('tb').value.trim(),card_number:$('tn').value.trim(),phone:$('tp').value.trim(),alias:$('ta').value.trim()};
     if(row.bank.length<2)throw new Error('Indica el banco');
     if(row.card_number.replace(/\D/g,'').length<12)throw new Error('Escribe el número completo de la tarjeta');
+    if(await payDup(row.card_number,row.phone))throw new Error('Este número de cobro ya está registrado por otro usuario.');
     const q=S.cardEdit?await sb.from('user_cards').update(row).eq('id',S.cardEdit):await sb.from('user_cards').insert(row);
     if(q.error)throw new Error(friendly(q.error));
     await loadCards(true);reset();draw()},'Tarjeta guardada',true);
@@ -1952,6 +1976,9 @@ async function loadPin(){try{const{data,error}=await sb.rpc('has_pin');S.hasPin=
 const devName=()=>{const u=navigator.userAgent,b=/Edg\//.test(u)?'Edge':/OPR\//.test(u)?'Opera':/Firefox/.test(u)?'Firefox':/Chrome/.test(u)?'Chrome':/Safari/.test(u)?'Safari':'Navegador',o=/Android/.test(u)?'Android':/iPhone|iPad/.test(u)?'iOS':/Windows/.test(u)?'Windows':/Mac/.test(u)?'Mac':/Linux/.test(u)?'Linux':'';return b+(o?' en '+o:'')};
 async function afterLogin(){
   const uid=S.user.id;
+  if(!sessionStorage.getItem('fc_'+uid)){sessionStorage.setItem('fc_'+uid,'1');
+    fraudCheck('/register-session').then(()=>fraudCheck('/check-suspicious')).then(r=>{
+      if(r&&r.risk_level==='alto')console.warn('[antifraude] riesgo alto',r.flags)}).catch(()=>{})}
   try{const pr=lsGet('pending_ref'),young=Date.now()-new Date(S.user.created_at)<7*864e5&&!lsGet('refchk_'+uid);
     if(pr||young){await sb.rpc('claim_referral',{p_code:pr||null});lsSet('refchk_'+uid,'1');try{localStorage.removeItem('pending_ref')}catch(e){}}}catch(e){}
   await loadPin();
