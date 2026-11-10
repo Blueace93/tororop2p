@@ -534,6 +534,8 @@ body[data-view=chat] main,body[data-view=pcon] main{padding-top:7px;padding-bott
 .pcs.pcs-c{gap:5px}.pcs.pcs-c>[data-pt]{min-width:0;padding:6px 3px;font-size:12px;letter-spacing:-.1px}.pcs.pcs-c .bd2{margin-left:2px}
 .pcs .cib{flex:none;width:34px;height:34px;padding:0;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--tx);font-size:16px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:none}
 @media(max-width:350px){.pcs.pcs-c>[data-pt]{font-size:10.5px;padding:6px 1px}.pcs .cib{width:30px}}
+/* El número de mensajes privados sin leer ya no se recorta: va como globito sobre la esquina de la pestaña */
+.pcs [data-pt]{position:relative;overflow:visible}.pcs [data-pt] .bd2{position:absolute!important;top:-7px;right:-3px;margin:0!important;transform:none!important;box-shadow:0 0 0 2px var(--card,#fff);z-index:2;pointer-events:none}
 .pcs .cib.on{background:var(--acc);color:#fff;border-color:transparent}
 .warnbox.ch-note{margin:0 0 6px}
 .pcrow-top{display:flex;align-items:center;gap:10px;margin:0 0 6px;flex-wrap:nowrap}
@@ -645,6 +647,7 @@ html[data-theme=light] .dc-sum{background:#fff1d6}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
 <div id="app"><div id="splash" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px"><svg width="64" height="64" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#6d5efc"/><circle cx="20" cy="20" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-weight:800;font-size:22px">Tororo<span style="color:#34d399"> P2P</span></div><div style="width:120px;height:3px;background:#23243a;border-radius:3px;overflow:hidden"><i style="display:block;width:40%;height:100%;background:#6d5efc;animation:spl 1s ease-in-out infinite alternate"></i></div></div></div>
 <style>@keyframes spl{to{transform:translateX(150%)}}</style>
+<script>setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<p id="slw" style="margin:0;max-width:280px;text-align:center;font-size:14px;opacity:.75">La conexión está lenta, sigue cargando…</p>')},8000);setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<button id="slr" style="padding:10px 18px;border-radius:12px;border:1px solid #6d5efc;background:transparent;color:inherit;font-weight:700" onclick="location.reload()">Reintentar</button>')},35000)</script>
 <div id="toast"></div>
 <script src="supabase-2.45.4.min.js"></script>
 <script>window.supabase||document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" crossorigin="anonymous"><\/script>')</script>
@@ -956,13 +959,16 @@ async function boot(){
   S.user=session?.user||null;
   if(!S.user)return renderAuth(lsGet('pending_ref')?'register':'login');
   if(await mfaGate())return;
-  await loadMe();render();afterLogin().catch(()=>{});maybeTuto();setTimeout(checkAnnPopup,1800)}
+  try{await loadMe()}catch(e){if(e&&e.conn)return renderConnFail();throw e}
+  render();afterLogin().catch(()=>{});maybeTuto();setTimeout(checkAnnPopup,1800)}
 async function loadMe(){
   const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
   const[p,w,st,cw,fr,sf]=await Promise.all([
     sb.rpc('my_profile').then(r=>(r.error||!r.data)?sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single():r),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
     fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle()]);
+  const netErr=r=>r&&r.error&&/fetch|network|abort|timed? ?out|load failed|connection/i.test(String(r.error.message||r.error));
+  if(netErr(p)&&netErr(w)){if(S.profile&&S.profile.username)return;const ce=new Error('conn');ce.conn=1;throw ce}
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
   S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}if(S.fees&&(S.profile.is_admin||S.profile.is_staff))S.fees.withdraw=0;{const[b1,b2]=await Promise.allSettled([sb.rpc('my_block'),sb.rpc('my_fee_exempt')]);
   try{const bk=b1.value&&b1.value.data;S.blocked=!!(bk&&bk.blocked);S.blockWhy=(bk&&bk.reason)||'';document.body.toggleAttribute('data-blocked',S.blocked)}catch(e){}
@@ -1008,7 +1014,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-09d';
+const APP_V='2026-11-10c';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -1218,7 +1224,7 @@ async function loadOffers(my){
   if(rr.error&&/avatar_path|column|permission/i.test(String(rr.error.message)))rr=await sel('username,is_admin,kyc_status');
   const{data,error}=rr;
   if(my!==NAV)return;
-  if(error){const bx=$('offers');if(bx){bx.dataset.h='';bx.innerHTML=`<div class="card mut">${esc(error.message)}</div>`}return}
+  if(error){const bx=$('offers');if(bx){bx.dataset.h='';bx.innerHTML=`<div class="card mut">${esc(friendly(error))}</div>`}return}
   S.offers=data||[];{const c=$('cS');if(c)c.textContent='('+S.offers.length+')'}drawOffers();
   {const ids=S.offers.map(o=>o.seller_id);Promise.all([loadStats(ids),loadRoles(ids)]).then(r=>{if((r[0]||r[1])&&my===NAV)drawOffers()})}}
 function offerDetail(id){
@@ -1439,7 +1445,7 @@ async function viewOrders(){
       .or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).order('created_at',{ascending:false}).limit(150),
     sb.from('trades').select('*').or(`buyer_id.eq.${S.user.id},seller_id.eq.${S.user.id}`).order('created_at',{ascending:false}).limit(150)]);
   if(my!==NAV)return;
-  if(error){main().innerHTML=`<div class="card mut">${esc(error.message)}</div>`;return}
+  if(error){main().innerHTML=`<div class="card mut">${esc(friendly(error))}</div>`;return}
   const TR=(tq.data||[]).filter(t=>S.of==='all'||(S.of==='act'&&['pending','review'].includes(t.status))||(S.of==='ok'&&t.status==='released')||(S.of==='x'&&t.status==='refunded'));
   const TLB={pending:['Esperando envío','warn'],review:['En revisión del admin','warn'],released:['Completada','ok'],refunded:['Devuelta','bad']};
   const trCards=TR.map(t=>{const[lb,k]=TLB[t.status]||[t.status,''],role=t.buyer_id===S.user.id?'Compra':'Venta';return`<div class="card" style="cursor:pointer" data-tr="${t.id}"><div class="row"><b>${role} · ${n(t.amount,2)} ${ASSETS[t.asset]?.label||t.asset}</b><span class="tag ${k}">${lb}</span></div><div class="mut">${n(t.total,qd(t.quote))} ${t.quote} · ${when(t.created_at)}</div></div>`}).join('');
@@ -2299,13 +2305,14 @@ const chatBad=t=>{const s=String(t);
   if(/\d{8,}/.test(s.replace(/(\d)[\s.()+_,-]+(?=\d)/g,'$1')))return'No se permiten números de teléfono';
   return''};
 /* Ajusta el chat al alto visible de la pantalla (sin que la página suba y baje) */
+let KBSTICK=true; /* ¿estabas viendo el final del chat? solo entonces el teclado lo mantiene abajo */
 function fitChat(){
   const w=document.getElementById('cwrap');if(!w)return;
   const v=window.visualViewport,vh=v?v.height:innerHeight,off=v?v.offsetTop:0,kb=document.body.classList.contains('kb');
   const nv=document.querySelector('nav'),res=kb||!nv?8:Math.max(8,Math.round(innerHeight-nv.getBoundingClientRect().top+8));
   const top=w.getBoundingClientRect().top-off;
   w.style.height=Math.max(180,Math.floor(vh-top-res))+'px';
-  const cl=document.getElementById('cl');if(cl&&kb)cl.scrollTop=cl.scrollHeight}
+  const cl=document.getElementById('cl');if(cl&&kb&&KBSTICK)cl.scrollTop=cl.scrollHeight}
 addEventListener('resize',()=>fitChat());
 if(window.visualViewport)visualViewport.addEventListener('resize',()=>fitChat());
 /* Caja de escribir del chat: crece hacia abajo y sube sobre el teclado */
@@ -2316,10 +2323,12 @@ const KB=(()=>{
   const upd=()=>{const v=window.visualViewport;const h=v?Math.max(0,Math.round(innerHeight-v.height-v.offsetTop)):0;document.body.style.setProperty('--kbh',(h+16)+'px')};
   const show=()=>{const t=document.activeElement;if(!t||!t.matches||!t.matches('.cmp textarea'))return;
     const c=t.closest('.cmp'),v=window.visualViewport,vb=v?v.offsetTop+v.height:innerHeight,r=c.getBoundingClientRect();
-    if(r.bottom>vb-8)scrollBy(0,Math.ceil(r.bottom-vb+8));
-    const cl=$('cl');if(cl)cl.scrollTop=cl.scrollHeight};
+    const dv=document.body.dataset.view;if(dv!=='chat'&&dv!=='pcon'&&r.bottom>vb-8)scrollBy(0,Math.ceil(r.bottom-vb+8));
+    const cl=$('cl');if(cl&&KBSTICK)cl.scrollTop=cl.scrollHeight};
   let T;const later=(ms=120)=>{clearTimeout(T);T=setTimeout(()=>{upd();show();fitChat()},ms)};
+  document.addEventListener('scroll',e=>{const t=e.target;if(t&&t.id==='cl')KBSTICK=t.scrollHeight-t.scrollTop-t.clientHeight<120},true);
   document.addEventListener('focusin',e=>{if(!e.target.matches||!e.target.matches('.cmp textarea'))return;
+    {const c0=$('cl');KBSTICK=!c0||c0.scrollHeight-c0.scrollTop-c0.clientHeight<120}
     if(coarse){base=Math.max(base,cur());seen=false;document.body.classList.add('kb')}upd();fit(e.target);later(80);later(350)});
   document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;
     if(!a||!a.matches||!a.matches('.cmp textarea')){document.body.classList.remove('kb');document.body.style.removeProperty('--kbh');fitChat()}},150));
@@ -2492,7 +2501,7 @@ async function viewChat(){
     const MXd=await msgExtras('g',0,L.map(x=>Number(x.id)));if(my!==NAV||!$('cl'))return;MXc=MXd;LST=L;
     paint(force)};
   const NWg={};
-  const paint=async force=>{
+  const paint=async(force,keep)=>{
     const L=LST,MXd=MXc,key=L.map(x=>x.id).join(',')+'|'+(MXd?JSON.stringify(MXd):'');
     if(!force&&key===lastKey)return;
     if(!force){await idle();if(my!==NAV||!$('cl'))return}
@@ -2502,10 +2511,10 @@ async function viewChat(){
       const sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.created_at)}</span></div>`):'';
       return sp+mxBubble({id:x.id,mine,v,MX:MXd,un:x.username,pu:mine?'':x.user_id,tag:(mine&&x.role!=='owner'&&x.role!=='admin')?'':userTag(x.role,x.kyc_status),at:x.created_at,views:x.views})}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     mxNew(cl,NWg);
-    if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
+    if(keep)cl.scrollTop=st0;else if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   const curG=id=>{const x=LST.find(m=>Number(m.id)===id);if(!x)return null;const v=mxView(x.id,x.user_id,x.body,MXc);return{author:x.user_id,raw:v.raw,del:v.del,un:x.username}};
   const delG=id=>act(null,async()=>{await rpc('chat_delete',{p_id:id});await draw(false)},'Mensaje eliminado',true);
-  const ctxG={scope:'g',room:0,redraw:()=>draw(false),max:300,cur:curG,mx:()=>MXc,mod,pu:true,delMod:delG,opt:(id,e)=>{mxOpt(MXc,id,e);paint(true)}};
+  const ctxG={scope:'g',room:0,redraw:()=>draw(false),max:300,cur:curG,mx:()=>MXc,mod,pu:true,delMod:delG,opt:(id,e)=>{mxOpt(MXc,id,e);paint(true,true)}};
   $('cl').onclick=e=>{
     if(e.target.closest('[data-rx]')){mxAction(e,'g',0,()=>draw(false),300,curG);return}
     const u=e.target.closest('[data-pu]');if(u){e.preventDefault();pcInvite(u.dataset.pu,u.dataset.pn);return}
@@ -2637,16 +2646,16 @@ async function viewPcon(){
     paint(force,atEnd);
     if(force)pcSummary()};
   const NWp={};
-  const paint=async(force,atEnd0)=>{
+  const paint=async(force,atEnd0,keep)=>{
     const key=MSGS.map(x=>x.mid).join(',')+'|'+(MXc?JSON.stringify(MXc):'');
     if(!force&&key===lastKey)return;
     if(!force){await idle();if(my!==NAV||!$('cl'))return}
     lastKey=key;const cl=$('cl'),atEnd=atEnd0!=null?atEnd0:cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;let pk='';
     cl.innerHTML=MSGS.length?MSGS.map(x=>{const dk=dayKey(x.mat),sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.mat)}</span></div>`):'';return sp+row(x)}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
     mxNew(cl,NWp);
-    if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
+    if(keep)cl.scrollTop=st0;else if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   const curP=mid=>{const x=MSGS.find(m=>Number(m.mid)===mid);if(!x)return null;const v=mxView(x.mid,x.msender,x.mbody,MXc);return{author:x.msender,raw:v.raw,del:v.del}};
-  const ctxP={scope:'p',room:id,redraw:()=>draw(false),max:1000,cur:curP,mx:()=>MXc,mod:false,pu:false,delMod:()=>{},opt:(mid,e)=>{mxOpt(MXc,mid,e);paint(true)}};
+  const ctxP={scope:'p',room:id,redraw:()=>draw(false),max:1000,cur:curP,mx:()=>MXc,mod:false,pu:false,delMod:()=>{},opt:(mid,e)=>{mxOpt(MXc,mid,e);paint(true,null,true)}};
   $('cl').onclick=e=>{
     if(e.target.closest('[data-rx]')){mxAction(e,'p',id,()=>draw(false),1000,curP);return}
     const m=e.target.closest('.msg');if(m&&!(window.getSelection&&String(getSelection()).length>0))mxPop(m,ctxP)};
@@ -3120,7 +3129,7 @@ async function adminKycUsers(my){
     sb.from('kyc_submissions').select('*,profiles(username)').neq('status','pending').order('created_at',{ascending:false}).limit(100)]);
   if(my!==NAV||!$('kycbox'))return;
   const error=pq.error||rq.error;
-  if(error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los expedientes: ${esc(error.message)}</div>`;return}
+  if(error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los expedientes: ${esc(friendly(error))}</div>`;return}
   const L=[...(pq.data||[]),...(rq.data||[])];let F=(pq.data||[]).length?'pending':'all',Q='';
   box.innerHTML=`<button class="b gh w" id="kuI" style="margin-bottom:8px">📋 Buscar aprobados con datos faltantes</button><input id="kuQ" type="search" placeholder="Buscar por usuario, nombre o documento" autocomplete="off"><div class="chips" id="kuC"></div><div id="kuL"></div>`;
   const tabs={pending:'Pendientes',all:'Todos',approved:'Aprobados',incomplete:'Faltan datos',rejected:'Rechazados'},cnt=k=>k==='all'?L.length:L.filter(x=>x.status===k).length;
@@ -3176,7 +3185,7 @@ async function adminUnverified(my){
   if(r.error)r=await base('id,username,full_name,kyc_status,is_admin,is_staff,created_at').order('created_at',{ascending:false});
   if(r.error)r=await base('id,username,full_name,kyc_status,is_admin,is_staff').order('username');
   if(my!==NAV||!$('unvbox'))return;
-  if(r.error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los usuarios sin verificar: ${esc(r.error.message)}</div>`;return}
+  if(r.error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los usuarios sin verificar: ${esc(friendly(r.error))}</div>`;return}
   const L=(r.data||[]).filter(x=>!x.is_admin&&!x.is_staff);let Q='';
   const UT={rejected:['Rechazado','bad'],pending:['En revisión','warn']};
   const head=$('s-unv');if(head)head.textContent='Usuarios sin verificar · '+L.length;
@@ -3700,6 +3709,13 @@ function renderOffline(){
   $app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center"><div style="max-width:380px">${brand(34)}<div style="font-size:44px;margin:18px 0 6px">📡</div><h2 style="margin:0 0 8px">Sin conexión</h2><p class="mut">Tororo necesita internet para mostrar tus saldos y operaciones. Esta pantalla se actualiza sola cuando vuelva la conexión.</p><button class="b" id="offr">Reintentar</button></div></div>`;
   $('offr').onclick=()=>{if(navigator.onLine)boot();else toast('Todavía no hay internet','err')}}
 addEventListener('online',()=>{if(S.offScreen){S.offScreen=0;boot()}});
+/* Hay red (Wi-Fi o datos) pero el servidor no responde: no se muestra un panel falso con saldo 0 */
+function renderConnFail(){
+  S.offScreen=1;
+  $app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center"><div style="max-width:380px">${brand(34)}<div style="font-size:44px;margin:18px 0 6px">🐢</div><h2 style="margin:0 0 8px">No se pudo conectar</h2><p class="mut">Tu internet está activo, pero la conexión con Tororo va muy lenta o se cortó. <b>Tus saldos y operaciones están a salvo.</b> Reintentamos solos cada pocos segundos.</p><button class="b w" id="cfr" style="margin-top:12px">Reintentar ahora</button></div></div>`;
+  const go_=()=>{clearTimeout(S.cft);if(navigator.onLine)boot();else renderOffline()};
+  $('cfr').onclick=()=>{$('cfr').textContent='Reintentando…';go_()};
+  clearTimeout(S.cft);S.cft=setTimeout(()=>{if(S.offScreen&&document.getElementById('cfr'))go_()},10000)}
 
 /* ---------- Cola sin conexión: SOLO mensajes de chat.
    Todo lo que mueve dinero (publicar, comprar, retirar, confirmar pagos) NO se guarda para después. ---------- */
