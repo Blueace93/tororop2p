@@ -1,5 +1,5 @@
 // Service worker de Tororo: notificaciones push con la app cerrada + caché para abrir más rápido
-const CACHE = 'tororo-v3';
+const CACHE = 'tororo-v5';
 const SB_LIB = 'cdn.jsdelivr.net/npm/@supabase/supabase-js';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -26,6 +26,11 @@ self.addEventListener('fetch', e => {
       if (n.ok && /javascript/i.test(n.headers.get('content-type') || '')) c.put(r, n.clone());
       return n;
     }))));
+    return;
+  }
+  // Lector de texto (OCR) en tu propio dominio: primero la copia guardada (son archivos que no cambian)
+  if (u.origin === location.origin && u.pathname.includes('/ocr/')) {
+    e.respondWith(caches.open(CACHE).then(c => c.match(r).then(h => h || fetch(r).then(n => { if (n.ok && !/text\/html/i.test(n.headers.get('content-type') || '')) c.put(r, n.clone()); return n; }))));
     return;
   }
   // La página y sus iconos: primero la versión nueva (hasta 3 s); si la red va lenta o falla, la guardada

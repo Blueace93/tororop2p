@@ -596,6 +596,50 @@ nav button.on svg,nav button.on>span{animation:navp .32s cubic-bezier(.3,1.5,.5,
 @media (prefers-reduced-motion:reduce){.cwrap .msg.nw,nav button.on svg,nav button.on>span{animation:none!important}.b,.chip,.qb,.tile{transition:none}}
 html.lite .cwrap .msg.nw,html.lite nav button.on svg,html.lite nav button.on>span{animation:none!important}
 </style>
+<style id="dc">
+.dc{padding:12px 10px}.dc-h{display:flex;align-items:center;justify-content:space-between;gap:8px}.dc-h h3{margin:0}
+.dc-pp{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.dc-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--card2);color:var(--mut);border:1px solid var(--line);white-space:nowrap}
+.dc-chip.ok{background:#0e3a30;color:var(--ok);border-color:transparent}.dc-chip.warn{background:#3d3113;color:var(--warn);border-color:transparent}
+html[data-theme=light] .dc-chip.ok{background:#dff6e9}html[data-theme=light] .dc-chip.warn{background:#fff1d6}
+.dc-chip.r-buyer{color:#6cb6ff}.dc-chip.r-seller{color:var(--ok)}.dc-chip.r-admin{color:var(--warn)}
+.dc-sum{background:#3d3113;color:var(--warn);border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600;margin:4px 0 8px}
+html[data-theme=light] .dc-sum{background:#fff1d6}
+.dc-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}.dc-tabs::-webkit-scrollbar{display:none}
+.dc-tabs button{flex:none;border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.dc-tabs button.on{background:var(--acc);color:#fff;border-color:transparent}
+.dc-chat{max-height:min(58vh,520px);min-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:8px 4px;background:var(--wb,transparent);border-radius:14px;scroll-behavior:smooth}
+.dc-empty{color:var(--mut);text-align:center;padding:24px 8px;font-size:13px}
+.dc-day{text-align:center;margin:6px 0 2px}.dc-day span{font-size:11px;font-weight:700;color:var(--mut);background:var(--card2);padding:3px 10px;border-radius:99px}
+.dc-row{display:flex}.dc-row.me{justify-content:flex-end}
+.dc-b{position:relative;max-width:82%;padding:6px 10px 5px;border-radius:14px 14px 14px 4px;background:var(--bo,var(--card2));color:var(--bo-t,var(--tx));font-size:14.5px;line-height:1.35;box-shadow:0 1px 1px rgba(0,0,0,.14);word-break:break-word;border-left:3px solid transparent;animation:dcin .18s ease-out}
+.dc-b.me{background:linear-gradient(135deg,var(--acc),#8a78ff);color:#fff;border-radius:14px 14px 4px 14px}
+.dc-b.r-buyer:not(.me){border-left-color:#6cb6ff}.dc-b.r-seller:not(.me){border-left-color:var(--ok)}.dc-b.r-admin{border-left-color:var(--warn)}
+.dc-n{font-size:11px;font-weight:700;opacity:.85;margin-bottom:2px}.dc-t{white-space:pre-wrap}.dc-pt{font-size:11px;font-weight:700;opacity:.8;margin-bottom:3px}
+.dc-img{display:block;width:100%;max-width:230px;min-height:60px;border-radius:10px;background:rgba(127,127,127,.15);cursor:zoom-in;margin:2px 0 4px}
+.dc-tm{display:inline-block;font-size:10px;opacity:.65;margin-left:8px;float:right;padding-top:3px}
+.dc-card .dc-tm{float:none;display:block;text-align:right;margin:4px 0 0}
+.dc-card{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:6px 0;animation:dcin .18s ease-out}
+.dc-card.req{border-color:var(--warn)}.dc-card.disp{border-color:var(--bad)}.dc-card.ai{border-color:var(--acc)}
+.dc-ch{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;font-size:13.5px;margin-bottom:6px;flex-wrap:wrap}
+.dc-rt{margin:0 0 6px;font-size:14px;white-space:pre-wrap}.dc-st{display:flex;flex-wrap:wrap;gap:6px}
+.dc-sec{margin:8px 0 2px}.dc-sec>b{display:block;font-size:12px;color:var(--mut);margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
+.dc-it{display:flex;gap:7px;padding:5px 8px;border-radius:9px;margin:3px 0;font-size:13px;line-height:1.35;background:rgba(127,127,127,.08)}
+.dc-it.warn{background:#3d3113}.dc-it.ok{background:#0e3a30}html[data-theme=light] .dc-it.warn{background:#fff1d6}html[data-theme=light] .dc-it.ok{background:#dff6e9}
+.dc-it i{font-style:normal;flex:none}.dc-it ul{margin:3px 0 0 14px;padding:0;color:var(--mut);font-size:12px}
+.dc-sec details{margin-top:4px}.dc-sec summary{font-size:12px;color:var(--mut);cursor:pointer}
+.dc-foot{margin:8px 0 0;font-size:11px;color:var(--mut)}
+.dc-ev{text-align:center;font-size:11.5px;color:var(--mut);margin:6px 0}.dc-ev span{opacity:.85}
+.dc-pend{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#3d3113;color:var(--warn);border-radius:12px;padding:8px 10px;margin-top:8px;font-size:13px}
+.dc-pend.ai{background:#1d2a4a;color:#9db8ff}html[data-theme=light] .dc-pend{background:#fff1d6}html[data-theme=light] .dc-pend.ai{background:#e3ebff;color:#2d4fb3}
+.dc-pend .b{flex:none}
+.dc-cmp{display:flex;gap:6px;align-items:flex-end;margin-top:8px}.dc-cmp textarea{flex:1;border-radius:22px;padding:10px 14px;min-height:40px;max-height:120px;resize:none}
+.dc-att,.dc-send{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--tx);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dc-send{background:linear-gradient(135deg,var(--acc),#8a78ff);color:#fff;border:0}
+.dc-pv{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.dc-pv img{width:70px;height:70px;object-fit:cover;border-radius:10px}
+@keyframes dcin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.dc-b,.dc-card{animation:none}.dc-chat{scroll-behavior:auto}}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
@@ -619,9 +663,9 @@ const gate=()=>{if(needKyc()){toast('Verifica tu identidad (KYC) para operar o r
 const kycBanner=()=>{if(!needKyc())return'';const st=S.profile?.kyc_status;
   return`<div class="warnbox">🪪 ${st==='pending'?'Tu verificación está en revisión. Podrás operar y retirar cuando el administrador la apruebe.':st==='rejected'?'Tu verificación fue rechazada'+(S.profile.kyc_note?': '+esc(S.profile.kyc_note):'')+'. Envíala de nuevo.':'Verifica tu identidad (KYC) para comprar, vender y retirar.'}${st==='pending'?'':'<br><button class="b sm" style="margin-top:8px" onclick="go(\'profile\')">Verificar ahora</button>'}</div>`};
 /* Comprime fotos grandes antes de subirlas (internet lento). Si algo falla, se sube la original. */
-async function shrinkImg(file,max=1600,q=.85){
+async function shrinkImg(file,max=1600,q=.85,keep=350*1024){
   try{
-    if(!file||file.size<350*1024||!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
+    if(!file||file.size<keep||!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
     const bm=await createImageBitmap(file,{imageOrientation:'from-image'});
     const k=Math.min(1,max/Math.max(bm.width,bm.height)),w=Math.round(bm.width*k),h=Math.round(bm.height*k);
     const c=document.createElement('canvas');c.width=w;c.height=h;
@@ -784,7 +828,7 @@ async function boot(){
 async function loadMe(){
   const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
   const[p,w,st,cw,fr,sf]=await Promise.all([
-    sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single(),
+    sb.rpc('my_profile').then(r=>(r.error||!r.data)?sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single():r),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
     fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle()]);
   if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
@@ -832,7 +876,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-07e';
+const APP_V='2026-11-09d';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -1282,11 +1326,30 @@ async function proofImg(path,who){
   if(!path)return`<p class="mut">${who} aún no sube la captura.</p>`;
   const{data}=await sb.storage.from('proofs').createSignedUrl(path,3600);
   return data?`<img class="proof" loading="lazy" decoding="async" src="${data.signedUrl}" alt="Captura" data-z="${data.signedUrl}">`:'<p class="mut">No se pudo cargar la captura.</p>'}
+const EVC=new Map();
+const FORENSE_URL='https://tororo-analisis.lazaromichelfn.workers.dev';   /* pega aquí la URL de tu Worker tororo-forense, p. ej. https://tororo-forense.TU-USUARIO.workers.dev */
+const FORENSE_DESDE='2026-11-10';   /* operaciones anteriores a esta fecha no se avisan por "sin análisis" */
+async function forense(orderId,role,file){
+  if(!FORENSE_URL||String(orderId).startsWith('trade/')||!['buyer','mediation','evidence'].includes(role))return;
+  try{const{data:{session}}=await sb.auth.getSession();if(!session)return;
+    const fd=new FormData();fd.append('file',file,file.name||'captura');fd.append('order_id',String(orderId));fd.append('role',role);
+    const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),6000);
+    await fetch(FORENSE_URL.replace(/\/$/,'')+'/analyze-proof',{method:'POST',headers:{Authorization:'Bearer '+session.access_token},body:fd,signal:ctl.signal}).catch(()=>{});clearTimeout(t)}catch(e){}}
+async function forenseLines(o){
+  if(!FORENSE_URL||(!o.buyer_proof&&!o.mediation_proof))return[];
+  const{data,error}=await sb.from('proof_forensics').select('role,score,level,flags,created_at').eq('order_id',String(o.id)).order('created_at');
+  if(error)return[['na','Análisis de archivo: no disponible (falta crear la tabla proof_forensics).']];
+  const out=[],R={buyer:'Captura del pago',mediation:'Historial de mediación',evidence:'Prueba aportada'},rows=data||[];
+  if(o.buyer_proof&&!rows.some(r=>r.role==='buyer')&&new Date(o.created_at)>new Date(FORENSE_DESDE))out.push(['warn','Análisis de archivo: no hay registro de la captura del pago. Pudo subirse sin pasar por la app: desconfía.']);
+  rows.forEach(r=>{const fl=r.flags||[];out.push([r.level==='bajo'?'ok':'warn',`${R[r.role]||r.role} (archivo): riesgo ${String(r.level).toUpperCase()} (${r.score}/100).`]);
+    fl.forEach(f=>out.push([f.sev==='baja'?'na':'warn','   · '+f.text]));if(!fl.length)out.push(['na','   · Sin señales de edición en el archivo (no demuestra que sea auténtico).'])});
+  return out}
 async function uploadProof(orderId,role,file){
   if(!file)throw new Error('Elige una imagen');
   if(!/^image\//.test(file.type))throw new Error('El archivo debe ser una imagen');
   if(file.size>6*1024*1024)throw new Error('La imagen pesa más de 6 MB');
-  file=await shrinkImg(file);
+  await forense(orderId,role,file);   /* se analiza el archivo original, antes de comprimirlo */
+  file=await shrinkImg(file,1600,.85,3.5*1024*1024);   /* las capturas de pago se suben originales (hasta 3,5 MB) para poder revisar si fueron editadas */
   const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
   const path=`${orderId}/${role}-${Date.now()}.${ext}`;
   const{error}=await sb.storage.from('proofs').upload(path,file,{contentType:file.type});
@@ -1298,7 +1361,32 @@ function uploader(btnId,label,cls){
   return`<input type="file" id="f" accept="image/*"><img id="pv" class="proof hide" style="display:none" alt="Vista previa">
   <button class="b ${cls} w" id="${btnId}" disabled>${label}</button>`}
 
-const expireSweep=async()=>{if(Date.now()-(S._exp||0)<20000)return;S._exp=Date.now();try{await Promise.race([sb.rpc('expire_orders'),sleep(1500)])}catch(e){}};
+/* ---- Protección contra vendedores tramposos: evidencia, historial y alertas ---- */
+async function sellerFlags(o,x){
+  const card=main().querySelector('.card');if(!card||$('dnBox'))return;
+  card.insertAdjacentHTML('afterend','<div id="dnBox"></div>');
+  const box=$('dnBox'),adm=x.admin||x.staff,OUT={seller_wrong:'❌ Perdió la disputa',seller_right:'✅ Tenía razón',withdrawn:'↩️ Se corrigió solo'};
+  try{
+    const{data:d}=await sb.rpc('order_denial',{p_order:o.id});
+    let h='',slBind=null;
+    if(d&&d.reason){
+      h+=`<div class="card dg"><h3 style="margin:0 0 6px">🚩 El vendedor negó el pago</h3><p style="margin:4px 0"><b>Motivo:</b> ${esc(d.reason)}</p>${d.outcome?`<p class="mut" style="margin:4px 0">${OUT[d.outcome]||''}</p>`:''}${adm&&d.proof?`<button class="b gh sm" id="dnPv">Ver captura del vendedor</button>`:''}</div>`}
+    else if(adm&&d&&(d.flags||[]).includes('stale'))h+='<div class="warnbox bad">⏰ El vendedor lleva horas sin responder a este pago.</div>';
+    if(adm&&d&&(d.flags||[]).includes('buyer_escalated'))h+='<div class="warnbox bad">🛡️ El comprador pidió revisión por falta de respuesta del vendedor.</div>';
+    if(adm){
+      const{data:r}=await sb.rpc('admin_seller_record',{p_user:o.seller_id});
+      if(r){h+=`<div class="card"><h3 style="margin:0 0 6px">🧾 Historial del vendedor ${x.name(o.seller_id)}</h3>
+        <p class="mut" style="margin:4px 0">${r.total} operaciones (${r.done} completadas) · ${r.denials} pagos negados: <b>${r.wrong}</b> perdidos · ${r.right} con razón · ${r.open} abiertos</p>
+        <p style="margin:4px 0">Strikes: <b>${r.strikes}/3</b> ${r.suspended?'· <span class="tag bad">⛔ SUSPENDIDO</span>':''}</p>${r.suspended&&r.reason?`<p class="mut" style="margin:4px 0">${esc(r.reason)}</p>`:''}
+        <button class="b ${r.suspended?'ok':'bad'} sm" id="slSus">${r.suspended?'Levantar suspensión':'Suspender vendedor'}</button></div>`;
+        slBind=async ev=>{const on=!r.suspended;const m=await ask(on?'Suspender vendedor':'Levantar suspensión',on?'<p>No podrá crear ofertas ni recibir operaciones nuevas.</p><label>Motivo</label><input id="slW" maxlength="120" placeholder="Motivo">':'<p>Se quita la suspensión y los strikes vuelven a 0.</p>',on?'Suspender':'Levantar',on?'bad':'ok');if(!m)return;const w=m.querySelector('#slW')?.value||'';m.remove();
+          act(ev.target,async()=>{await rpc('admin_set_seller_suspension',{p_user:o.seller_id,p_on:on,p_reason:w});viewOrder()},on?'Vendedor suspendido':'Suspensión levantada')};
+      }}
+    box.innerHTML=h;if(slBind&&$('slSus'))$('slSus').onclick=slBind;
+    if($('dnPv'))$('dnPv').onclick=async()=>{const{data:u}=await sb.storage.from('proofs').createSignedUrl(d.proof,600);u?zoom(u.signedUrl):toast('No se pudo cargar la captura','err')};
+  }catch(e){}
+}
+const expireSweep=async()=>{if(Date.now()-(S._exp||0)<20000)return;S._exp=Date.now();try{await Promise.race([sb.rpc('expire_orders'),sleep(1500)])}catch(e){}if(Date.now()-(S._esc||0)>600000){S._esc=Date.now();try{sb.rpc('escalate_stale_orders',{p_hours:6}).then(()=>{},()=>{})}catch(e){}}};
 async function viewOrder(){
   const my=NAV;main().innerHTML=skel(3);await expireSweep();
   const{data:o,error}=await sb.from('orders').select('*').eq('id',S.orderId).single();
@@ -1319,13 +1407,18 @@ async function viewOrder(){
   let act_='';
   if(isBuyer&&o.status==='awaiting_payment')act_+=`<div class="warnbox">Envía <b>${mny(due(o,cur),cur)} ${esc(cur)}</b> con los datos de arriba y sube la <b>captura de tu pago</b> (obligatoria).<br>⏱️ Tienes <b>${Math.max(0,Math.ceil((new Date(o.created_at).getTime()+30*60000-Date.now())/60000))} min</b> para pagar; si no, la operación se cancela sola.</div>${bank?`<div class="warnbox">🏦 Vas a enviar a <b>${esc(bank)}</b>. Si tu tarjeta es de un banco distinto, la acreditación puede demorar hasta <b>72 h</b>.</div><label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="xb" style="width:auto;margin:0"> Mi tarjeta es de otro banco</label><label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="xs" style="width:auto;margin:0"> Mi tarjeta es del mismo banco (${esc(bank)})</label>`:''}${uploader('sendB','Ya pagué · enviar captura','')}
     <button class="b gh w" id="cancel" style="margin-top:8px">Cancelar operación</button>`;
-  if(isSeller&&o.status==='payment_sent')act_+=`${xbank?`<div class="warnbox bad">🏦 <b>El comprador envía desde un banco distinto al suyo.</b> La operación está <b>congelada</b> hasta que indiques que te llegó el pago (puede demorar hasta 72 h). ${xdue?'<b>Pasaron más de 72 h:</b> confirma o niega el pago; el comprador ya puede pedir mediación.':''}</div>`:''}<div class="warnbox">El comprador dice que ya pagó. Revisa su captura y comprueba en tu cuenta que el dinero llegó.${o.seller_denied_at?' <b>Marcaste que no lo recibiste.</b> Si ya llegó, confírmalo.':''}</div><div class="grid2"><button class="b ok" id="sOk">✅ Pago recibido</button>${o.seller_denied_at?'':'<button class="b bad" id="sNo">❌ No he recibido</button>'}</div><button class="b gh w" id="sAI" style="margin-top:8px">🔍 Revisar la captura con IA</button><div id="aiBox"></div><p class="mut" style="font-size:12px">Al confirmar, los USDT se liberan al comprador automáticamente.</p>`;
+  if(isSeller&&o.status==='payment_sent')act_+=`${xbank?`<div class="warnbox bad">🏦 <b>El comprador envía desde un banco distinto al suyo.</b> La operación está <b>congelada</b> hasta que indiques que te llegó el pago (puede demorar hasta 72 h). ${xdue?'<b>Pasaron más de 72 h:</b> confirma o niega el pago; el comprador ya puede pedir mediación.':''}</div>`:''}<div class="warnbox">El comprador dice que ya pagó. Revisa su captura y comprueba en tu cuenta que el dinero llegó.${o.seller_denied_at?' <b>Marcaste que no lo recibiste.</b> Si ya llegó, confírmalo.':''}</div><div class="grid2"><button class="b ok" id="sOk">✅ Pago recibido</button>${o.seller_denied_at?'':'<button class="b bad" id="sNo">❌ No he recibido</button>'}</div><button class="b gh w" id="sAI" style="margin-top:8px">🔍 Revisar la captura con IA</button><div id="aiBox"></div><button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div><p class="mut" style="font-size:12px">Al confirmar, los USDT se liberan al comprador automáticamente.</p>`;
   if(isBuyer&&o.status==='payment_sent')act_+=`<p class="mut">Captura enviada. Esperando que el vendedor confirme que recibió el pago.${o.seller_denied_at?' <b>El vendedor indicó que no lo recibió.</b>':''}</p>${xbank&&!o.seller_denied_at?(xdue?'<div class="warnbox bad">⏰ Pasaron más de 72 h y el vendedor no confirmó ni negó el pago. Puedes pedir la mediación del administrador.</div><button class="b w" id="med">🛡️ Solicitar mediación del administrador</button>':'<div class="warnbox">🏦 Pago desde otro banco: la operación está congelada hasta que el vendedor confirme que le llegó (hasta 72 h). Si pasan 72 h sin respuesta podrás pedir mediación.</div>'):(o.seller_denied_at||(Date.now()-new Date(o.updated_at))/60000>=15)?'<button class="b w" id="med">🛡️ Solicitar mediación del administrador</button>':'<p class="mut" style="font-size:12px">Si en 15 minutos el vendedor no responde, podrás pedir mediación.</p>'}`;
+  if(isBuyer&&o.status==='payment_sent'&&!o.seller_denied_at&&o.payment_sent_at&&Date.now()-new Date(o.payment_sent_at)>3*3600000)act_+='<div class="warnbox bad">⏰ El vendedor lleva más de 3 horas sin responder. Puedes pedir que el administrador revise tu pago ahora.</div><button class="b w" id="esc">🛡️ Pedir revisión del administrador</button>';
   if((isBuyer||isSeller)&&o.status==='seller_confirmed')act_+='<p class="mut">Pago confirmado. El administrador revisará y liberará los USDT.</p>';
   if((isSeller&&o.status==='payment_sent')||((isBuyer||isSeller)&&o.status==='seller_confirmed'))
     act_+=`<button class="b gh w" id="disp" style="margin-top:10px">⚖️ Pedir revisión del administrador / Abrir disputa</button>`;
   if(admin&&['payment_sent','seller_confirmed','disputed'].includes(o.status))act_+=`<div class="grid2" style="margin-top:10px"><button class="b ok" id="rel">Liberar USDT al comprador</button><button class="b bad" id="ref">Devolver al vendedor</button></div>`;
   if(admin&&o.status==='awaiting_payment')act_+=`<button class="b bad sm" id="ref">Devolver al vendedor</button>`;
+  if(med&&!fin_&&(isBuyer||isSeller)){
+    const need=isBuyer?(!o.mediation_proof):true;
+    act_+=`<div class="warnbox ${need?'bad':''}">${isBuyer?'📎 <b>El administrador necesita ver tus últimas 10 operaciones</b> de Transfermóvil, EnZona o tu banco (la captura donde aparezca el pago). Súbela aquí. Puedes añadir más pruebas cuando quieras.':'📎 <b>Sube la captura de los movimientos de tu cuenta</b> (donde se vea que el pago no llegó, o que sí). Puedes añadir más pruebas cuando quieras.'} Se verán en el chat de mediación.</div><button class="b w" id="evB">📎 ${isBuyer?'Subir captura de mis últimas operaciones':'Subir captura de mis movimientos'}</button>`;
+    if(isSeller&&o.buyer_proof)act_+=`<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>`}
 
   if(o.cup_paid>0)act_=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">💰 Pagado con saldo de la plataforma (${n(o.cup_paid,2)} ${o.bal_cur==='USD'?'USD':'CUP'}). ${isSeller?'Lo recibirás en tu saldo cuando se liberen los USDT.':''}</div>`+act_;
   main().innerHTML=`<p><a href="#" id="back">← Volver</a></p>
@@ -1356,14 +1449,35 @@ async function viewOrder(){
     if(bank&&$('xb').checked)await rpc('flag_cross_bank',{p_order:o.id});
     const p=await uploadProof(o.id,'buyer',$('f').files[0]);await rpc('submit_buyer_proof',{p_order:o.id,p_path:p});await reload()},'Captura de pago enviada');
   if($('sOk'))$('sOk').onclick=async ev=>{const m=await ask('Confirmar pago recibido',`<p>Confirmas que recibiste <b>${mny(due(o,cur),cur)} ${esc(cur)}</b>. Los <b>${n(o.amount,2)} USDT</b> se liberarán al comprador ahora mismo y no se puede deshacer.</p>`,'Sí, lo recibí','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_confirm',{p_order:o.id});await reload()},'USDT liberados al comprador')};
-  if($('sAI'))$('sAI').onclick=async ev=>{const b=ev.target,box=$('aiBox');b.disabled=true;b.textContent='Leyendo la captura…';
-    let d;try{d=await sellerCheck(o,cur)}catch(e){d={checks:[{level:'na',text:'No se pudo leer la captura ahora. Revísala tú mismo.'}]}}
-    box.innerHTML=aiCard(d);b.disabled=false;b.textContent='🔍 Volver a revisar con IA'};
-  if($('sNo'))$('sNo').onclick=async ev=>{const m=await ask('No he recibido el pago','<p>La operación queda en pausa. El comprador podrá pedir mediación al administrador y subir sus comprobantes.</p>','Confirmar','bad');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_deny',{p_order:o.id});await reload()},'Operación en pausa')};
+  if($('sAI'))warmOcr();
+  /* La revisión con IA arranca sola al abrir la operación con captura; el botón queda para repetirla */
+  if($('sAI')){
+    const runAI=async auto=>{const b=$('sAI'),box=$('aiBox'),k=o.buyer_proof;if(!b||!box)return;
+      if(auto&&AIR.has(k)){box.innerHTML=aiCard(AIR.get(k));b.textContent='🔍 Volver a revisar con IA';return}
+      b.disabled=true;b.textContent='Analizando…';
+      box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🤖 Analizando la captura automáticamente… unos segundos.</span></div>';
+      let d;try{d=await sellerCheck(o,cur)}catch(e){d={checks:[{level:'na',text:'No se pudo leer la captura ahora. Revísala tú mismo.'}]}}
+      AIR.set(k,d);
+      if(auto&&(d.checks||[]).some(c=>c.level==='warn')&&!AIW.has(k)){AIW.add(k);toast('⚠️ La revisión automática encontró avisos en la captura del comprador','err')}
+      const b2=$('sAI'),box2=$('aiBox');if(box2)box2.innerHTML=aiCard(d);if(b2){b2.disabled=false;b2.textContent='🔍 Volver a revisar con IA'}};
+    $('sAI').onclick=()=>runAI(false);
+    runAI(true)}
+  if($('sAI2'))advAI(o);
+  if($('esc'))$('esc').onclick=async ev=>{const m=await ask('Pedir revisión','<p>El administrador revisará tu captura y decidirá. Podrás chatear con él en esta operación.</p>','Pedir revisión','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('buyer_escalate',{p_order:o.id});await reload()},'El administrador revisará tu pago')};
+  if($('sNo'))$('sNo').onclick=async ev=>{const m=await ask('No he recibido el pago','<p>Para negar un pago debes dar <b>evidencia</b>. La operación queda en pausa y el administrador la revisará junto con tu captura.</p><p class="mut" style="font-size:12px">⚠️ Negar un pago que sí recibiste es una falta grave: tras varias disputas perdidas la cuenta de vendedor se suspende.</p><label>Motivo (qué pasó)</label><textarea id="dnR" rows="3" maxlength="500" placeholder="Ej: revisé mi cuenta de Transfermóvil y no hay ningún ingreso de ese monto"></textarea><label>Captura de los movimientos de tu cuenta</label><input type="file" id="dnF" accept="image/*">','Negar pago','bad');
+    if(!m)return;const why=m.querySelector('#dnR').value.trim(),f=m.querySelector('#dnF').files[0];m.remove();
+    if(why.length<10)return toast('Explica el motivo (mínimo 10 caracteres) y vuelve a intentarlo','err');if(!f)return toast('Sube la captura de los movimientos de tu cuenta y vuelve a intentarlo','err');
+    act(ev.target,async()=>{const pth=await uploadProof(o.id,'sellerdeny',f);
+      const{error:er}=await sb.rpc('seller_deny_with_proof',{p_order:o.id,p_reason:why,p_path:pth});
+      if(er){if(/does not exist|schema cache|Could not find the function/i.test(String(er.message))){await rpc('seller_deny',{p_order:o.id})}else throw new Error(friendly(er))}
+      await reload()},'Operación en pausa: el administrador revisará tu evidencia')};
   if($('med'))$('med').onclick=async ev=>{const m=await ask('Solicitar mediación',`<p class="mut">Sube una captura de tus <b>últimas operaciones</b> de Transfermóvil o EnZona y escribe el <b>número de referencia</b> del pago (6 a 12 dígitos). El administrador lo revisará.</p><label>Número de referencia</label><input id="mref" inputmode="numeric" maxlength="12" placeholder="Ej: 12345678"><label>Captura del historial</label><input type="file" id="mf" accept="image/*">`,'Enviar a mediación','ok');
     if(!m)return;const ref=m.querySelector('#mref').value.replace(/\D/g,''),f=m.querySelector('#mf').files[0];
     if(ref.length<6||ref.length>12){m.remove();return toast('Escribe el número de referencia (6 a 12 dígitos) y vuelve a intentarlo','err')}if(!f){m.remove();return toast('Sube la captura de tus últimas operaciones y vuelve a intentarlo','err')}m.remove();
     act(ev.target,async()=>{const p=await uploadProof(o.id,'mediation',f);await rpc('request_mediation',{p_order:o.id,p_ref:ref,p_path:p});try{await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Mediación solicitada] Referencia del pago: '+ref+'. Adjunté la captura de mis últimas operaciones.'})}catch(e){}await reload()},'Mediación solicitada: el administrador la revisará')};
+  if($('evB'))$('evB').onclick=async ev=>{const m=await ask('Subir una prueba',`<p class="mut">Sube una captura y explica qué demuestra. La verán el administrador y la otra parte en el chat de mediación.</p><label>Imagen</label><input type="file" id="evF" accept="image/*"><label>¿Qué demuestra? (opcional)</label><textarea id="evT" rows="3" maxlength="400" placeholder="Ej: ${isBuyer?'mis últimas operaciones, donde aparece el pago':'movimientos de mi cuenta de hoy, donde no aparece el pago'}"></textarea>`,'Enviar prueba','ok');
+    if(!m)return;const f=m.querySelector('#evF').files[0],tx=m.querySelector('#evT').value.trim();m.remove();if(!f)return toast('Elige la imagen de la prueba y vuelve a intentarlo','err');
+    act(ev.target,async()=>{const p=await uploadProof(o.id,'evidence',f);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Prueba] '+(tx?tx+' ':'')+'[img:'+p+']'});if(error)throw error;await reload()},'Prueba enviada: el administrador y la otra parte ya pueden verla')};
   if($('cancel'))$('cancel').onclick=async ev=>{const m=await ask('Cancelar operación','<p>¿Seguro que quieres cancelarla?</p>','Sí, cancelar','bad');if(!m)return;m.remove();
     act(ev.target,async()=>{await rpc('cancel_order',{p_order:o.id});go('orders')},'Operación cancelada')};
   if($('disp'))$('disp').onclick=async ev=>{
@@ -1378,21 +1492,102 @@ async function viewOrder(){
 
   /* chat de disputa */
   const canChat=(isBuyer||isSeller||admin||staff);
-  const drawChat=async()=>{
+  const evBody=b=>esc(b).replace(new RegExp('\\[img:('+o.id+'/[A-Za-z0-9._-]+)\\]','g'),(m,p)=>`<img class="proof" data-ev="${p}" alt="Prueba" style="display:block;margin-top:6px;max-width:220px;cursor:zoom-in">`);
+  const DCR=u=>u===o.buyer_id?'buyer':u===o.seller_id?'seller':'admin';
+  const DCL={buyer:'Comprador',seller:'Vendedor',admin:'Administrador'};
+  const DCP=[['Últimas 10 operaciones de tu cuenta (Transfermóvil, EnZona o banco)'],['Movimientos de tu cuenta del día del pago'],['Comprobante del pago con número de referencia / transacción'],['Captura completa, sin recortar, con fecha y hora'],['Conversación con la otra parte sobre este pago']];
+  const dcDay=t=>{const d=new Date(t),k=x=>x.toDateString();return k(d)===k(new Date())?'Hoy':k(d)===k(new Date(Date.now()-864e5))?'Ayer':d.toLocaleDateString('es',{day:'numeric',month:'short'})};
+  const dcHm=t=>new Date(t).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  const dcParse=x=>{const b=String(x.body||'');let m;
+    if(b.startsWith(HDR))return{k:'ai'};
+    if(m=b.match(/^\[Solicitud:(buyer|seller|both)\]\s*([\s\S]*)$/))return{k:'req',to:m[1],text:m[2].trim()};
+    if((m=b.match(/^\[Prueba\]\s*([\s\S]*?)\s*\[img:([A-Za-z0-9._\/-]+)\]\s*$/))&&m[2].startsWith(o.id+'/'))return{k:'proof',text:m[1].trim(),path:m[2]};
+    if(m=b.match(/^\[Disputa\]\s*([\s\S]*)$/))return{k:'dispute',text:m[1].trim()};
+    if(/^\[Mediación solicitada\]/.test(b))return{k:'event',text:b.replace(/^\[Mediación solicitada\]\s*/,'')};
+    return{k:'text',text:b}};
+  const dcAI=b=>{
+    const IC={ok:'✅',warn:'⚠️',na:'➖'},sec={c:[],f:[]};let cur_='c',last=null,head='',foot='';
+    for(const raw of b.slice(HDR.length).split('\n')){const l=raw.replace(/\s+$/,''),t=l.trim();if(!t)continue;
+      if(/^Solo es un an/.test(t)){foot=t;continue}
+      if(/^Resultado:/.test(t)){head=t.replace(/^Resultado:\s*/,'');continue}
+      if(t.startsWith('🔬')){cur_='f';last=null;continue}
+      const s=l.match(/^\s+·\s*(.*)$/);if(s){if(last)last.sub.push(s[1]);continue}
+      const m=t.match(/^(✅|⚠️|➖|ℹ️)\s*(.*)$/);
+      if(m){last={lv:m[1]==='✅'?'ok':m[1]==='⚠️'?'warn':'na',t:m[2],sub:[]};sec[cur_].push(last)}
+      else if(last)last.t+=' '+t}
+    const all=[...sec.c,...sec.f],nw=all.filter(i=>i.lv==='warn').length;
+    const row=i=>`<div class="dc-it ${i.lv}"><i>${IC[i.lv]}</i><div>${esc(i.t)}${i.sub.length?`<ul>${i.sub.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div></div>`;
+    const grp=(title,arr)=>{if(!arr.length)return'';const w=arr.filter(i=>i.lv==='warn'),k=arr.filter(i=>i.lv==='ok'),n=arr.filter(i=>i.lv==='na');
+      return`<div class="dc-sec"><b>${title}</b>${w.map(row).join('')}${k.map(row).join('')}${n.length?`<details><summary>${n.length} dato(s) sin resultado</summary>${n.map(row).join('')}</details>`:''}</div>`};
+    return`<div class="dc-card ai"><div class="dc-ch">🤖 Análisis automático<span class="dc-chip ${nw?'warn':'ok'}">${nw?nw+' a revisar':'Sin señales raras'}</span></div>
+      ${grp('📄 Lo que dice la captura',sec.c)}${grp('🔬 El archivo (¿fue editado?)',sec.f)}
+      ${foot?`<p class="dc-foot">${esc(foot)}</p>`:`<p class="dc-foot">${esc(head)}</p>`}</div>`};
+  const dcState=ms=>{const reqs=[];ms.forEach((x,i)=>{const p=dcParse(x);if(p.k!=='req')return;const need=p.to==='both'?['buyer','seller']:[p.to],done={};
+      need.forEach(r=>{done[r]=ms.slice(i+1).some(y=>DCR(y.sender_id)===r&&dcParse(y).k==='proof')});reqs.push({id:x.id,need,done,text:p.text})});return reqs};
+  let dcF=S._dcf||'all',dcSig='';
+  const drawChat=async(force)=>{
     const{data:ms,error:ce}=await sb.from('order_messages').select('id,sender_id,body,created_at').eq('order_id',o.id).order('created_at');
     const box=$('chatbox');if(!box||my!==NAV)return;
     if(ce){box.innerHTML=med?`<div class="warnbox bad">El chat no está disponible: falta crear la tabla order_messages (ver archivo SQL).</div>`:'';return}
     if(!ms.length&&!med)return box.innerHTML='';
-    const open=med&&!fin_&&canChat,keep=box.querySelector('#cm')?.value||'',wasF=document.activeElement?.id==='cm';
-    box.innerHTML=`<div class="card"><h3>💬 Chat de mediación</h3>${med?`<p class="mut" style="font-size:12px;margin:-4px 0 8px">👥 Comprador ${name(o.buyer_id)} · Vendedor ${name(o.seller_id)} · 🛡️ Administrador${fin_?' · <b>Mediación cerrada</b>':''}</p>`:''}<div class="chat" id="cl">${ms.length?ms.map(x=>{const nm=x.sender_id===o.buyer_id||x.sender_id===o.seller_id?name(x.sender_id):'Administrador';
-      return`<div class="msg ${x.sender_id===S.user.id?'me':''} ${nm==='Administrador'?'ad':''}"><small>${nm} · ${when(x.created_at)}</small>${esc(x.body)}</div>`}).join(''):'<span class="mut">Sin mensajes todavía.</span>'}</div>
-      ${open?`<div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…">${esc(keep)}</textarea><button class="b" id="cs">Enviar</button></div>`:''}</div>`;
-    const cl=$('cl');cl.scrollTop=cl.scrollHeight;
-    if(open){KB.fit($('cm'));if(wasF){const t=$('cm');t.focus();try{t.setSelectionRange(t.value.length,t.value.length)}catch(_){}}}
-    if(open){const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';KB.fit($('cm'));toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat()},null,true);
-      $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();go_()}}}};
+    const sig=ms.length+':'+(ms[ms.length-1]?.id||'')+':'+dcF+':'+(fin_?1:0);
+    if(!force&&sig===dcSig&&box.querySelector('.dc'))return;dcSig=sig;
+    const open=med&&!fin_&&canChat,keep=box.querySelector('#cm')?.value||'',wasF=document.activeElement?.id==='cm',old=box.querySelector('#cl'),stick=!old||old.scrollHeight-old.scrollTop-old.clientHeight<80;
+    const myR=DCR(S.user.id),adm_=admin||staff,reqs=dcState(ms),pend=reqs.filter(r=>r.need.includes(myR)&&!r.done[myR]);
+    const nProof=ms.filter(x=>dcParse(x).k==='proof').length,nReqOpen=reqs.filter(r=>r.need.some(k=>!r.done[k])).length;
+    const lastAi=ms.map((x,i)=>dcParse(x).k==='ai'?i:-1).filter(i=>i>=0).pop(),newPr=lastAi!=null&&ms.slice(lastAi+1).some(x=>dcParse(x).k==='proof');
+    const keepK={all:()=>true,proof:p=>p.k==='proof',admin:(p,x)=>p.k==='req'||DCR(x.sender_id)==='admin',ai:p=>p.k==='ai'}[dcF]||(()=>true);
+    let html='',lastDay='',prev=null;
+    ms.forEach(x=>{const p=dcParse(x);if(!keepK(p,x))return;
+      const day=dcDay(x.created_at);if(day!==lastDay){html+=`<div class="dc-day"><span>${day}</span></div>`;lastDay=day;prev=null}
+      const role=DCR(x.sender_id),me=x.sender_id===S.user.id,nm=role==='admin'?'Administrador':name(x.sender_id),tm=dcHm(x.created_at);
+      if(p.k==='ai'){html+=dcAI(String(x.body))+`<div class="dc-tm">${tm}</div>`;prev=null;return}
+      if(p.k==='req'){const r=reqs.find(q=>q.id===x.id),to=p.to==='both'?'Comprador y vendedor':DCL[p.to];
+        html+=`<div class="dc-card req"><div class="dc-ch">📌 Solicitud del administrador<span class="dc-chip">Para: ${to}</span></div><p class="dc-rt">${esc(p.text)}</p>
+          <div class="dc-st">${r.need.map(k=>`<span class="dc-chip ${r.done[k]?'ok':'warn'}">${r.done[k]?'✅':'⏳'} ${DCL[k]} ${r.done[k]?'respondió':'pendiente'}</span>`).join('')}</div><div class="dc-tm">${tm}</div></div>`;prev=null;return}
+      if(p.k==='dispute'){const i=p.text.indexOf('. '),rs=i>0?p.text.slice(0,i):p.text,ds=i>0?p.text.slice(i+2):'';
+        html+=`<div class="dc-card disp"><div class="dc-ch">⚖️ Disputa abierta<span class="dc-chip">${esc(DCL[role]==='Administrador'?'Admin':nm)}</span></div><p class="dc-rt"><b>${esc(rs)}</b>${ds?'<br>'+esc(ds):''}</p><div class="dc-tm">${tm}</div></div>`;prev=null;return}
+      if(p.k==='event'){html+=`<div class="dc-ev">🛡️ Mediación solicitada · ${esc(nm)} · ${tm}<br><span>${esc(p.text)}</span></div>`;prev=null;return}
+      const first=!prev||prev.sender_id!==x.sender_id;prev=x;
+      html+=`<div class="dc-row ${me?'me':''}"><div class="dc-b r-${role} ${me?'me':''}">${first?`<div class="dc-n">${role==='admin'?'🛡️ ':''}${role==='admin'?'Administrador':DCL[role]+' · '+nm}</div>`:''}
+        ${p.k==='proof'?`<div class="dc-pt">📎 Prueba</div><img class="dc-img" data-ev="${p.path}" alt="Prueba">${p.text?`<div class="dc-t">${esc(p.text)}</div>`:''}`:`<div class="dc-t">${evBody(p.text)}</div>`}
+        <span class="dc-tm">${tm}</span></div></div>`});
+    const tabs=[['all','Todo'],['proof','📎 Pruebas '+nProof],['admin','🛡️ Admin'],['ai','🤖 Análisis']];
+    box.innerHTML=`<div class="card dc"><div class="dc-h"><h3>🛡️ Sala de mediación</h3>${fin_?'<span class="dc-chip">Cerrada</span>':med?'<span class="dc-chip warn">En curso</span>':''}</div>
+      ${med?`<div class="dc-pp"><span class="dc-chip r-buyer">Comprador ${name(o.buyer_id)}</span><span class="dc-chip r-seller">Vendedor ${name(o.seller_id)}</span><span class="dc-chip r-admin">🛡️ Administrador</span></div>`:''}
+      ${nReqOpen?`<div class="dc-sum">📌 ${nReqOpen} solicitud(es) del administrador sin responder</div>`:''}
+      <div class="dc-tabs">${tabs.map(([k,l])=>`<button data-dcf="${k}" class="${dcF===k?'on':''}">${l}</button>`).join('')}</div>
+      <div class="dc-chat" id="cl">${html||'<div class="dc-empty">Sin mensajes en esta vista.</div>'}</div>
+      ${open&&adm_&&newPr?`<div class="dc-pend ai">🆕 Hay pruebas nuevas desde el último análisis.<button class="b sm" id="dcRe">Analizar de nuevo</button></div>`:''}
+      ${open&&pend.length?`<div class="dc-pend">📌 <span>El administrador te pidió: <b>${esc(pend[0].text)}</b>${pend.length>1?` (+${pend.length-1} más)`:''}</span><button class="b sm" id="dcDo">Subir ahora</button></div>`:''}
+      ${open?`<div class="dc-cmp"><button class="dc-att" id="dcAtt" title="Adjuntar captura" aria-label="Adjuntar captura">📎</button>${adm_?'<button class="dc-att" id="dcReq" title="Pedir una prueba" aria-label="Pedir una prueba">📌</button>':''}<textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…">${esc(keep)}</textarea><button class="dc-send" id="cs" aria-label="Enviar">${SEND_IC}</button></div>`:(med?'<p class="mut" style="font-size:12px;text-align:center;margin:8px 0 0">Mediación cerrada: el chat quedó solo de lectura.</p>':'')}</div>`;
+    const cl=$('cl');if(stick||force)cl.scrollTop=cl.scrollHeight;else if(old)cl.scrollTop=old.scrollTop;
+    box.querySelectorAll('[data-dcf]').forEach(b=>b.onclick=()=>{dcF=S._dcf=b.dataset.dcf;drawChat(true)});
+    cl.querySelectorAll('img[data-ev]').forEach(async im=>{const pa=im.dataset.ev;let u=EVC.get(pa);if(!u){const{data}=await sb.storage.from('proofs').createSignedUrl(pa,3600);u=data&&data.signedUrl;if(u)EVC.set(pa,u)}if(u){im.onload=()=>{if(stick)cl.scrollTop=cl.scrollHeight};im.src=u;im.onclick=()=>zoom(u)}});
+    if(!open)return;
+    KB.fit($('cm'));if(wasF){const t=$('cm');t.focus();try{t.setSelectionRange(t.value.length,t.value.length)}catch(_){}}
+    const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';KB.fit($('cm'));toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat(true)},null,true);
+    $('cs').onclick=go_;$('cm').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!KB.coarse){e.preventDefault();go_()}};
+    const upl=async(hint)=>{const pr=ask('Subir captura de prueba',`<p class="mut">${hint?'📌 '+esc(hint)+'<br>':''}Elige una o varias imágenes (máx. 4). La verán el administrador y la otra parte.</p><input type="file" id="dcF" accept="image/*" multiple><div class="dc-pv" id="dcPv"></div><label>Descripción (opcional)</label><textarea id="dcT" rows="2" maxlength="300" placeholder="Ej: mis últimas operaciones, donde aparece el pago"></textarea>`,'Enviar','ok');
+      const mm=[...document.querySelectorAll('.ov')].pop(),fi=mm&&mm.querySelector('#dcF');
+      if(fi)fi.onchange=()=>{const pv=mm.querySelector('#dcPv');pv.innerHTML='';[...fi.files].slice(0,4).forEach(f=>{const im=document.createElement('img');im.src=URL.createObjectURL(f);im.onload=()=>URL.revokeObjectURL(im.src);pv.appendChild(im)})};
+      const m=await pr;if(!m)return;const fs_=[...m.querySelector('#dcF').files].slice(0,4),tx=m.querySelector('#dcT').value.trim();m.remove();
+      if(!fs_.length)return toast('Elige al menos una imagen y vuelve a intentarlo','err');
+      act($('dcAtt')||$('cs'),async()=>{for(const f of fs_){const pa=await uploadProof(o.id,'evidence',f);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Prueba] '+(tx?tx+' ':'')+'[img:'+pa+']'});if(error)throw error}await drawChat(true)},fs_.length>1?'Pruebas enviadas':'Prueba enviada',true)};
+    $('dcAtt').onclick=()=>upl('');
+    if($('dcDo'))$('dcDo').onclick=()=>upl(pend[0].text);
+    if($('dcRe'))$('dcRe').onclick=()=>$('anaB')&&$('anaB').click();
+    if($('dcReq'))$('dcReq').onclick=async()=>{
+      const pr=ask('Pedir una prueba',`<p class="mut">Se verá como una solicitud destacada en la sala, y la parte elegida tendrá un botón para subirla.</p><label>¿A quién?</label><select id="rqT"><option value="buyer">Comprador</option><option value="seller">Vendedor</option><option value="both">Ambos</option></select><label>¿Qué necesitas?</label><select id="rqP">${DCP.map((x,i)=>`<option value="${i}">${esc(x[0])}</option>`).join('')}<option value="x">Otra…</option></select><textarea id="rqX" rows="3" maxlength="300">${esc(DCP[0][0])}</textarea>`,'Pedir prueba','ok');
+      const mm=[...document.querySelectorAll('.ov')].pop(),sp=mm&&mm.querySelector('#rqP');if(sp)sp.onchange=()=>{const t=mm.querySelector('#rqX');if(t)t.value=sp.value==='x'?'':DCP[+sp.value][0]};
+      const m=await pr;if(!m)return;const tx=m.querySelector('#rqX').value.trim(),to=m.querySelector('#rqT').value;m.remove();if(tx.length<5)return toast('Escribe qué prueba necesitas','err');
+      act($('dcReq'),async()=>{const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:`[Solicitud:${to}] ${tx}`});if(error)throw error;
+        const ids=to==='both'?[o.buyer_id,o.seller_id]:[to==='buyer'?o.buyer_id:o.seller_id];try{await sb.from('notifications').insert(ids.map(u=>({user_id:u,title:'🛡️ El administrador te pidió una prueba',body:tx.slice(0,120)})))}catch(e){}
+        await drawChat(true)},'Solicitud enviada',true)};};
   drawChat();
+  sellerFlags(o,{admin,staff,isBuyer,isSeller,name});
   if((admin||staff)&&med&&!fin_&&(o.buyer_proof||o.mediation_proof)){
+    warmOcr();
     const runAna=async(force,btn)=>{if(S._ana===o.id)return;S._ana=o.id;
       try{if(!force){const{data:ex}=await sb.from('order_messages').select('id').eq('order_id',o.id).like('body',HDR+'%').limit(1);if(ex&&ex.length)return}
         if(btn){btn.disabled=true;btn.textContent='Analizando…'}toast('🤖 Analizando las capturas…');
@@ -1400,7 +1595,8 @@ async function viewOrder(){
         if(my===NAV)await drawChat();toast('Análisis publicado en el chat','good')}
       catch(e){toast('No se pudo analizar: '+friendly(e),'err')}finally{S._ana=null;if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🤖 Analizar capturas de nuevo'}}};
     $('chatbox').insertAdjacentHTML('afterend','<button class="b gh w" id="anaB" style="margin-top:8px">🤖 Analizar capturas de nuevo</button>');
-    $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200)}
+    $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200);
+    if(o.buyer_proof&&!$('sAI2')){$('anaB').insertAdjacentHTML('afterend','<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>');advAI(o)}}
   if(o.status==='released'&&(isBuyer||isSeller))drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);
   /* actualización automática */
   let last=o.status+o.updated_at;
@@ -1896,7 +2092,7 @@ const LEGAL=()=>{const tf=S.fees?.trade??1,wf=S.fees?.withdraw??3;return[
   body:[
    ['1. Qué datos guardamos','Tu usuario y correo, los datos de verificación de identidad que subas, tus operaciones, depósitos y retiros, las direcciones de wallet que uses y los comprobantes o capturas que adjuntes.'],
    ['2. Para qué los usamos','Para operar tu cuenta, verificar tu identidad, procesar operaciones, resolver disputas, prevenir fraudes y cumplir la ley cuando corresponda.'],
-   ['3. Con quién los compartimos','No vendemos tus datos. En una operación, la otra parte ve solo lo necesario (tu usuario y los datos de pago que indiques). Podemos compartir información con proveedores de infraestructura y pagos solo en lo necesario para operar, o con autoridades si la ley lo exige.'],
+   ['3. Con quién los compartimos','No vendemos tus datos. En una operación, la otra parte ve solo lo necesario (tu usuario y los datos de pago que indiques). Podemos compartir información con proveedores de infraestructura y pagos solo en lo necesario para operar, o con autoridades si la ley lo exige. Si el vendedor usa la «Revisión avanzada con IA», la captura de pago del comprador se envía a Cloudflare (Workers AI) únicamente para analizarla.'],
    ['4. Dónde y cuánto tiempo','Los datos se guardan en servicios de infraestructura en la nube. Los conservamos mientras tu cuenta esté activa y el tiempo necesario para resolver disputas o cumplir obligaciones.'],
    ['5. Tus derechos','Puedes pedir que corrijamos o eliminemos tus datos, salvo los que debamos conservar por seguridad, disputas abiertas u obligaciones legales. Escríbenos por soporte.'],
    ['6. Seguridad','Aplicamos medidas razonables para protegerlos, pero ningún sistema es 100 % seguro. Protege tu cuenta con un PIN y dos pasos.']]},
@@ -2379,47 +2575,241 @@ const digitRuns=t=>(String(t).match(/\d[\d\s]{3,}\d/g)||[]).map(r=>r.replace(/\s
 const hasAmount=(t,v)=>numsFrom(t).some(x=>Math.abs(x-v)<0.011);
 const hasRef=(t,ref)=>!!ref&&digitRuns(t).some(r=>r.includes(ref));
 const hasTail=(t,tail)=>!!tail&&(digitRuns(t).some(r=>r.includes(tail))||String(t).includes(tail));
-let _tess=null;
-function loadTess(){return _tess||(_tess=new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
-  sc.onload=()=>window.Tesseract?ok(window.Tesseract):no(new Error('ocr'));sc.onerror=()=>{_tess=null;no(new Error('ocr'))};document.head.appendChild(sc);setTimeout(()=>no(new Error('ocr')),25000)}))}
-async function ocrBlob(blob){const T=await loadTess();return Promise.race([T.recognize(blob,'eng').then(r=>r.data.text||''),new Promise((_,j)=>setTimeout(()=>j(new Error('ocr')),60000))])}
-async function getProof(path){const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');return r.blob()}
+/* Revisiones extra de la captura (fecha, estado, número de transacción, destino enmascarado).
+   Solo avisan cuando encuentran el dato y no cuadra; si la captura tiene otro formato, no inventan nada. */
+const HAV=t=>new Date(t).toLocaleDateString('en-CA',{timeZone:'America/Havana'});
+const fmtD=iso=>iso.split('-').reverse().join('/');
+function extraChecks(t,o){
+  const R=[],T=String(t||'');
+  const toISO=(d,m,y)=>{d=+d;m=+m;y=+y;return d>=1&&d<=31&&m>=1&&m<=12&&y>=2020&&y<=2100?`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:null};
+  /* fecha: la de "Fecha:" y, si no hay, la más reciente que aparezca */
+  let dt=null;const lab=T.match(/Fecha:?\s*(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/i);
+  if(lab)dt=toISO(lab[1],lab[2],lab[3]);
+  if(!dt){const all=[];T.replace(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/g,(m,d,mo,y)=>{const i=toISO(d,mo,y);if(i)all.push(i);return m});
+    const MS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    T.replace(/\b(\d{1,2})\s+(?:de\s+)?(ene|feb|mar|abr|may|jun|jul|ago|sep|set|oct|nov|dic)[a-z]*\.?,?\s+(?:de\s+)?(\d{4})\b/gi,(m,d,mo,y)=>{const i=toISO(d,MS.indexOf(mo.toLowerCase().replace('set','sep'))+1,y);if(i)all.push(i);return m});
+    if(all.length)dt=all.sort().pop()}
+  if(dt){const cr=o&&o.created_at?HAV(o.created_at):null,hoy=HAV(Date.now());
+    if(dt>hoy)R.push(['warn',`Fecha: la captura dice ${fmtD(dt)}, que es una fecha futura.`]);
+    else if(cr&&dt<cr)R.push(['warn',`Fecha: la captura es del ${fmtD(dt)}, anterior a la operación (${fmtD(cr)}). Puede ser una captura vieja.`]);
+    else R.push(['ok',`Fecha: ${fmtD(dt)}, coincide con la operación.`])}
+  /* estado */
+  const bad=/(fallid|rechazad|denegad|cancelad|pendiente|declinad|no\s+(fue\s+)?(complet|realiz))/i.test(T),good=/(complet(ad[ao]|o)|exitos|aprobad|acreditad|realizad[ao])/i.test(T.replace(/no\s+(fue\s+)?(complet\w*|realiz\w*)/ig,' '));
+  if(bad&&!good)R.push(['warn','Estado: la captura parece indicar que la transferencia NO se completó (aparece "fallida", "pendiente" o similar).']);
+  else if(good&&!bad)R.push(['ok','Estado: la captura indica que la transferencia fue completada.']);
+  /* número de transacción (queda a la vista para anotarlo) */
+  const tx=T.match(/(?:Nro\.?|N[uú]mero|No\.?|C[oó]digo|ID|Id\.?)\s*(?:de\s*)?(?:Transac[^\s:]*|Operaci[oó]n)\.?:?\s*([A-Z0-9]{8,24})/i)||T.match(/Transac(?:ci[oó]n|tion)\s*(?:ID|Id)?:?\s*([A-Z0-9]{8,24})/i);
+  if(tx)R.push(['na',`Nro. de transacción: ${tx[1].toUpperCase()}.`]);
+  /* destino enmascarado (ej. 9227XXXXXXXX0363): inicio y final */
+  const mk=T.match(/Beneficiari\w*:?\s*(\d{4})\s*[xX*•]{2,}\s*(\d{4})/i),card=((String(o&&o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'');
+  if(mk&&card.length>=8){
+    if(card.slice(0,4)!==mk[1])R.push(['warn',`Destino: la captura empieza por ${mk[1]} pero los datos de cobro empiezan por ${card.slice(0,4)}.`]);
+    else if(card.slice(-4)===mk[2])R.push(['ok',`Destino: empieza por ${mk[1]} y termina en ${mk[2]}, igual que los datos de cobro.`])}
+  return R}
+/* ---------- Detector de señales de edición (revisa el archivo ORIGINAL, sin servidor) ---------- */
+const FX_ED=/(Adobe Photoshop|Photoshop|Adobe Illustrator|Adobe Express|Lightroom|Photopea|Canva|PicsArt|Snapseed|Pixelmator|Paint\.NET|GIMP \d|Affinity|Figma|Facetune|Remini|PhotoRoom|Fotor|Pixlr|BeFunky|InShot|Microsoft Paint|Krita|Sketch|ImageMagick|Fake|Editor)/i;
+function fxScan(u8,createdAt){
+  const S=[],I={bytes:u8.length};const sig=(sev,t)=>S.push({sev,t});
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength),u16=(o,le)=>dv.getUint16(o,le),u32=(o,le)=>dv.getUint32(o,le);
+  const str=(a,b)=>{let s='';for(let i=a;i<b&&i<u8.length;i++)s+=String.fromCharCode(u8[i]);return s};
+  const asc=(o,n)=>str(o,o+n).replace(/\0.*$/,'').trim();
+  const isPNG=u8.length>8&&u8[0]===0x89&&str(1,4)==='PNG',isJPG=u8.length>3&&u8[0]===0xFF&&u8[1]===0xD8,isWEBP=str(0,4)==='RIFF'&&str(8,12)==='WEBP';
+  I.format=isPNG?'PNG':isJPG?'JPEG':isWEBP?'WEBP':'?';
+  const dateIso=s=>{const m=String(s||'').match(/(\d{4})[:\-](\d{2})[:\-](\d{2})/);return m?`${m[1]}-${m[2]}-${m[3]}`:null};
+  const edSoft=(txt,where)=>{if(txt&&FX_ED.test(txt))sig('high',`El archivo dice haber pasado por un programa de edición (${(txt.match(FX_ED)||[''])[0]}) — ${where}.`)};
+  /* EXIF (formato TIFF) */
+  const exif=(base,len,thumbCheck)=>{try{
+    const le=str(base,base+2)==='II',rd16=o=>u16(o,le),rd32=o=>u32(o,le);if(rd16(base+2)!==42)return;
+    const ifd=(off,out)=>{if(!off||base+off+2>u8.length)return 0;const n=rd16(base+off);for(let k=0;k<n&&k<80;k++){const e=base+off+2+k*12;if(e+12>u8.length)break;
+      const tag=rd16(e),typ=rd16(e+2),cnt=rd32(e+4),vo=(typ===2&&cnt>4)?base+rd32(e+8):e+8;
+      if(typ===2)out[tag]=asc(vo,Math.min(cnt,200));else if(typ===3)out[tag]=rd16(e+8);else if(typ===4)out[tag]=rd32(e+8)}
+      const nx=base+off+2+n*12;return nx+4<=u8.length?rd32(nx):0};
+    const a={},next=ifd(rd32(base+4),a);
+    if(a[0x010F])I.make=a[0x010F];if(a[0x0110])I.model=a[0x0110];if(a[0x0131]){I.software=a[0x0131];edSoft(a[0x0131],'campo Software')}
+    if(a[0x0132])I.date=a[0x0132];
+    if(a[0x8769]){const x={};ifd(a[0x8769],x);if(x[0x9003])I.date=x[0x9003];if(x[0xA002]){I.exifW=x[0xA002];I.exifH=x[0xA003]}}
+    if(thumbCheck&&next){const t={};ifd(next,t);if(t[0x0201]&&t[0x0202]){const s=base+t[0x0201];
+      for(let i=s+2;i<s+t[0x0202]&&i+9<u8.length;){if(u8[i]!==0xFF){i++;continue}const m=u8[i+1];if(m>=0xC0&&m<=0xC2){I.tw=u16(i+7,false);I.th=u16(i+5,false);break}if(m===0xD8||m===0x01||(m>=0xD0&&m<=0xD7)){i+=2;continue}i+=2+u16(i+2,false)}}}
+  }catch(e){}};
+  let endAt=0;
+  if(isPNG){
+    let i=8;
+    while(i+12<=u8.length){const len=u32(i,false),ty=str(i+4,i+8),d=i+8;
+      if(ty==='IHDR'){I.w=u32(d,false);I.h=u32(d+4,false)}
+      else if(ty==='tEXt'||ty==='iTXt'||ty==='zTXt'){const kw=asc(d,Math.min(80,len)),body=ty==='tEXt'?str(d+kw.length+1,Math.min(d+len,d+kw.length+400)):'';
+        if(/^(Software|Comment|Description|Creator|Author|Source|XML:com\.adobe\.xmp)$/i.test(kw)){if(kw==='Software')I.software=body;edSoft(kw+' '+body+(ty==='iTXt'?str(d+kw.length,Math.min(d+len,d+kw.length+1500)):''),`dato "${kw}" dentro del PNG`)}}
+      else if(ty==='tIME'&&len>=7){I.date=`${u16(d,false)}-${String(u8[d+2]).padStart(2,'0')}-${String(u8[d+3]).padStart(2,'0')}`}
+      else if(ty==='eXIf')exif(d,len,false);
+      i+=12+len;if(ty==='IEND'){endAt=i;break}if(len>u8.length)break}
+    if(endAt&&u8.length-endAt>32)sig('high',`Hay ${u8.length-endAt} bytes de datos escondidos después del final de la imagen.`);
+    if(!endAt)sig('med','El PNG no termina de forma normal (archivo incompleto o manipulado).');
+  }else if(isJPG){
+    let i=2;
+    while(i+4<u8.length){if(u8[i]!==0xFF){i++;continue}const m=u8[i+1];
+      if(m===0x00||m===0xFF||m===0x01||(m>=0xD0&&m<=0xD7)){i+=(m===0xFF?1:2);continue}
+      if(m===0xD9){endAt=i+2;break}
+      const len=u16(i+2,false),s=i+4;
+      if(m===0xE1){if(str(s,s+6)==='Exif\0\0')exif(s+6,len,true);else if(str(s,s+28).startsWith('http://ns.adobe.com/xap')){const x=str(s,Math.min(s+len,s+6000));edSoft(x,'metadatos XMP');if(/stEvt:action|xmpMM:History|xmpMM:DerivedFrom/.test(x))sig('high','Los metadatos guardan un historial de ediciones (XMP).')}}
+      else if(m===0xED&&str(s,s+13)==='Photoshop 3.0')sig('high','Contiene bloques de Photoshop dentro del archivo.');
+      else if(m===0xFE){const c=asc(s,Math.min(len-2,200));if(c){I.comment=c;edSoft(c,'comentario del JPEG')}}
+      else if(m>=0xC0&&m<=0xC2){I.h=u16(s+1,false);I.w=u16(s+3,false)}
+      if(m===0xDA){i=s+u16(i+2,false)-2+2;continue}
+      i+=2+len}
+    if(endAt&&u8.length-endAt>32)sig('high',`Hay ${u8.length-endAt} bytes de datos escondidos después del final de la imagen.`);
+    if(I.tw&&I.w&&I.h&&Math.abs(I.tw/I.th-I.w/I.h)/(I.w/I.h)>0.03)sig('high','La miniatura interna no coincide con la imagen: alguien la modificó con un programa que no actualizó la miniatura.');
+    if(I.exifW&&I.w&&(Math.abs(I.exifW-I.w)>2||Math.abs(I.exifH-I.h)>2)&&Math.abs(I.exifW-I.h)>2)sig('med',`El tamaño anotado en los metadatos (${I.exifW}×${I.exifH}) no coincide con el real (${I.w}×${I.h}).`);
+  }else if(isWEBP){const x=str(0,Math.min(u8.length,4000));edSoft(x,'metadatos WEBP')}
+  /* fecha interna del archivo frente a la operación */
+  const d=dateIso(I.date),cr=createdAt?new Date(createdAt).toLocaleDateString('en-CA',{timeZone:'America/Havana'}):null;
+  if(d&&cr){const diff=(Date.parse(cr)-Date.parse(d))/864e5;if(diff>1)sig('med',`La fecha guardada dentro del archivo (${d.split('-').reverse().join('/')}) es anterior a la operación (${cr.split('-').reverse().join('/')}).`)}
+  if(I.w&&I.h){const r=Math.max(I.w,I.h)/Math.min(I.w,I.h);if(r<1.4)sig('weak',`La proporción de la imagen (${I.w}×${I.h}) no es la de una captura normal de teléfono; puede estar recortada o exportada por un editor.`)}
+  if(!isPNG&&!isJPG&&!isWEBP)sig('weak','Formato de imagen poco habitual.');
+  const pts={high:60,med:30,weak:10},score=Math.min(100,S.reduce((a,s)=>a+pts[s.sev],0));
+  return{score,level:score>=60?'high':score>=25?'review':'ok',signals:S,info:I}}
+
+/* Resultado listo para mostrar en la tarjeta de revisión: [nivel, texto] */
+async function fxCheck(blob,o,lbl){
+  const u8=new Uint8Array(await blob.arrayBuffer()),r=fxScan(u8,o&&o.created_at),R=[],p=lbl?lbl+': ':'';
+  if(r.level==='high')R.push(['warn',`${p}🕵️ Señales claras de edición en el archivo (puntaje ${r.score}/100). Revísala con mucho cuidado antes de liberar.`]);
+  else if(r.level==='review')R.push(['warn',`${p}🕵️ Hay indicios que conviene revisar en el archivo (puntaje ${r.score}/100).`]);
+  r.signals.forEach(x=>R.push([x.sev==='weak'?'na':'warn',p+x.t]));
+  if(!r.signals.length)R.push(['na',`${p}Análisis del archivo: sin señales de edición en sus datos internos. (No puede detectar una edición hecha y luego vuelta a capturar.)`]);
+  return R}
+let _tess=null,_tw=null,_twIdle=0;
+const OCRC=new Map();            /* texto ya leído por captura (en esta sesión) */
+const OCRDIR=new URL('ocr/',location.href).href;   /* archivos propios de Tesseract, junto a index.html */
+function loadTess(){return _tess||(_tess=(async()=>{
+  const get=src=>new Promise((ok,no)=>{const sc=document.createElement('script');sc.src=src;
+    const t=setTimeout(()=>{sc.remove();no(new Error('ocr'))},20000);
+    sc.onload=()=>{clearTimeout(t);window.Tesseract?ok(window.Tesseract):(sc.remove(),no(new Error('ocr')))};sc.onerror=()=>{clearTimeout(t);sc.remove();no(new Error('ocr'))};document.head.appendChild(sc)});
+  try{const T=await get(OCRDIR+'tesseract.min.js');T.__local=true;return T}catch(e){}
+  return get('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js')})().catch(e=>{_tess=null;throw e}))}
+const _race=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('ocr')),ms))]);
+/* Un solo lector que se reutiliza (antes se creaba y descargaba uno por cada captura). Idioma "fast" = más rápido y ligero; si no está, usa el normal. */
+function getTW(){return _tw||(_tw=(async()=>{const T=await loadTess();let w;
+  /* 1) todo desde tu propia carpeta ocr/  2) idioma ligero del CDN  3) todo del CDN */
+  try{if(!T.__local)throw 0;w=await _race(T.createWorker('eng',1,{workerPath:OCRDIR+'worker.min.js',corePath:OCRDIR,langPath:OCRDIR}),30000)}
+  catch(e){try{w=await _race(T.createWorker('eng',1,{langPath:'https://tessdata.projectnaptha.com/4.0.0_fast'}),30000)}catch(e2){w=await _race(T.createWorker('eng',1),45000)}}
+  try{localStorage.setItem('ocr_used','1')}catch(e){}return w})().catch(e=>{_tw=null;throw e}))}
+function dropTW(){const p=_tw;_tw=null;if(p)p.then(w=>w.terminate()).catch(()=>{})}
+/* Calentar el lector en segundo plano, solo si ya se usó antes en este equipo (así no gasta datos de más) */
+function warmOcr(){try{if(!localStorage.getItem('ocr_used')||(navigator.connection&&navigator.connection.saveData))return}catch(e){return}
+  (window.requestIdleCallback||setTimeout)(()=>{getTW().catch(()=>{})},1200)}
+/* Prepara la imagen: más pequeña (menos píxeles = lectura mucho más rápida), en grises, con más contraste y, si es modo oscuro, invertida */
+async function prepImage(blob){
+  try{const bm=await createImageBitmap(blob);const k=Math.min(1,1280/bm.width,3000/bm.height);
+    const w=Math.max(1,Math.round(bm.width*k)),h=Math.max(1,Math.round(bm.height*k)),c=document.createElement('canvas');c.width=w;c.height=h;
+    const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(bm,0,0,w,h);if(bm.close)bm.close();
+    const im=x.getImageData(0,0,w,h),d=im.data,n=w*h;let sum=0;
+    for(let i=0;i<n;i++){const g=d[i*4]*.299+d[i*4+1]*.587+d[i*4+2]*.114;d[i*4]=g;sum+=g}
+    const inv=sum/n<110;
+    for(let i=0;i<n;i++){let g=d[i*4];if(inv)g=255-g;g=(g-128)*1.25+128;g=g<0?0:g>255?255:g;d[i*4]=d[i*4+1]=d[i*4+2]=g;d[i*4+3]=255}
+    x.putImageData(im,0,0);return c}catch(e){return blob}}
+async function ocrBlob(blob){
+  const img=await prepImage(blob);let w=await getTW();
+  clearTimeout(_twIdle);
+  try{const r=await _race(w.recognize(img),60000);return r.data.text||''}
+  catch(e){dropTW();throw e}
+  finally{clearTimeout(_twIdle);_twIdle=setTimeout(dropTW,120000)}}   /* libera memoria si nadie lo usa en 2 min */
+const AI_URL='https://tororo-analisis.lazaromichelfn.workers.dev';
+const AIC=new Map();   /* resultados de la revisión avanzada ya hechos (por captura) */
+const aiAdvCard=d=>{
+  const ic={ok:'✅',warn:'⚠️',na:'➖'},
+    R={bajo:['✅','Riesgo BAJO','var(--ok,#3ddc97)'],medio:['⚠️','Riesgo MEDIO','var(--warn,#f5b94a)'],alto:['🚨','Riesgo ALTO','var(--bad,#ef6a5b)'],no_concluyente:['❔','No concluyente','var(--mut,#9aa0b8)']}[d&&d.riesgo]||['❔','No concluyente','var(--mut,#9aa0b8)'],
+    x=(d&&d.extraido)||{},
+    ex=[['Monto',x.monto!=null&&x.monto!==''?n(x.monto,2)+(x.moneda?' '+x.moneda:''):null],['Fecha',x.fecha],['Destino',x.destino],['Referencia',x.referencia],['App',x.app],['Estado',x.estado]].filter(r=>r[1]!=null&&r[1]!==''),
+    ck=Array.isArray(d&&d.checks)?d.checks:[];
+  return`<div class="card" style="margin-top:10px"><h3>🧠 Revisión avanzada con IA</h3>
+    <div style="font-weight:700;font-size:16px;color:${R[2]}">${R[0]} ${R[1]}</div>
+    ${d&&d.resumen?`<p style="margin:6px 0 8px">${esc(d.resumen)}</p>`:''}
+    ${ck.map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}
+    ${ex.length?`<details style="margin-top:8px"><summary class="mut">Datos que leyó la IA</summary>${ex.map(r=>`<div class="mut" style="padding:2px 0">${r[0]}: <b>${esc(r[1])}</b></div>`).join('')}</details>`:''}
+    <div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura editada con cuidado puede pasar la revisión, y la IA puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div>
+    <p class="mut" style="font-size:11px;margin-bottom:0">Este análisis envía la imagen a Cloudflare (Workers AI).${d&&d.modelo?' Modelo: '+esc(String(d.modelo).replace('@cf/','')):''}</p></div>`};
+/* Revisión avanzada: solo cuando el vendedor toca el botón (cada operación permite 3 análisis) */
+function advAI(o){
+  const b=$('sAI2'),k=o.buyer_proof;if(!b||!$('aiBox2'))return;
+  if(AIC.has(k)){$('aiBox2').innerHTML=aiAdvCard(AIC.get(k));b.textContent='🧠 Volver a analizar (máx. 3 por operación)'}
+  b.onclick=async()=>{
+    if(b.disabled)return;
+    if(!S._aiAdvOk){const m=await ask('Revisión avanzada con IA','<p>La captura del comprador se enviará a <b>Cloudflare (Workers AI)</b> para analizarla.</p><p>Es una ayuda y <b>no es definitiva</b>. Cada operación permite hasta <b>3</b> análisis.</p>','Analizar','ok');if(!m)return;m.remove();S._aiAdvOk=1}
+    b.disabled=true;b.textContent='Analizando… (puede tardar hasta 40 s)';
+    const bx=$('aiBox2');if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🧠 Analizando la captura con IA… no cierres la pantalla.</span></div>';
+    let d=null,err='';
+    try{
+      const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Vuelve a iniciar sesión');
+      const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),50000);let r;
+      try{r=await fetch(AI_URL+'/analyze-proof',{method:'POST',headers:{authorization:'Bearer '+session.access_token,'content-type':'application/json'},body:JSON.stringify({order_id:o.id}),signal:ac.signal})}finally{clearTimeout(tm)}
+      const j=await r.json().catch(()=>null);
+      if(!r.ok||!j)throw new Error((j&&j.error)||('El análisis respondió con un error (HTTP '+r.status+')'));
+      d=j}
+    catch(e){const m=String((e&&e.message)||e);err=(e&&e.name==='AbortError')?'El análisis tardó demasiado. Inténtalo de nuevo en un momento.':/Failed to fetch|NetworkError|Load failed/i.test(m)?'No se pudo conectar con el análisis avanzado. Revisa tu internet.':m}
+    const b2=$('sAI2'),box=$('aiBox2');
+    if(box){
+      if(err)box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ '+esc(err)+'</span> <span class="mut" style="font-size:12px">Puedes seguir con la revisión de arriba y comprobar tu cuenta a mano.</span></div>';
+      else{AIC.set(k,d);box.innerHTML=aiAdvCard(d);if(d.riesgo==='alto'||(Array.isArray(d.checks)?d.checks:[]).some(c=>c.level==='warn'))toast('⚠️ La revisión avanzada encontró avisos en la captura','err')}}
+    if(b2){b2.disabled=false;b2.textContent='🧠 Volver a analizar (máx. 3 por operación)'}}}
+const AIR=new Map(),AIW=new Set();   /* resultados de la revisión automática ya hechos */
+const PRC=new Map();
+async function getProof(path){if(PRC.has(path))return PRC.get(path);const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');const b=await r.blob();PRC.set(path,b);if(PRC.size>8)PRC.delete(PRC.keys().next().value);return b}
 const aiCard=d=>{const ic={ok:'✅',warn:'⚠️',na:'➖'};
-  return`<div class="card" style="margin-top:10px"><h3>🤖 Revisión con IA</h3><p class="mut" style="font-size:12px;margin-top:0">Lectura automática (OCR) de la captura del comprador.</p>${(d.checks||[]).map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}<div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura puede estar editada o ser falsa, y el lector puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div><p class="mut" style="font-size:11px;margin-bottom:0">La lectura se hace en tu dispositivo (OCR): la imagen no se envía a ningún servicio externo.</p></div>`};
+  return`<div class="card" style="margin-top:10px"><h3>🤖 Revisión con IA</h3><p class="mut" style="font-size:12px;margin-top:0">Lectura automática (OCR) de la captura del comprador.</p>${(d.checks||[]).map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}<div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura puede estar editada o ser falsa, y el lector puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div><p class="mut" style="font-size:11px;margin-bottom:0">Esta revisión se hace en tu dispositivo (OCR): la imagen no sale de él. (La «Revisión avanzada» sí envía la imagen a Cloudflare.)</p></div>`};
 async function analyzeProofs(o,cur){
+  const[t,f]=await Promise.all([analyzeProofs0(o,cur),forenseLines(o).catch(()=>[])]);if(!f.length)return t;
+  const ic={ok:'✅',warn:'⚠️',na:'ℹ️'},i=t.indexOf('\n\nSolo es un an'),blk='\n\n🔬 Análisis del archivo (servicio forense)\n'+f.map(([l,x])=>(x.startsWith('   ')?'':ic[l]+' ')+x).join('\n');
+  return i<0?t+blk:t.slice(0,i)+blk+t.slice(i)}
+async function analyzeProofs0(o,cur){
   const L=[],W=[];const ok=t=>L.push('✅ '+t),bad=t=>{L.push('⚠️ '+t);W.push(t)},na=t=>L.push('➖ '+t);
   const exp=due(o,cur),ref=o.mediation_ref||'',tail=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-4);
   const prs=[['buyer',o.buyer_proof],['mediation',o.mediation_proof]].filter(x=>x[1]);
+  try{const{data:em}=await sb.from('order_messages').select('sender_id,body').eq('order_id',o.id).like('body','[Prueba]%').order('created_at',{ascending:false}).limit(8);
+    (em||[]).filter(m=>m.sender_id===o.buyer_id).map(m=>(String(m.body).match(/\[img:([A-Za-z0-9._\/-]+)\]/)||[])[1]).filter(pa=>pa&&pa.startsWith(o.id+'/')&&!prs.some(q=>q[1]===pa)).slice(0,2).forEach((pa,i)=>prs.push(['ev'+i,pa]))}catch(e){}
   const txt={},hs={};
-  for(const[k,pa]of prs){let b=null;try{b=await getProof(pa)}catch(e){continue}
-    try{hs[k]=await aHash(b)}catch(e){}
-    try{txt[k]=await ocrBlob(b)}catch(e){}}
+  /* las consultas a la base de datos arrancan ya, mientras se descargan y leen las imágenes */
+  const qHash=sb.from('proof_hashes').select('order_id,phash').neq('order_id',o.id).order('created_at',{ascending:false}).limit(1500).then(r=>r,()=>({}));
+  const qRef=ref?sb.from('orders').select('id').eq('mediation_ref',ref).neq('id',o.id).limit(3).then(r=>r,()=>({})):null;
+  const blobs=await Promise.all(prs.map(([k,pa])=>getProof(pa).then(b=>[k,pa,b],()=>null)));
+  await Promise.all(blobs.filter(Boolean).map(async([k,pa,b])=>{try{hs[k]=await aHash(b)}catch(e){}}));
+  for(const it of blobs){if(!it)continue;const[k,pa,b]=it;let t=OCRC.get(pa);
+    if(t==null){try{t=await ocrBlob(b);OCRC.set(pa,t)}catch(e){}}
+    if(t!=null)txt[k]=t}
+  for(const it of blobs){if(!it)continue;const[k,pa,b]=it;try{(await fxCheck(b,o,blobs.filter(Boolean).length>1?(k==='buyer'?'Captura del comprador':k==='mediation'?'Captura de mediación':'Prueba del comprador en el chat'):'')).forEach(([l,x])=>l==='ok'?ok(x):l==='warn'?bad(x):na(x))}catch(e){}}
   const all=Object.values(txt).join('\n');
   if(!Object.keys(txt).length)na('No se pudo leer el texto de las capturas (el lector de texto no cargó). Revísalas a ojo.');
   else{
     if(txt.buyer!=null){hasAmount(txt.buyer,exp)?ok(`Monto: aparece ${mny(exp,cur)} ${cur} en la captura del pago.`):bad(`Monto: no se encontró ${mny(exp,cur)} ${cur} en la captura del pago.`)}
+    if(txt.buyer!=null)extraChecks(txt.buyer,o).forEach(([l,x])=>l==='ok'?ok(x):l==='warn'?bad(x):na(x));
     if(tail){hasTail(txt.buyer||all,tail)?ok(`Destino: aparecen los últimos dígitos (${tail}) de los datos de cobro.`):bad(`Destino: no se vieron los últimos dígitos (${tail}) de los datos de cobro (pueden estar ocultos).`)}
     if(ref){hasRef(all,ref)?ok(`Referencia ${ref}: aparece en las capturas.`):bad(`Referencia ${ref}: no aparece en las capturas.`)}
+    const evT=Object.keys(txt).filter(k=>/^ev\d/.test(k)).map(k=>txt[k]).join('\n');
+    if(evT){hasAmount(evT,exp)?ok(`Pruebas del comprador en el chat: aparece el monto ${mny(exp,cur)} ${cur}.`):na(`Pruebas del comprador en el chat: no se vio el monto ${mny(exp,cur)} ${cur} (pueden ser capturas de otro tipo).`);
+      if(tail)hasTail(evT,tail)&&ok(`Pruebas del comprador en el chat: aparecen los últimos dígitos (${tail}) del destino.`)}
   }
-  try{const{data:hh}=await sb.from('proof_hashes').select('order_id,phash').neq('order_id',o.id).order('created_at',{ascending:false}).limit(1500);
+  try{const{data:hh}=await qHash;
     const dup=new Set();(hh||[]).forEach(r=>Object.values(hs).forEach(h=>{if(r.phash&&hamm(h,r.phash)<=4)dup.add(r.order_id.slice(0,8))}));
     if(dup.size)bad('Imagen repetida: se parece mucho a capturas de otra(s) operación(es): '+[...dup].slice(0,3).join(', ')+'.');else if(Object.keys(hs).length)ok('Imagen: no coincide con capturas de otras operaciones.')}catch(e){}
-  if(ref)try{const{data:rr}=await sb.from('orders').select('id').eq('mediation_ref',ref).neq('id',o.id).limit(3);
+  if(ref)try{const{data:rr}=await qRef;
     if(rr&&rr.length)bad('La misma referencia ya se usó en otra operación: '+rr.map(x=>x.id.slice(0,8)).join(', ')+'.');else ok('La referencia no se había usado antes.')}catch(e){}
   const head=W.length?`Resultado: ${W.length} punto(s) a revisar.`:'Resultado: sin señales raras en lo que se pudo comprobar.';
   return `${HDR}\n${head}\n\n${L.join('\n')}\n\nSolo es un análisis automático de IA, orientativo: NO demuestra si el pago es real o falso y puede equivocarse al leer capturas borrosas. La decisión la toma el administrador.`}
 
 /* Revisión de la captura para el VENDEDOR: solo OCR en el dispositivo (sin servicio externo) */
 async function sellerCheck(o,cur){
+  const[r,f]=await Promise.all([sellerCheck0(o,cur),forenseLines(o).catch(()=>[])]);
+  r.checks=(r.checks||[]).concat(f.map(([level,text])=>({level,text})));return r}
+async function sellerCheck0(o,cur){
   const na=t=>({checks:[{level:'na',text:t}]});
   if(!o.buyer_proof)return na('El comprador aún no subió la captura.');
-  let b;try{b=await getProof(o.buyer_proof)}catch(e){return na('No se pudo descargar la captura. Revísala tú mismo.')}
-  let t;try{t=await ocrBlob(b)}catch(e){return na('El lector de texto no cargó (revisa tu conexión). Revísala tú mismo.')}
+  let t=OCRC.get(o.buyer_proof);
+  if(t==null){let b;try{b=await getProof(o.buyer_proof)}catch(e){return na('No se pudo descargar la captura. Revísala tú mismo.')}
+    try{t=await ocrBlob(b)}catch(e){return na('El lector de texto no cargó (revisa tu conexión). Revísala tú mismo.')}OCRC.set(o.buyer_proof,t)}
   if(!String(t).replace(/\s+/g,'').length)return na('No se pudo leer texto en la captura (borrosa o sin texto). Revísala tú mismo.');
   const C=[],add=(level,text)=>C.push({level,text});
   const exp=due(o,cur),tail=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-4);
   hasAmount(t,exp)?add('ok',`Monto: aparece ${mny(exp,cur)} ${cur} en la captura.`):add('warn',`Monto: no se encontró ${mny(exp,cur)} ${cur} en la captura.`);
   if(tail)hasTail(t,tail)?add('ok',`Destino: aparecen los últimos dígitos (${tail}) de tus datos de cobro.`):add('warn',`Destino: no se vieron los últimos dígitos (${tail}) de tus datos de cobro (pueden estar ocultos).`);
+  extraChecks(t,o).forEach(([l,x])=>add(l,x));
+  try{const fb=await getProof(o.buyer_proof);(await fxCheck(fb,o)).forEach(([l,x])=>add(l,x))}catch(e){}
   return{checks:C}}
 
 /* ---------- Anuncio a pantalla completa ---------- */
@@ -2641,7 +3031,8 @@ async function adminKycUsers(my){
 async function adminUnverified(my){
   const box=$('unvbox');if(!box)return;
   const base=cols=>sb.from('profiles').select(cols).or('kyc_status.is.null,kyc_status.neq.approved').limit(500);
-  let r=await base('id,username,full_name,kyc_status,is_admin,is_staff,created_at').order('created_at',{ascending:false});
+  let r=await sb.rpc('admin_unverified_users');
+  if(r.error)r=await base('id,username,full_name,kyc_status,is_admin,is_staff,created_at').order('created_at',{ascending:false});
   if(r.error)r=await base('id,username,full_name,kyc_status,is_admin,is_staff').order('username');
   if(my!==NAV||!$('unvbox'))return;
   if(r.error){box.innerHTML=`<div class="warnbox bad">No se pudieron cargar los usuarios sin verificar: ${esc(r.error.message)}</div>`;return}
@@ -2781,6 +3172,7 @@ async function viewAdmin(){
     const m=await ask('Poner comisiones en 0',`<p>Confirma que ya tomaste este dinero:</p><p><b>${Object.entries(ftot).filter(([,v])=>v>0).map(([c,v])=>n(v,fd(c))+' '+esc(c)).join(' · ')}</b></p><p class="mut">El historial de comisiones no se borra: solo se registra el retiro y el contador queda en 0. Las comisiones nuevas vuelven a sumar desde cero.</p>`,'Sí, poner en 0','ok');
     if(!m)return;m.remove();
     act(fb,async()=>{await rpc('admin_clear_fees');viewAdmin()},'Comisiones en 0')}}
+  sb.rpc('admin_flagged_orders').then(({data:fl})=>{(fl||[]).forEach(f=>{const c=main().querySelector(`[data-o="${f.order_id}"] .row`);if(c&&!c.querySelector('.flg'))c.insertAdjacentHTML('beforeend',`<span class="flg" title="${esc(f.note||'')}" style="margin-left:6px">${f.kind==='denied'?'🚩 Niega pago':f.kind==='stale'?'⏰ Sin respuesta':'🛡️ Pide revisión'}</span>`)})},()=>{});
   main().querySelectorAll('[data-tp]').forEach(b=>b.onclick=async()=>{const[id,w]=b.dataset.tp.split('|'),t=TM.find(x=>x.id===id),p=w==='s'?t.sender_proof:t.receiver_proof;
     if(!p)return toast('Aún no hay captura','err');const{data}=await sb.storage.from('proofs').createSignedUrl(p,600);data?zoom(data.signedUrl):toast('No se pudo cargar la captura','err')});
   main().querySelectorAll('[data-tl]').forEach(b=>b.onclick=async()=>{const m=await ask('Aprobar y liberar','<p>Se liberará el CUP retenido al vendedor (menos la comisión). No se puede deshacer.</p>','Aprobar','ok');if(!m)return;m.remove();
