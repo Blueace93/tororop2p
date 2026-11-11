@@ -1219,8 +1219,9 @@ function botAlParse(raw){
     if(!x.a&&!x.p)continue;
     const c=botCur(' '+s+' ');if(c)x.c=c;else if(x.p)x.c='CUP';
     out.push(x)}
+  if(!out.length&&/(oferta|ofertas|publiquen|publique|aparezca|nueva|nuevas|alguna|algo nuevo|novedad)/.test(T)){const c=botCur(' '+T+' ');out.push(c?{c}:{any:1})}
   return out.length?out.slice(0,3):null}
-const botAltTxt=x=>{const am=x.a?(x.a.op==='gte'?'al menos ':x.a.op==='lte'?'hasta ':'')+n(x.a.v,2)+' USDT':'',pr=x.p?'a '+mny(x.p.v,x.c||'CUP')+' '+(x.c||'CUP')+' '+(x.p.op==='gte'?'o más':'o menos'):(x.c?'en '+botCl(x.c):'');
+const botAltTxt=x=>{if(!x.a&&!x.p)return 'Cualquier oferta nueva'+(x.c?' en '+botCl(x.c):'');const am=x.a?(x.a.op==='gte'?'al menos ':x.a.op==='lte'?'hasta ':'')+n(x.a.v,2)+' USDT':'',pr=x.p?'a '+mny(x.p.v,x.c||'CUP')+' '+(x.c||'CUP')+' '+(x.p.op==='gte'?'o más':'o menos'):(x.c?'en '+botCl(x.c):'');
   return 'Oferta'+(am?' de '+am:'')+(pr?(am?' ':' con el USDT ')+pr:'')};
 function botAlHit(al,o){
   const c=parseM(o.methods).c,a=Number(o.amount),p=Number(o.price_cup);
@@ -1266,7 +1267,10 @@ function botIntent(q){
   if(/ (mis operaciones|operaciones activas|operaciones en curso|ordenes activas|mis ordenes|estado de mis|que operaciones tengo|tengo operaciones) /.test(t))return{k:'ops'};
   if(!ask&&(want||w<=4)&&/ (cancel|elimin|quit|borr|despublic)\w* .*(oferta|anuncio|publicacion|orden de venta)/.test(t))return{k:'cancel'};
   if(!ask&&(want||w<=3)&&/ (agreg|anad|registr|guard|nueva|crear|crea|poner|pon)\w* .*tarjeta/.test(t))return{k:'card'};
-  if(/ solicitud(es)? de compra | (publicar|crear|hacer|poner|pon|crea|haz) .*solicitud /.test(t))return{k:'breq'};
+  if(/ solicitud(es)? de compra | (publicar|crear|hacer|poner|pon|crea|haz) .*solicitud /.test(t)){const pre={},r=String(q).replace(/,/g,'.'),ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];const c=botCur(' '+r+' ');if(c)pre.c=c;return{k:'breq',pre}};
+  if(!ask&&(want||w<=5)&&/ (quiero comprar|quieren comprar|para comprar|a comprar|de compra|comprar|compra) /.test(t)&&/ (oferta|solicitud|anuncio|orden|pedido|publicar|publica|publicame|poner|pon|ponme|crear|crea|creame|abre|abreme|abrir|haz|hazme) /.test(t)&&!/ (vender|vendo|vende) /.test(t)){
+    const pre={},r=String(q).replace(/,/g,'.'),ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];
+    const c=botCur(' '+r+' ');if(c)pre.c=c;return{k:'breq',pre}}
   if(!ask&&(want||w<=3)&&/ (vender|vendo|vende|venta|publicar|publica|poner|pon|ponme|crear|crea|hacer|haz|abre|abreme|abrir) /.test(t)&&/ (usdt|oferta|anuncio|orden|venta|vender|vendo|vende) /.test(t)){
     const pre={},r=String(q).replace(/,/g,'.');
     const ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];
@@ -1308,7 +1312,7 @@ async function botFlowStart(k,pre){
     if(needKyc()){botSay('Para publicar ofertas primero debes verificar tu identidad (KYC), una sola vez.',{acts:['kyc']});return}
     BOT.fl={k,s:'',d:Object.assign({m:[]},pre||{}),ch:[]};return botSellNext()}
   if(k==='card'){BOT.fl={k,s:'',d:{},ch:[]};return botCardNext()}
-  if(k==='breq'){BOT.fl={k,s:'',d:{},ch:[]};return botBreqNext()}
+  if(k==='breq'){BOT.fl={k,s:'',d:Object.assign({},pre||{}),ch:[]};return botBreqNext()}
   if(k==='cancel')return botCancelStart();
   if(k==='ops')return botOps();
   if(k==='alert')return botAlertCreate(pre&&pre.raw);
@@ -1656,7 +1660,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-10i';
+const APP_V='2026-11-10j';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
