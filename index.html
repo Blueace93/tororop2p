@@ -1672,7 +1672,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-11a';
+const APP_V='2026-11-11b';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -2028,7 +2028,8 @@ async function pollNotifs(){
     if((S.profile?.is_admin||S.profile?.is_staff)&&S.pollN%4===1){
       const c=async(t,f)=>{const{count}=await f(sb.from(t).select('id',{count:'exact',head:true}));return count||0};
       const v=!S.profile.is_admin?[await c('kyc_submissions',q=>q.eq('status','pending'))]:await Promise.all([c('orders',q=>q.in('status',['seller_confirmed','disputed'])),c('fiat_topups',q=>q.eq('status','pending')),c('fiat_withdrawals',q=>q.eq('status','pending')),c('withdrawals',q=>q.eq('status','pending')),c('deposits',q=>q.eq('status','pending')),c('kyc_submissions',q=>q.eq('status','pending')),c('trades',q=>q.in('status',['pending','review']).eq('asset','MOVIL'))]);
-      const tot=v.reduce((a,b)=>a+b,0);
+      let dupN=0;if(S.profile.is_admin)try{const dr=await sb.rpc('admin_dup_list');dupN=((dr&&dr.data)||[]).filter(x=>x.status==='explained').length}catch(e){}
+      S.dupN=dupN;const tot=v.reduce((a,b)=>a+b,0)+dupN;
       if(!S.np0&&!S.pushOn&&tot>(S.lastPend||0))sysNotify('Tienes '+tot+' solicitudes pendientes','Revisa el panel de administrador');
       S.lastPend=tot;S.adminPend=tot;
       const bd=$('adbd');if(bd){bd.textContent=tot;bd.style.display=tot?'block':'none'}}
@@ -2753,8 +2754,52 @@ async function viewRefs(){
   $('rl2').onclick=()=>copy(link)}
 async function loadPin(){try{const{data,error}=await sb.rpc('has_pin');S.hasPin=error?false:!!data}catch(e){S.hasPin=false}}
 const devName=()=>{const u=navigator.userAgent,b=/Edg\//.test(u)?'Edge':/OPR\//.test(u)?'Opera':/Firefox/.test(u)?'Firefox':/Chrome/.test(u)?'Chrome':/Safari/.test(u)?'Safari':'Navegador',o=/Android/.test(u)?'Android':/iPhone|iPad/.test(u)?'iOS':/Windows/.test(u)?'Windows':/Mac/.test(u)?'Mac':/Linux/.test(u)?'Linux':'';return b+(o?' en '+o:'')};
+function getDevId(){
+  const ck=k=>{try{const m=document.cookie.match(new RegExp('(?:^|; )'+k+'=([^;]*)'));return m?m[1]:null}catch(e){return null}};
+  let did=lsGet('dev_id')||ck('dev_id');
+  if(!did){did=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()}
+  lsSet('dev_id',did);try{document.cookie='dev_id='+did+'; max-age=315360000; path=/; SameSite=Lax'}catch(e){}
+  return did}
+async function dupCheck(){
+  if(!S.user||S.profile?.is_admin||S.profile?.is_staff||document.getElementById('dupov'))return;
+  let r=null;try{r=await sb.rpc('dup_check',{p_device_id:getDevId()});r=r&&r.data}catch(e){}
+  if(r&&r.dup)dupOverlay(r.other||'')}
+function dupOverlay(other){
+  if(document.getElementById('dupov'))return;
+  const m=document.createElement('div');m.id='dupov';m.className='ov';m.style.zIndex='99999';
+  m.innerHTML='<div class="md" id="dupmd"></div>';document.body.appendChild(m);
+  const box=m.firstChild,bye=async msg=>{try{await sb.auth.signOut()}catch(e){}m.remove();toast(msg,'good');setTimeout(()=>location.reload(),600)};
+  const step1=()=>{
+    box.innerHTML=`<h3>⚠️ Ya tienes una cuenta en Tororo</h3>
+      <p>Detectamos que este dispositivo ya se usó con otra cuenta${other?' (<b>@'+esc(other)+'</b>)':''}. Las cuentas duplicadas no están permitidas.</p>
+      <div class="warnbox bad" style="margin:10px 0">Si continúas con esta cuenta, <b>ambas cuentas pueden ser bloqueadas</b> hasta que el equipo las revise.</div>
+      <p class="mut">Puedes salir y eliminar esta cuenta nueva, o continuar y explicarnos el motivo.</p>
+      <div class="grid2" style="margin-top:12px"><button class="b" id="dpDel">🚪 Salir y eliminar esta cuenta</button><button class="b gh" id="dpGo">Continuar con esta cuenta</button></div>
+      <p class="mut" id="dpErr" style="color:var(--bad,#ff6b6b)"></p>`;
+    box.querySelector('#dpDel').onclick=async e=>{
+      const b=e.target;if(!confirm('¿Seguro? Se eliminará esta cuenta nueva y saldrás de la app.'))return;
+      b.disabled=true;b.textContent='Procesando…';
+      try{const r=await sb.rpc('dup_delete_me');if(r.error)throw r.error;
+        await bye(r.data==='deleted'?'Cuenta eliminada':'Cuenta cerrada. Usa tu cuenta original.')}
+      catch(x){b.disabled=false;b.textContent='🚪 Salir y eliminar esta cuenta';box.querySelector('#dpErr').textContent='No se pudo completar: '+(x.message||'intenta de nuevo')}};
+    box.querySelector('#dpGo').onclick=step2};
+  const step2=()=>{
+    box.innerHTML=`<h3>Explícanos el motivo</h3>
+      <p class="mut">Un administrador revisará tu explicación. Mientras tanto la cuenta puede ser limitada.</p>
+      <textarea id="dpWhy" rows="4" maxlength="500" placeholder="Ej: comparto el teléfono con mi familiar, perdí el acceso a mi otra cuenta…"></textarea>
+      <p class="mut" id="dpErr" style="color:var(--bad,#ff6b6b)"></p>
+      <div class="grid2" style="margin-top:12px"><button class="b gh" id="dpBack">Atrás</button><button class="b" id="dpSend">Enviar y continuar</button></div>`;
+    box.querySelector('#dpBack').onclick=step1;
+    box.querySelector('#dpSend').onclick=async e=>{
+      const t=box.querySelector('#dpWhy').value.trim(),er=box.querySelector('#dpErr');
+      if(t.length<15){er.textContent='Escribe al menos 15 caracteres.';return}
+      const b=e.target;b.disabled=true;b.textContent='Enviando…';
+      try{const r=await sb.rpc('dup_continue',{p_reason:t});if(r.error)throw r.error;m.remove();toast('Explicación enviada. Un administrador la revisará.','good')}
+      catch(x){b.disabled=false;b.textContent='Enviar y continuar';er.textContent=x.message||'No se pudo enviar'}}};
+  step1()}
 async function afterLogin(){
   const uid=S.user.id;
+  dupCheck().catch(()=>{});
   if(!sessionStorage.getItem('fc_'+uid)){sessionStorage.setItem('fc_'+uid,'1');
     fraudCheck('/register-session').then(()=>fraudCheck('/check-suspicious')).then(r=>{
       if(r&&r.risk_level==='alto')console.warn('[antifraude] riesgo alto',r.flags)}).catch(()=>{});profileCheck()}
@@ -3886,12 +3931,12 @@ async function adminRisk(my){
   if(B.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',B.map(x=>x.user_id));(pp||[]).forEach(p=>bn[p.id]=p.username)}
   const bt=(id,nm)=>BS.has(id)?`<button class="b gh sm" data-ub="${id}">🔓 Desbloquear</button>`:`<button class="b sm" data-bk="${id}" data-bn="${esc(nm)}">🚫 Bloquear</button>`;
   const hi=L.filter(x=>x.puntos>=60).length,TOPN=5;
-  box.innerHTML=`<div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-bottom:8px"><span class="tag ${hi?'bad':'ok'}">🚨 ${hi} en alto riesgo</span><span class="tag ${L.length?'warn':'ok'}">⚠️ ${L.length} con señales</span><span class="tag">🚫 ${B.length} bloqueadas</span></div><div id="ffBox"></div><div class="card"><label>Buscar usuario para bloquear</label><input id="rkq" placeholder="Nombre de usuario…" maxlength="40" autocomplete="off"><div id="rkres"></div></div>`
+  box.innerHTML=`<div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-bottom:8px"><span class="tag ${hi?'bad':'ok'}">🚨 ${hi} en alto riesgo</span><span class="tag ${L.length?'warn':'ok'}">⚠️ ${L.length} con señales</span><span class="tag">🚫 ${B.length} bloqueadas</span></div><div id="dupBox"></div><div id="ffBox"></div><div class="card"><label>Buscar usuario para bloquear</label><input id="rkq" placeholder="Nombre de usuario…" maxlength="40" autocomplete="off"><div id="rkres"></div></div>`
     +(L.length?L.map((x,i)=>`<div class="card ${x.puntos>=60?'hl':''}"${i>=TOPN?' data-more style="display:none"':''}><div class="row"><b>@${esc(x.username||'?')}</b><span class="tag wa">${x.puntos} pts</span></div><div class="mut">${esc(x.full_name||'')} · KYC: ${esc(x.kyc_status||'—')} · cuenta del ${when(x.cuenta_creada)}</div><div class="mut">${(x.senales||[]).map(k=>esc(KN[k]||k)).join(' · ')}</div><div class="row" style="margin-top:8px">${bt(x.user_id,x.username||'')}<button class="b gh sm" data-rv="${x.user_id}">Marcar revisada</button></div></div>`).join('')+(L.length>TOPN?`<button class="b gh w" id="riskMore">Ver las ${L.length-TOPN} restantes</button>`:''):'<div class="card mut">Sin cuentas con señales de riesgo.</div>')
     +`<h4 style="margin:12px 0 6px">🚫 Bloqueados (${B.length})</h4>`
     +(B.length?B.map(x=>`<div class="card"><div class="row"><b>@${esc(bn[x.user_id]||'?')}</b>${bt(x.user_id,bn[x.user_id]||'')}</div><div class="mut">${esc(x.reason||'Sin motivo')} · ${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">No hay usuarios bloqueados.</div>')
     +'<button class="b gh w" id="riskRe">Volver a escanear</button>';
-  loadFraudFlags();
+  loadFraudFlags();dupAdmin(box,my);
   let T;const q=box.querySelector('#rkq');if(!q||!box.isConnected)return;
   q.oninput=()=>{clearTimeout(T);T=setTimeout(async()=>{
     const v=q.value.trim().replace(/[%_,()]/g,''),r=$('rkres');if(!r)return;if(v.length<2){r.innerHTML='';return}
@@ -3912,6 +3957,22 @@ async function adminRisk(my){
     if(e.target.closest('#riskMore')){box.querySelectorAll('[data-more]').forEach(c=>c.style.display='');e.target.closest('#riskMore').remove();return}
     if(e.target.closest('#riskRe'))adminRisk(NAV)};
 }
+async function dupAdmin(box,my){
+  const d=box.querySelector('#dupBox');if(!d)return;
+  let L=[];try{const r=await sb.rpc('admin_dup_list');if(r.error)return;L=r.data||[]}catch(e){return}
+  if(my!==NAV||!d.isConnected)return;
+  if(!L.length){d.innerHTML='';return}
+  const nE=L.filter(x=>x.status==='explained').length;
+  d.innerHTML=`<h4 style="margin:6px 0">🔁 Cuentas duplicadas por revisar <span class="tag ${nE?'bad':'warn'}">${nE?nE+' con explicación':L.length+' pendientes'}</span></h4>`+L.map(x=>`<div class="card ${x.status==='explained'?'hl':''}"><div class="row"><b>@${esc(x.user_name||'?')}</b><span class="tag ${x.status==='explained'?'bad':'warn'}">${x.status==='explained'?'🔔 Revisar':'Sin respuesta'}</span></div>
+    <div class="mut">Misma persona/dispositivo que <b>@${esc(x.other_name||'?')}</b> (cuenta más antigua) · detectada ${when(x.created_at)}</div>
+    <div style="margin:8px 0;padding:8px;border-radius:8px;background:var(--bg2,rgba(127,127,127,.12))">${x.explanation?'💬 '+esc(x.explanation):'<span class="mut">El usuario aún no ha explicado el motivo.</span>'}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-start"><button class="b sm" data-dboth="${x.user_id}" data-dother="${x.other_user_id}">🚫 Bloquear ambas</button><button class="b gh sm" data-dnew="${x.user_id}">Solo la nueva</button><button class="b gh sm" data-dok="${x.user_id}">✅ Dar por válida</button></div></div>`).join('');
+  d.onclick=async e=>{
+    const a=e.target.closest('[data-dboth]'),n=e.target.closest('[data-dnew]'),o=e.target.closest('[data-dok]');
+    const blk=async(id,why)=>{await rpc('admin_block_user',{p_user:id,p_reason:why})};
+    if(a)return act(a,async()=>{await blk(a.dataset.dboth,'Cuenta duplicada');await blk(a.dataset.dother,'Cuenta duplicada (vinculada)');await rpc('admin_dup_review',{p_user:a.dataset.dboth,p_decision:'Ambas bloqueadas'});await adminRisk(NAV);return false},'Ambas cuentas bloqueadas',true);
+    if(n)return act(n,async()=>{await blk(n.dataset.dnew,'Cuenta duplicada');await rpc('admin_dup_review',{p_user:n.dataset.dnew,p_decision:'Bloqueada la nueva'});await adminRisk(NAV);return false},'Cuenta nueva bloqueada',true);
+    if(o)return act(o,async()=>{await rpc('admin_dup_review',{p_user:o.dataset.dok,p_decision:'Dada por válida'});await adminRisk(NAV);return false},'Marcada como válida',true)}}
 async function adminAudit(my){
   const box=$('auditbox');if(!box)return;
   let F=S.audF||'all',lim=30;
