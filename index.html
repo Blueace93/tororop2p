@@ -54,6 +54,7 @@ img.proof{max-width:100%;max-height:340px;border-radius:10px;border:1px solid va
 .auth{max-width:400px;margin:7vh auto;padding:16px}
 .warnbox{background:#3d3113;border:1px solid #5b4a1a;color:var(--warn);padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:12px}
 .warnbox.bad{background:#42201c;border-color:#6b2f28;color:var(--bad)}
+.b.lk{opacity:.62;filter:saturate(.55)}
 a{color:#a99fff}
 code{background:var(--bg);padding:2px 6px;border-radius:6px;word-break:break-all}
 .steps{display:flex;margin:4px 0 14px}
@@ -766,7 +767,7 @@ const APP_NAME="Tororo";
 const CFG={card:"9227 0699 9899 2229",card_usd:"9760 0390 0799 6464",holder:"",whatsapp:"5352510320"}; // card: recargas CUP · card_usd: recargas Saldo Clásica (USD) · holder: nombre del titular (opcional)
 const avUrl=p=>p?sb.storage.from('avatars').getPublicUrl(p).data.publicUrl:'';
 const avatar=(z=26)=>{const u=avUrl(S.profile?.avatar_path);return u?`<img src="${esc(u)}" width="${z}" height="${z}" style="border-radius:50%;object-fit:cover" alt="">`:`<span style="display:inline-flex;width:${z}px;height:${z}px;border-radius:50%;background:var(--card2);align-items:center;justify-content:center;font-weight:700;color:var(--ok);font-size:${Math.round(z/2)}px">${esc((S.profile?.username||'?')[0].toUpperCase())}</span>`};
-const needKyc=()=>!S.kycOff&&!S.profile?.is_admin&&S.profile?.kyc_status!=='approved';
+const needKyc=()=>!S.profile?.is_admin&&S.profile?.kyc_status!=='approved';
 const kycChk=()=>{if(needKyc())throw new Error('Debes verificar tu identidad (KYC) para operar o retirar')};
 const gate=()=>{if(needKyc()){toast('Verifica tu identidad (KYC) para operar o retirar','err');go('profile');return true}return false};
 const kycBanner=()=>{if(!needKyc())return'';const st=S.profile?.kyc_status;
@@ -1077,7 +1078,7 @@ async function loadMe(){
     fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle()]);
   const netErr=r=>r&&r.error&&/fetch|network|abort|timed? ?out|load failed|connection/i.test(String(r.error.message||r.error));
   if(netErr(p)&&netErr(w)){if(S.profile&&S.profile.username)return;const ce=new Error('conn');ce.conn=1;throw ce}
-  if(p.error){const q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=true}else S.kycOff=false;
+  if(p.error){let q=await sb.from('profiles').select('username,is_admin,kyc_status,kyc_note').eq('id',S.user.id).single();if(q.error)q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=!!(q.data&&q.data.kyc_status===undefined)}else S.kycOff=false;
   S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}if(S.fees&&(S.profile.is_admin||S.profile.is_staff))S.fees.withdraw=0;{const[b1,b2]=await Promise.allSettled([sb.rpc('my_block'),sb.rpc('my_fee_exempt')]);
   try{const bk=b1.value&&b1.value.data;S.blocked=!!(bk&&bk.blocked);S.blockWhy=(bk&&bk.reason)||'';document.body.toggleAttribute('data-blocked',S.blocked)}catch(e){}
   try{S.feeEx=!!(b2.value&&b2.value.data===true)}catch(e){S.feeEx=false}}
@@ -1106,6 +1107,32 @@ const botStrip=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[
 const botNorm=t=>' '+botStrip(t).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' ';
 const botWa=()=>String((S.settings&&S.settings.whatsapp)||CFG.whatsapp||'').replace(/\D/g,'');
 const botSay=(t,o)=>{BOT.msgs.push(Object.assign({t:t},o||{}));if(BOT.msgs.length>60)BOT.msgs.splice(0,BOT.msgs.length-60);if(!(o&&o.n))botSpeakSoon(t)};
+/* Cierre sutil de cada respuesta: según el estado real del usuario invita a verificar el KYC, depositar USDT u operar. Sin urgencias falsas. */
+function botNudge(){
+  if(!S.user||!S.profile||S.profile.is_admin||S.blocked)return null;
+  try{if(maintOn())return null}catch(e){}
+  const st=S.profile.kyc_status||'none',tot=Number((S.wallet&&S.wallet.available)||0)+Number((S.wallet&&S.wallet.locked)||0),i=BOT.nz=(BOT.nz||0)+1,pk=a=>a[i%a.length];
+  if(needKyc()){
+    if(st==='pending')return{a:'dep',t:pk([
+      '⏳ Tu verificación está en revisión. Mientras tanto puedes ir adelantando tu depósito de USDT, así empiezas a operar apenas te aprueben.',
+      '⏳ Ya enviaste tu verificación, solo falta la revisión. Si quieres, deja listo tu depósito de USDT para cuando te aprueben.'])};
+    if(st==='rejected')return{a:'kyc',t:pk([
+      '🪪 Tu verificación necesita un reenvío: revisa que las fotos se vean nítidas y envíala de nuevo desde tu Perfil. ¿Te llevo?',
+      '🪪 Cuando puedas, reenvía tu verificación con fotos bien claras; es lo que te habilita para operar y retirar.'])};
+    if(st==='incomplete')return{a:'kyc',t:'🪪 Te faltan algunos datos para completar tu verificación; en tu Perfil ves cuáles. Completarlos te habilita para operar y retirar.'};
+    return{a:'kyc',t:pk([
+      '🪪 Por cierto: verificar tu identidad se hace una sola vez, toma pocos minutos y es lo que te abre comprar, vender y retirar. ¿Te llevo a tu Perfil?',
+      '🪪 Con tu identidad verificada y USDT en tu saldo ya puedes publicar ofertas y retirar cuando quieras. ¿Empezamos por la verificación?',
+      '🪪 Un paso te deja listo para operar: verificar tu identidad desde el Perfil (una sola vez). Cuando quieras, te llevo.'])}}
+  if(tot<=0)return{a:'dep',t:pk([
+    '💡 Para publicar una oferta necesitas USDT en tu saldo; el depósito se hace desde Billetera en unos pasos. ¿Te llevo?',
+    '💡 Tu identidad ya está verificada, así que solo te falta saldo: deposita USDT y podrás vender y retirar cuando quieras.'])};
+  return{a:'sell',t:pk([
+    '✨ Ya tienes todo listo: cuando quieras puedes publicar una oferta o echar un vistazo al Mercado.',
+    '✨ Tu saldo está disponible. Si te animas, publicar una oferta toma un momento y puedo guiarte paso a paso.'])}}
+const botSayN=(t,acts)=>{const z=botNudge(),a=(acts||[]).slice();
+  if(z){t=String(t).replace(/\s+$/,'')+'\n\n'+z.t;const k=a.indexOf(z.a);if(k>=0)a.splice(k,1);a.unshift(z.a)}
+  return botSay(t,{acts:a.slice(0,4)})};
 const botNum=t=>{const m=String(t).replace(/,/g,'.').match(/\d+(\.\d+)?/);return m?+m[0]:NaN};
 const botMsk=c=>'···· '+String(c||'').replace(/\D/g,'').slice(-4);
 const botCl=c=>c==='Saldo Clásica'?'Saldo Clásica (USD)':c;
@@ -1315,7 +1342,8 @@ async function botFlowStart(k,pre){
     if(needKyc()){botSay('Para publicar ofertas primero debes verificar tu identidad (KYC), una sola vez.',{acts:['kyc']});return}
     BOT.fl={k,s:'',d:Object.assign({m:[]},pre||{}),ch:[]};return botSellNext()}
   if(k==='card'){BOT.fl={k,s:'',d:{},ch:[]};return botCardNext()}
-  if(k==='breq'){BOT.fl={k,s:'',d:Object.assign({},pre||{}),ch:[]};return botBreqNext()}
+  if(k==='breq'){if(needKyc()){botSay('Para publicar solicitudes de compra primero debes verificar tu identidad (KYC), una sola vez.',{acts:['kyc']});return}
+    BOT.fl={k,s:'',d:Object.assign({},pre||{}),ch:[]};return botBreqNext()}
   if(k==='cancel')return botCancelStart();
   if(k==='ops')return botOps();
   if(k==='alert')return botAlertCreate(pre&&pre.raw);
@@ -1447,7 +1475,7 @@ async function botBreqIn(x,raw){
     case 'ok':{
       if(x==='no'||/ (no|cancelar) /.test(nx)){BOT.fl=null;return botSay('Listo, no publiqué nada.')}
       if(!botConf(x,nx,'Publicar solicitud'))return;
-      try{await rpc('buy_req_create',{p_amount:d.a,p_currency:d.c});BOT.fl=null;
+      try{kycChk();await rpc('buy_req_create',{p_amount:d.a,p_currency:d.c});BOT.fl=null;
         return botSay('✅ Solicitud publicada. Los vendedores la verán en el Mercado.',{acts:['mkt']})}
       catch(e){return botSay('⚠️ No pude publicarla: '+String((e&&e.message)||e).slice(0,200))}}
   }
@@ -1505,9 +1533,9 @@ async function botFree(q){
   const it=botIntent(q);
   if(it)return botFlowStart(it.k,it.pre);
   const out=botReply(q);
-  if(out){await new Promise(r=>setTimeout(r,300));return botSay(out.a,{acts:out.acts})}
+  if(out){await new Promise(r=>setTimeout(r,300));return botSayN(out.a,out.acts)}
   const ai=await botAI(q);
-  botSay(ai||'No estoy seguro de eso 🤔. Prueba con otra pregunta o mira la Ayuda completa.'+(ai?'':(botWa()?' También puedes escribir a soporte por WhatsApp.':'')),{acts:ai?[]:['help'].concat(botWa()?['wa']:[])})}
+  botSayN(ai||'No estoy seguro de eso 🤔. Prueba con otra pregunta o mira la Ayuda completa.'+(ai?'':(botWa()?' También puedes escribir a soporte por WhatsApp.':'')),ai?[]:['help'].concat(botWa()?['wa']:[]))}
 function botSend(q,val,voice){
   q=String(q||'').trim().slice(0,300);if(!q||BOT.busy)return;
   const fl=BOT.fl,step=fl&&fl.s,mask=fl&&step==='cardn'&&val===undefined;
@@ -1756,7 +1784,7 @@ const chipsHtml=(sel,id)=>`<div class="chips" id="${id}">${METHODS.map(m=>`<butt
 async function viewMarket(){
   const my=NAV,F=S.f;
   main().innerHTML=`${topHtml()}
-  <div class="mkact"><button class="b" id="tg">💰 Vender USDT</button><button class="b gh" id="tb">🙋 Quiero comprar</button></div>
+  <div class="mkact"><button class="b${needKyc()?' lk':''}" id="tg">${needKyc()?'🔒 ':''}💰 Vender USDT</button><button class="b gh${needKyc()?' lk':''}" id="tb">${needKyc()?'🔒 ':''}🙋 Quiero comprar</button></div>
   <div id="sell" class="card hide" style="display:none"><b>Vender USDT</b><div class="mut">Disponible: ${n(S.wallet?.available,2)} USDT</div>
       <label>Cantidad de USDT <button class="b gh sm" id="omax" type="button">Máx</button></label><input id="oa" type="number" min="1" step="any" inputmode="decimal">
       <label>Moneda que quieres recibir</label><select id="oc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
@@ -1784,10 +1812,10 @@ async function viewMarket(){
   <div id="pnB" style="display:none"><div id="breqs">${skel(1)}</div></div>`;
   $('srt').value=F.sort;bindTop();
   $('tg').onclick=()=>{if(gate())return;loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
-  $('tb').onclick=()=>{const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
+  $('tb').onclick=()=>{if(gate())return;const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   const setMt=t=>{S.mt=t;$('pnS').style.display=t==='s'?'':'none';$('pnB').style.display=t==='b'?'':'none';$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t))};
   $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'s');
-  $('bk').onclick=ev=>act(ev.target,async()=>{const a=+$('ba').value,c=$('bc').value;if(!(a>0))throw new Error('Indica cuántos USDT quieres comprar');
+  $('bk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('ba').value,c=$('bc').value;if(!(a>0))throw new Error('Indica cuántos USDT quieres comprar');
     await rpc('buy_req_create',{p_amount:a,p_currency:c});$('ba').value='';$('buy').style.display='none';setMt('b');await loadBuyReqs(my)},'Solicitud publicada');
   loadBuyReqs(my);
   if(S.openSell){S.openSell=0;if(!gate())$('sell').style.display='block'}
@@ -1842,7 +1870,7 @@ function drawOffers(){
     ${r?`<div class="qo-ic"><span>${r.ratings>0?'⭐ '+Number(r.avg_stars).toFixed(1):'Sin calificar'}</span><span>🔁 ${n(r.ops,0)}</span></div>`:''}</div>
     <small class="qo-t">${tm(o.created_at)}</small></div>
     <div class="qo-s"><div class="qo-v"><span>Vende</span><div><b>${n(o.amount,2)}</b> <u>USDT</u></div></div>
-    ${mine?`<button class="b ob1 qo-btn own" data-cancel="${o.id}">Cancelar oferta</button>`:`<button class="b ob1 qo-btn" data-buy="${o.id}">Comprar</button>`}</div>
+    ${mine?`<button class="b ob1 qo-btn own" data-cancel="${o.id}">Cancelar oferta</button>`:`<button class="b ob1 qo-btn${needKyc()?' lk':''}" data-buy="${o.id}">${needKyc()?'🔒 ':''}Comprar</button>`}</div>
     <div class="qo-g"><div class="qo-k"><span>Precio por USDT</span><b><i class="qo-ci" style="background:hsl(${hue(c)} 55% 42%)">${esc(String(c).charAt(0).toUpperCase())}</i>${mny(o.price_cup,c)} ${esc(c)}${dl!=null&&Math.abs(dl)>=0.05?`<em class="qo-d ${dl<0?'dn':'up'}" title="Frente a la mediana de las ofertas en ${esc(c)}">${dl>0?'+':''}${dl.toFixed(1)}%</em>`:''}</b></div>
     <div class="qo-k"><span>Total a pagar</span><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></div></div>
     <div class="qo-m">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
@@ -2429,7 +2457,7 @@ async function viewWallet(){
     <label>Monto (USDT) <button class="b gh sm" id="wmax" type="button">Máx</button></label><input id="wa" type="number" step="any" inputmode="decimal"><div class="mut" id="wfee" style="margin:-4px 0 8px"></div>
     <label>Red</label><select id="wn"><option value="BEP20">BNB Smart Chain (BEP20)</option><option value="ARBITRUM">Arbitrum One</option></select>
     <label>Dirección de destino (0x…, de la red elegida)</label><input id="wd" placeholder="0x...">
-    <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${FE('withdraw')}%.</div><button class="b w" id="wit">Solicitar retiro</button></div>
+    <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${FE('withdraw')}%.</div><button class="b w${needKyc()?' lk':''}" id="wit">${needKyc()?'🔒 ':''}Solicitar retiro</button></div>
   <div id="hist">${skel(2)}</div>`;
   bindCopy(main());
   const upd=()=>{$('wfee').textContent=wfeeTxt(+$('wa').value,'USDT',2)};$('wa').oninput=upd;$('wmax').onclick=()=>{const L=S.wlim;$('wa').value=L&&L.limited?Math.min(S.wallet.available,L.available):S.wallet.available;upd()};
@@ -2565,7 +2593,7 @@ async function drawKycFix(){
 async function viewProfile(){
   const my=NAV,P=S.profile,st=P.kyc_status||'none';
   const TG={none:['Sin verificar','bad'],pending:['En revisión','warn'],approved:['Verificado','ok'],rejected:['Rechazado','bad'],incomplete:['Faltan datos','warn']}[st]||['','' ];
-  const kyc=S.kycOff||P.is_admin?'':st==='approved'?'<div class="card hl"><h3>✅ Identidad verificada</h3><p class="mut" style="margin:0">Ya puedes comprar, vender y retirar.</p></div>'
+  const kyc=P.is_admin?'':st==='approved'?'<div class="card hl"><h3>✅ Identidad verificada</h3><p class="mut" style="margin:0">Ya puedes comprar, vender y retirar.</p></div>'
    :st==='incomplete'?'<div class="card" id="kfx"><h3>⏳ Pendiente de verificación por falta de datos</h3><p class="mut" style="margin:0">Cargando…</p></div>'
    :st==='pending'?'<div class="card"><h3>⏳ Verificación en revisión</h3><p class="mut" style="margin:0">El administrador revisará tus documentos. Te avisaremos aquí cuando esté lista.</p></div>'
    :`<div class="card"><h3>🪪 Verificación de identidad (KYC)</h3>
