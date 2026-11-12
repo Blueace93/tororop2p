@@ -1672,7 +1672,7 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
-const APP_V='2026-11-10j';
+const APP_V='2026-11-11a';
 function renderAuth(mode='login'){
   const reg=mode==='register';
   $app.innerHTML=`<div class="auth ${reg?'reg':''}"><div class="axb" aria-hidden="true"><span style="left:8%;top:12%">${cIco('USDT',30)}</span><span style="right:10%;top:22%;animation-delay:-2s">${cIco('CUP',26)}</span><span style="left:14%;bottom:14%;animation-delay:-4s">${cIco('CUP',24)}</span><span style="right:12%;bottom:10%;animation-delay:-1s">${cIco('USDT',34)}</span></div><div class="ac">
@@ -3873,26 +3873,26 @@ function adminAuditShell(){
   $('auditGo').onclick=()=>adminAudit(NAV)}
 function adminRiskShell(){
   if($('s-risk'))return;
-  main().insertAdjacentHTML('beforeend','<h3 id="s-risk">Riesgo y bloqueos</h3><div id="riskbox"><button class="b gh w" id="riskGo">Ver cuentas con señales</button></div>');
-  $('riskGo').onclick=()=>adminRisk(NAV)}
+  main().insertAdjacentHTML('beforeend','<h3 id="s-risk">🚨 Análisis de cuentas mula y riesgo</h3><div id="riskbox">'+skel(1)+'</div>')}
 async function adminRisk(my){
   const box=$('riskbox');if(!box)return;
   box.innerHTML=skel(1);
   try{await sb.rpc('risk_scan')}catch(e){}
   const[sc,bl]=await Promise.all([sb.from('risk_scores').select('*').order('puntos',{ascending:false}).limit(50),sb.from('user_blocks').select('user_id,reason,created_at').order('created_at',{ascending:false})]);
-  if(my!==NAV||!$('riskbox'))return;
+  if(my!==NAV||!$('riskbox')||!box.isConnected)return;
   if(sc.error||bl.error){box.innerHTML='<div class="warnbox bad">Falta crear el sistema de riesgo y bloqueos en Supabase.</div>';return}
   const L=sc.data||[],B=bl.data||[],BS=new Set(B.map(x=>x.user_id)),bn={};
   const KN={shared_address:'Dirección de retiro compartida',pass_through:'Cuenta puente',new_high_volume:'Cuenta nueva con volumen alto',circular:'Operaciones circulares',many_addresses:'Varias direcciones de retiro',shared_payment:'Datos de pago compartidos'};
   if(B.length){const{data:pp}=await sb.from('profiles').select('id,username').in('id',B.map(x=>x.user_id));(pp||[]).forEach(p=>bn[p.id]=p.username)}
   const bt=(id,nm)=>BS.has(id)?`<button class="b gh sm" data-ub="${id}">🔓 Desbloquear</button>`:`<button class="b sm" data-bk="${id}" data-bn="${esc(nm)}">🚫 Bloquear</button>`;
-  box.innerHTML=`<div id="ffBox"></div><div class="card"><label>Buscar usuario para bloquear</label><input id="rkq" placeholder="Nombre de usuario…" maxlength="40" autocomplete="off"><div id="rkres"></div></div>`
-    +(L.length?L.map(x=>`<div class="card ${x.puntos>=60?'hl':''}"><div class="row"><b>@${esc(x.username||'?')}</b><span class="tag wa">${x.puntos} pts</span></div><div class="mut">${esc(x.full_name||'')} · KYC: ${esc(x.kyc_status||'—')} · cuenta del ${when(x.cuenta_creada)}</div><div class="mut">${(x.senales||[]).map(k=>esc(KN[k]||k)).join(' · ')}</div><div class="row" style="margin-top:8px">${bt(x.user_id,x.username||'')}<button class="b gh sm" data-rv="${x.user_id}">Marcar revisada</button></div></div>`).join(''):'<div class="card mut">Sin cuentas con señales de riesgo.</div>')
+  const hi=L.filter(x=>x.puntos>=60).length,TOPN=5;
+  box.innerHTML=`<div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-bottom:8px"><span class="tag ${hi?'bad':'ok'}">🚨 ${hi} en alto riesgo</span><span class="tag ${L.length?'warn':'ok'}">⚠️ ${L.length} con señales</span><span class="tag">🚫 ${B.length} bloqueadas</span></div><div id="ffBox"></div><div class="card"><label>Buscar usuario para bloquear</label><input id="rkq" placeholder="Nombre de usuario…" maxlength="40" autocomplete="off"><div id="rkres"></div></div>`
+    +(L.length?L.map((x,i)=>`<div class="card ${x.puntos>=60?'hl':''}"${i>=TOPN?' data-more style="display:none"':''}><div class="row"><b>@${esc(x.username||'?')}</b><span class="tag wa">${x.puntos} pts</span></div><div class="mut">${esc(x.full_name||'')} · KYC: ${esc(x.kyc_status||'—')} · cuenta del ${when(x.cuenta_creada)}</div><div class="mut">${(x.senales||[]).map(k=>esc(KN[k]||k)).join(' · ')}</div><div class="row" style="margin-top:8px">${bt(x.user_id,x.username||'')}<button class="b gh sm" data-rv="${x.user_id}">Marcar revisada</button></div></div>`).join('')+(L.length>TOPN?`<button class="b gh w" id="riskMore">Ver las ${L.length-TOPN} restantes</button>`:''):'<div class="card mut">Sin cuentas con señales de riesgo.</div>')
     +`<h4 style="margin:12px 0 6px">🚫 Bloqueados (${B.length})</h4>`
     +(B.length?B.map(x=>`<div class="card"><div class="row"><b>@${esc(bn[x.user_id]||'?')}</b>${bt(x.user_id,bn[x.user_id]||'')}</div><div class="mut">${esc(x.reason||'Sin motivo')} · ${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">No hay usuarios bloqueados.</div>')
     +'<button class="b gh w" id="riskRe">Volver a escanear</button>';
   loadFraudFlags();
-  let T;const q=$('rkq');
+  let T;const q=box.querySelector('#rkq');if(!q||!box.isConnected)return;
   q.oninput=()=>{clearTimeout(T);T=setTimeout(async()=>{
     const v=q.value.trim().replace(/[%_,()]/g,''),r=$('rkres');if(!r)return;if(v.length<2){r.innerHTML='';return}
     const{data}=await sb.from('profiles').select('id,username,is_admin,is_staff').ilike('username','%'+v+'%').order('username').limit(8);
@@ -3900,11 +3900,16 @@ async function adminRisk(my){
     $('rkres').innerHTML=(data||[]).length?data.map(x=>`<div class="row" style="padding:6px 0"><b>@${esc(x.username)}</b>${x.is_admin||x.is_staff?'<span class="mut">Administrador</span>':bt(x.id,x.username)}</div>`).join(''):'<p class="mut" style="margin:8px 0 0">No encontré ese usuario.</p>'},300)};
   box.onclick=async e=>{
     const k=e.target.closest('[data-bk]'),u=e.target.closest('[data-ub]'),v=e.target.closest('[data-rv]');
-    if(k){const m=await ask('🚫 Bloquear a @'+k.dataset.bn,'<p>Solo podrá <b>retirar su saldo</b>. No podrá operar, publicar, depositar ni usar el chat.</p><label>Motivo</label><textarea id="brs" rows="2" maxlength="200" placeholder="Ej: sospecha de cuenta mula"></textarea>','Bloquear');
+    if(k){const m=await ask('🚫 Bloquear a @'+k.dataset.bn,'<p>Solo podrá <b>retirar su saldo</b>. No podrá operar, publicar, depositar ni usar el chat. <b>Sus ofertas abiertas se retirarán del mercado</b> y su USDT volverá a su saldo.</p><label>Motivo</label><textarea id="brs" rows="2" maxlength="200" placeholder="Ej: sospecha de cuenta mula"></textarea>','Bloquear');
       if(!m)return;const why=m.querySelector('#brs').value.trim();m.remove();
-      return act(k,async()=>{await rpc('admin_block_user',{p_user:k.dataset.bk,p_reason:why});await adminRisk(NAV);return false},'Usuario bloqueado',true)}
+      return act(k,async()=>{await rpc('admin_block_user',{p_user:k.dataset.bk,p_reason:why});
+        let left=0;try{const r=await sb.from('offers').select('id',{count:'exact',head:true}).eq('seller_id',k.dataset.bk).eq('status','open');left=r.count||0}catch(e){}
+        await adminRisk(NAV);
+        if(left>0)throw new Error('Usuario bloqueado, pero '+left+' oferta(s) siguen abiertas. Falta ejecutar tororo_nov11_bloqueo.sql en Supabase.');
+        return false},'Usuario bloqueado y sus ofertas retiradas del mercado',true)}
     if(u)return act(u,async()=>{await rpc('admin_unblock_user',{p_user:u.dataset.ub});await adminRisk(NAV);return false},'Usuario desbloqueado',true);
     if(v)return act(v,async()=>{await rpc('risk_resolve',{p_user:v.dataset.rv});await adminRisk(NAV);return false},'Marcada como revisada',true);
+    if(e.target.closest('#riskMore')){box.querySelectorAll('[data-more]').forEach(c=>c.style.display='');e.target.closest('#riskMore').remove();return}
     if(e.target.closest('#riskRe'))adminRisk(NAV)};
 }
 async function adminAudit(my){
@@ -4009,7 +4014,7 @@ async function viewAdmin(){
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
   const LD={
     sta:()=>adminStats(mm,my),
-    usr:()=>{mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my);adminStaffMgmt();adminBalances();adminDuty(my);adminAuditShell();adminRiskShell()},
+    usr:()=>{adminRiskShell();adminRisk(my);mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my);adminStaffMgmt();adminBalances();adminDuty(my);adminAuditShell()},
     cfg:async()=>{adminBlocks();adminMaint();adminPayout();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}if(id)toEl(id)};
