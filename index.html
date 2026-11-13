@@ -1265,8 +1265,10 @@ const BOT_KB=[
   a:()=>'Tus datos de cobro (tarjeta y teléfono) solo los ve quien te compra en una operación, y las tarjetas guardadas en Mis tarjetas son solo tuyas. Tu carnet y tu selfie del KYC los revisa el administrador para verificar tu identidad. Nunca compartas tu contraseña ni tu PIN con nadie, ni siquiera con el soporte.',acts:['sec']},
  {k:['pagar por fuera','pago por fuera','fuera de la plataforma','fuera de tororo','por whatsapp','me piden pagar','pide pagar','denunciar','reportar','usuario sospechoso','me quieren estafar'],
   a:()=>'No pagues ni hables fuera de Tororo: si alguien te pide pagar por otra vía, tu contraseña, tu PIN o un código, no lo hagas. Si ya pasó algo, entra en la operación y toca “Solicitar mediación” (sube tus capturas y la referencia del pago) o escribe a soporte.',acts:botWa()?['ord','wa']:['ord']},
- {k:['que es usdt','que es el usdt','que son los usdt','que es tether','=tether'],
+ {k:['que es usdt','que es el usdt','que son los usdt','que es tether','=tether','que cosa es el usdt','que cosa es usdt','que cosa son los usdt','es el usdt','es un usdt','que significa usdt','que significa el usdt','explicame el usdt','explicame que es usdt'],
   a:()=>'USDT (Tether) es una criptomoneda “estable”: busca mantener un valor cercano a 1 dólar. En Tororo compras y vendes USDT directamente con otras personas, pagando en CUP, MLC o saldo.',acts:['mkt']},
+ {k:['que es blockchain','que es la blockchain','que es el blockchain','que es una blockchain','que es block','que es la block','que es el block','que cosa es la blockchain','que cosa es blockchain','que cosa es el blockchain','que significa blockchain','que es la cadena de bloques','que es cadena de bloques','explicame la blockchain','explicame que es blockchain'],
+  a:()=>'Una blockchain (cadena de bloques) es un registro digital donde quedan anotadas todas las transacciones de una criptomoneda. Está copiado en miles de computadoras a la vez, así que nadie puede borrar ni alterar lo que ya se registró. Cada movimiento tiene un código único llamado TXID, con el que puedes ver tu transacción. En Tororo, las compras y ventas entre usuarios se hacen dentro de la plataforma; los depósitos y retiros de USDT sí pasan por la blockchain.',acts:['dep']},
  {k:['que es p2p','=p2p','como funciona tororo','como funciona la plataforma','que es tororo','para que sirve tororo','que hace tororo'],
   a:()=>'Tororo es una plataforma P2P: compradores y vendedores de USDT se conectan directamente. El vendedor publica una oferta con sus USDT bloqueados, el comprador paga por Transfermóvil o EnZona y sube su captura, y al confirmar el pago los USDT llegan a su billetera. Si hay un problema, el administrador media.',acts:['tuto','help']},
  {k:['metodos de pago','formas de pago','que monedas','que moneda','aceptan','=transfermovil','=enzona','como se paga'],
@@ -1396,12 +1398,25 @@ function botReply(q,aiFirst){
 /* Respuesta del Worker (/assistant). Se muestra tal cual, sin filtros. Si falla, botFree usa el FAQ local como respaldo. */
 async function botAI(q){
   /* tras 3 fallos seguidos se pausa 60 s (antes se apagaba para toda la sesión) */
-  if(BOT.aiFail>=3){if(Date.now()-(BOT.aiFailAt||0)<60000)return null;BOT.aiFail=0}
+  if(BOT.aiFail>=3){if(Date.now()-(BOT.aiFailAt||0)<60000){BOT.aiErr=BOT.aiErr||'pausado tras varios fallos';return null}BOT.aiFail=0}
+  const fail=why=>{BOT.aiFail++;BOT.aiFailAt=Date.now();BOT.aiErr=why;console.warn('[asistente]',why);return null};
   const hist=BOT.msgs.filter(x=>!x.typing&&!x.n&&x.t).slice(-11,-1).map(x=>({role:x.me?'user':'assistant',text:String(x.t).slice(0,600)}));
-  const r=await fraudCheck('/assistant',{question:q,history:hist,faq:[],app:APP_NAME},25000);
-  const a=r&&typeof r.answer==='string'?r.answer.trim():'';
-  if(!a){BOT.aiFail++;BOT.aiFailAt=Date.now();return null}
-  BOT.aiFail=0;return a}
+  let ses;try{ses=(await sb.auth.getSession()).data.session}catch(e){}
+  if(!ses)return fail('sin sesión');
+  const c=new AbortController(),tm=setTimeout(()=>c.abort(),25000);
+  try{
+    console.log('[asistente] POST',FRAUD_URL+'/assistant','· origen de la página:',location.origin,'· token:',ses.access_token?'sí':'NO','· pregunta:',q);
+    const r=await fetch(FRAUD_URL+'/assistant',{method:'POST',headers:{'Authorization':'Bearer '+ses.access_token,'Content-Type':'application/json'},body:JSON.stringify({question:q,history:hist,faq:[],app:APP_NAME}),signal:c.signal});
+    const raw=await r.text();let j=null;try{j=JSON.parse(raw)}catch(e){}
+    console.log('[asistente] status',r.status,r.statusText,'· respuesta:',raw.slice(0,500));
+    if(!r.ok)return fail('HTTP '+r.status+((j&&(j.error||j.message))?': '+String(j.error||j.message).slice(0,80):''));
+    const a=j&&[j.answer,j.response,j.reply,j.text,j.result].find(v=>typeof v==='string'&&v.trim());
+    if(!a)return fail('respuesta sin "answer"'+(j?' (campos: '+Object.keys(j).join(',')+')':' (no es JSON)'));
+    BOT.aiFail=0;BOT.aiErr='';return a.trim()}
+  catch(e){console.error('[asistente] fetch falló:',e&&e.name,e&&e.message,e);
+    const okOrg=/^https:\/\/(www\.)?tororo\.trade$/.test(location.origin);
+    return fail((e&&e.name==='AbortError')?'tiempo agotado (25 s)':(okOrg?'red o CORS':'CORS: la API solo acepta tororo.trade y esta página está en '+location.origin)+' · '+String((e&&e.message)||e).slice(0,60))}
+  finally{clearTimeout(tm)}}
 /* ----- Gestiones guiadas ----- */
 async function botFlowStart(k,pre){
   if(['sell','card','breq','cancel'].includes(k)&&S.user&&maintOn()&&!isAdm()){BOT.fl=null;return botSay('La plataforma está en mantenimiento. Vuelve más tarde.')}
@@ -1608,7 +1623,7 @@ async function botFree(q){
   /* 3) Respaldo solo si la IA no responde: FAQ local y, si tampoco, mensaje de ayuda */
   const fb=botReply(q);
   if(fb)return botSayN(fb.a,fb.acts);
-  botSay('Ahora mismo no logro conectarme para responderte bien 😕. Inténtalo de nuevo en unos segundos, mira la Ayuda completa'+(botWa()?' o escríbele a soporte por WhatsApp.':'.'),{acts:['help'].concat(botWa()?['wa']:[])})}
+  botSay('Ahora mismo no logro conectarme para responderte bien 😕. Inténtalo de nuevo en unos segundos, mira la Ayuda completa'+(botWa()?' o escríbele a soporte por WhatsApp.':'.')+(BOT.aiErr?'\n(código: '+BOT.aiErr+')':''),{acts:['help'].concat(botWa()?['wa']:[])})}
 function botSend(q,val,voice){
   q=String(q||'').trim().slice(0,300);if(!q||BOT.busy)return;
   const fl=BOT.fl,step=fl&&fl.s,mask=fl&&step==='cardn'&&val===undefined;
