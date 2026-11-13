@@ -753,6 +753,10 @@ html.lite #fabm,html.lite #fabbd,html.lite .bm.nw,html.lite .bm.bt i,html.lite #
 @keyframes sgA{to{transform:translate(12vmax,10vmax)}}
 @keyframes sgB{to{transform:translate(-10vmax,-12vmax)}}
 @media (prefers-reduced-motion:reduce){#splash *{animation-duration:0s!important;animation-iteration-count:1!important}#splash .sxt span:first-child{opacity:1}}
+.dc-ia{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
+.dc-trw{display:flex;gap:4px;margin-top:3px}
+.dc-trb{background:transparent;border:0;color:inherit;opacity:.55;font-size:12px;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer}.dc-trb:hover{opacity:1;background:rgba(127,127,127,.18)}.dc-trb:disabled{opacity:.35}
+.dc-trx{margin-top:4px;padding:6px 8px;border-radius:10px;background:rgba(127,127,127,.15);color:var(--mut);font-size:13px;white-space:pre-wrap;border-left:3px solid var(--acc)}
 </style>
 <script>setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<p id="slw" style="margin:0;max-width:280px;text-align:center;font-size:14px;opacity:.75">La conexión está lenta, sigue cargando…</p>')},8000);setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<button id="slr" style="padding:10px 18px;border-radius:12px;border:1px solid #6d5efc;background:transparent;color:inherit;font-weight:700" onclick="location.reload()">Reintentar</button>')},35000)</script>
 <div id="toast"></div>
@@ -865,6 +869,67 @@ async function fraudCheck(endpoint,body,ms){
     }finally{clearTimeout(t)}
   }catch(e){return null}
 }
+/* apiCall: igual que fraudCheck pero LANZA el error (para funciones que muestran el resultado al usuario). */
+async function apiCall(endpoint,body,ms){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session)throw new Error('No hay sesión');
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||20000);
+  try{const r=await fetch(FRAUD_URL+endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify(body||{}),signal:c.signal});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||('Error en la API ('+r.status+')'))}
+    return await r.json()}
+  finally{clearTimeout(t)}}
+/* Endpoints de la API listos para usar desde la interfaz (todavía no hay pantalla que los llame) */
+const apiTranslate=(text,target,source)=>apiCall('/translate',{text:String(text||'').slice(0,4000),source_lang:source||'es',target_lang:target||'en'});
+const apiSummarize=text=>apiCall('/summarize',{text:String(text||'').slice(0,8000)});
+const apiSentiment=text=>apiCall('/sentiment',{text:String(text||'').slice(0,4000)});
+const apiOcr=src=>apiCall('/ocr',/^data:/.test(src)?{image_base64:src}:{image_path:src},30000);
+const apiCheckListingImage=(src,declared)=>apiCall('/check-listing-image',Object.assign(/^data:/.test(src)?{image_base64:src}:{image_path:src},declared?{declared_description:declared}:{}),30000);
+/* Imagen (Blob/File) -> data URL JPEG reducida (máx. 1600 px) para no mandar fotos enormes */
+async function blobToDataUrl(blob,max){
+  max=max||1600;
+  try{const bm=await createImageBitmap(blob),k=Math.min(1,max/Math.max(bm.width,bm.height)),c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(bm.width*k));c.height=Math.max(1,Math.round(bm.height*k));
+    c.getContext('2d').drawImage(bm,0,0,c.width,c.height);try{bm.close()}catch(e){}
+    return c.toDataURL('image/jpeg',0.85)}
+  catch(e){return await new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(f.result);f.onerror=rej;f.readAsDataURL(blob)})}}
+/* Botón con estado de carga: muestra "…" mientras trabaja; si la API falla, toast genérico */
+async function aiBtn(b,fn){
+  if(!b||b.disabled)return;const t=b.innerHTML;b.disabled=true;b.textContent='…';
+  try{await fn()}catch(e){toast('No disponible en este momento','err');console.warn('[ia]',e)}
+  finally{if(b.isConnected){b.disabled=false;b.innerHTML=t}}}
+/* Sentimiento del chat: verde=positivo, rojo=negativo, gris=neutral/mixto */
+function sentModal(d){
+  d=d||{};const s=String(d.sentiment||'').toLowerCase(),k=/posit/.test(s)?'ok':/negat/.test(s)?'bad':'mut';
+  let cf=Number(d.confidence);cf=isNaN(cf)?null:(cf>1?cf/100:cf);
+  const em=(Array.isArray(d.emotions)?d.emotions:(d.emotions?[d.emotions]:[])).map(e=>typeof e==='string'?e:(e&&(e.label||e.emotion||e.name))||'').filter(Boolean);
+  const tense=k==='bad'&&cf!=null&&cf>0.7;
+  modal(`<h3>🧠 Análisis del chat</h3>
+    <div style="font-weight:700;font-size:20px;color:var(--${k});text-transform:capitalize">${esc(d.sentiment||'Sin resultado')}</div>
+    ${cf!=null?`<div class="mut">Confianza: <b>${Math.round(cf*100)}%</b></div>`:''}
+    ${em.length?`<div style="margin:8px 0">${em.map(e=>`<span class="dc-chip" style="margin:0 4px 4px 0">${esc(e)}</span>`).join('')}</div>`:''}
+    ${d.summary?`<p style="margin:8px 0">${esc(d.summary)}</p>`:''}
+    ${tense?'<div class="warnbox bad">El tono de esta conversación es tenso. Considera solicitar mediación.</div>':''}
+    <p class="mut" style="font-size:11px">Es una ayuda automática y puede equivocarse.</p>
+    <button class="b gh w" style="margin-top:6px" onclick="this.closest('.ov').remove()">Cerrar</button>`)}
+function summModal(d){
+  const t=d&&(d.summary||d.text)||'';
+  modal(`<h3>📝 Resumen del chat</h3><p style="white-space:pre-wrap;margin:8px 0">${esc(t||'No se pudo generar un resumen.')}</p>
+    <p class="mut" style="font-size:11px">Resumen automático: revisa los mensajes originales antes de decidir.</p>
+    <button class="b gh w" style="margin-top:6px" onclick="this.closest('.ov').remove()">Cerrar</button>`)}
+/* OCR de una captura: baja la imagen, la reduce a base64 y muestra el texto leído */
+async function ocrRun(b){
+  aiBtn(b,async()=>{
+    const r=await fetch(b.dataset.ocr);if(!r.ok)throw new Error('img '+r.status);
+    const d=await apiOcr(await blobToDataUrl(await r.blob()));
+    const t=String((d&&d.text)||'').trim();
+    modal(`<h3>🔎 Texto de la captura</h3>${t?`<pre style="white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;font-family:inherit;font-size:14px">${esc(t)}</pre><button class="b gh w" data-cp="${esc(t)}">Copiar texto</button>`:'<p class="mut">No se pudo leer texto en esta imagen.</p>'}
+      <p class="mut" style="font-size:11px">Lectura automática: puede equivocarse con números y referencias. Compara con la imagen.</p>
+      <button class="b gh w" style="margin-top:6px" onclick="this.closest('.ov').remove()">Cerrar</button>`)})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ocr]');if(b)ocrRun(b)});
+/* Traducciones del chat (se guardan por mensaje para que sobrevivan al redibujado) */
+const TRC=new Map(),TRV={n:0};
+const trHtml=id=>{const c=TRC.get(id);
+  return`<div class="dc-trw"><button type="button" class="dc-trb" data-tr="${esc(id)}" data-d="es-en" title="Traducir al inglés" aria-label="Traducir al inglés">🌐</button>${c?`<button type="button" class="dc-trb" data-tr="${esc(id)}" data-d="en-es" title="Traducir del inglés al español">EN→ES</button><button type="button" class="dc-trb" data-tr="${esc(id)}" data-d="hide" title="Quitar traducción" aria-label="Quitar traducción">↩</button>`:''}</div>${c?`<div class="dc-trx">${esc(c.t)}</div>`:''}`};
 async function payDup(...vals){
   for(const v of vals){
     const a=String(v||'').replace(/\D/g,'');
@@ -899,7 +964,7 @@ async function chatRisk(oid,msgs){
     const m=msgs.slice(-30),key=oid+':'+m.length+':'+String(m[m.length-1].text).slice(0,40),c=CHATRISK[oid]||{};
     if(c.key===key||Date.now()-(c.t||0)<20000)return;
     CHATRISK[oid]={key,t:Date.now()};
-    const r=await fraudCheck('/check-chat',{messages:m,order_id:oid});
+    const r=await fraudCheck('/check-chat',{messages:m,order_id:oid},15000);
     if(r){(FCP[oid]=FCP[oid]||{imgs:{}}).chat=r;fraudRender(oid)}
     if(!r||!(r.risk_level==='alto'||r.risk_level==='medio'))return;
     console.warn('[antifraude] chat',r);
@@ -914,7 +979,7 @@ async function profileCheck(){
   try{
     const p=S.profile||{},txt=[p.username,p.full_name].filter(Boolean).join(' ').trim();
     if(txt.length<3)return;
-    const r=await fraudCheck('/check-profile-similarity',{profile_text:txt});
+    const r=await fraudCheck('/check-profile-similarity',{profile_text:txt},10000);
     if(r&&(r.risk_level==='alto'||r.risk_level==='medio'))console.warn('[antifraude] perfil parecido a otros',r.risk_level,r.similar_profiles);
   }catch(e){}}
 /* panel antifraude para admin/staff dentro de la sala de mediación */
@@ -1576,7 +1641,7 @@ function botListen(){
   r.interimResults=true;r.continuous=!android;r.maxAlternatives=1;
   const done=()=>{clearTimeout(tm);try{r.stop()}catch(e){}};
   const left=()=>Math.max(300,BOT_SIL-(Date.now()-BOT_V.since));
-  r.onstart=()=>{BOT_V.on=true;try{speechSynthesis.cancel()}catch(e){}botListenUI(true,'Preparando micrófono…')};
+  r.onstart=()=>{BOT_V.on=true;botSpeakStop();botListenUI(true,'Preparando micrófono…')};
   r.onaudiostart=()=>{botListenUI(true,'Habla ahora… (se apaga tras 5 s en silencio)');clearTimeout(t0);t0=setTimeout(()=>{if(!(fin+itm).trim())done()},left())};
   r.onresult=e=>{fin='';itm='';for(let i=0;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=x[0].transcript+' ';else itm+=x[0].transcript}
     botListenUI(true,(fin+itm).trim());clearTimeout(t0);clearTimeout(tm);tm=setTimeout(done,android?3500:1800)};
@@ -1595,11 +1660,11 @@ function botListen(){
   try{r.start()}catch(e){BOT_V.on=false;BOT_V.rec=null;BOT_V.conv=false;botListenUI(false)}}
 /* espera a que el asistente termine de hablar para no escucharse a sí mismo */
 function botSpeechWait(){return new Promise(res=>{const t0=Date.now();
-  const chk=()=>{const sp=BOT_V.tts&&window.speechSynthesis&&(speechSynthesis.speaking||speechSynthesis.pending||(BOT_V.pend&&BOT_V.pend.length));
+  const chk=()=>{const sp=BOT_V.tts&&(BOT_V.playing||(window.speechSynthesis&&(speechSynthesis.speaking||speechSynthesis.pending))||(BOT_V.pend&&BOT_V.pend.length));
     if(!sp&&Date.now()-t0>700||Date.now()-t0>30000)return res();setTimeout(chk,250)};
   setTimeout(chk,400)})}
 function botMicStop(){BOT_V.conv=false;const r=BOT_V.rec;if(r){r.onend=null;r.onresult=null;r.onerror=null;try{r.abort()}catch(e){}}BOT_V.rec=null;BOT_V.on=false;botListenUI(false)}
-function botSpeakSoon(t){if(!BOT_V.tts||!window.speechSynthesis)return;const p=$('botp');if(!p||!p.classList.contains('show'))return;BOT_V.pend=(BOT_V.pend||[]).concat(String(t||''));clearTimeout(BOT_V.sp);BOT_V.sp=setTimeout(()=>{const all=BOT_V.pend.join('. ');BOT_V.pend=[];botSpeak(all)},350)}
+function botSpeakSoon(t){if(!BOT_V.tts)return;const p=$('botp');if(!p||!p.classList.contains('show'))return;BOT_V.pend=(BOT_V.pend||[]).concat(String(t||''));clearTimeout(BOT_V.sp);BOT_V.sp=setTimeout(()=>{const all=BOT_V.pend.join('. ');BOT_V.pend=[];botSpeak(all)},350)}
 /* Voz más natural: elige la mejor voz en español disponible (las "Google", "Natural", "Neural" u "Online" suenan mucho mejor
    que la local por defecto), limpia el texto para que no lea símbolos y respeta las pausas de la puntuación. */
 let BOT_VOICE=null;
@@ -1627,21 +1692,57 @@ function botSpeakClean(t){
     .replace(/\s*[\r\n]+\s*/g,'. ')
     .replace(/\.\s*\./g,'.').replace(/([:;])\s*\./g,'$1')
     .replace(/\s+/g,' ').trim()}
-function botSpeak(t){
-  try{const s=botSpeakClean(t).slice(0,2200);
-    if(!s)return;speechSynthesis.cancel();
+/* Voz del servidor (/tts, Workers AI): suena más natural que la del navegador. Si falla o tarda, se usa la del navegador. */
+const BOT_TS={ok:true,fail:0,at:0,seq:0};
+async function botTtsFetch(text){
+  if(!BOT_TS.ok){if(Date.now()-BOT_TS.at<120000)return null;BOT_TS.ok=true;BOT_TS.fail=0}
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);
+  try{const{data:{session}}=await sb.auth.getSession();if(!session)return null;
+    const r=await fetch(FRAUD_URL+'/tts',{method:'POST',headers:{'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({text,lang:'es'}),signal:c.signal});
+    if(!r.ok||!/audio/i.test(r.headers.get('content-type')||''))throw new Error('tts '+r.status);
+    const bl=await r.blob();if(!bl.size)throw new Error('tts vacío');
+    BOT_TS.fail=0;return bl}
+  catch(e){if(++BOT_TS.fail>=2){BOT_TS.ok=false;BOT_TS.at=Date.now()}return null}
+  finally{clearTimeout(t)}}
+function botSpeakStop(){
+  BOT_TS.seq++;BOT_V.playing=false;
+  try{const a=BOT_V.audio;if(a){a.onended=a.onerror=null;a.pause();a.removeAttribute('src');a.load()}}catch(e){}BOT_V.audio=null;
+  try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}}
+function botSpeakParts(s){
+  /* trozos de ~200 caracteres agrupando frases completas (evita cortar a mitad de idea) */
+  const raw=s.match(/[^.!?]+[.!?]*/g)||[s],parts=[];let cur='';
+  for(const x of raw){const z=x.trim();if(!z)continue;
+    if(z.length>200){if(cur){parts.push(cur);cur=''}
+      let c2='';for(const w of z.split(/(?<=,)\s+/)){if((c2+' '+w).length>180&&c2){parts.push(c2.trim());c2=w}else c2+=(c2?' ':'')+w}
+      if(c2)parts.push(c2.trim());continue}
+    if((cur+' '+z).length>200&&cur){parts.push(cur);cur=z}else cur+=(cur?' ':'')+z}
+  if(cur)parts.push(cur);return parts}
+/* reproduce por el servidor; devuelve los trozos que faltan si algo falla (para leerlos con la voz del navegador) o null si ya terminó/se canceló */
+async function botSpeakServer(parts,id){
+  let nx=botTtsFetch(parts[0]);
+  for(let i=0;i<parts.length;i++){
+    const bl=await nx;if(id!==BOT_TS.seq)return null;
+    if(!bl)return parts.slice(i);
+    nx=i+1<parts.length?botTtsFetch(parts[i+1]):null;
+    const url=URL.createObjectURL(bl),au=new Audio(url);BOT_V.audio=au;
+    const okp=await new Promise(res=>{au.onended=()=>res(true);au.onerror=()=>res(false);au.play().catch(()=>res(false))});
+    try{URL.revokeObjectURL(url)}catch(e){}
+    if(id!==BOT_TS.seq)return null;
+    if(!okp)return parts.slice(i)}
+  return null}
+function botSpeakLocal(parts){
+  try{if(!window.speechSynthesis)return;
     if(!BOT_VOICE)BOT_VOICE=botPickVoice();
-    /* frases completas (sin cortar a mitad de idea); las muy largas se parten en comas */
-    const raw=s.match(/[^.!?]+[.!?]*/g)||[s],parts=[];
-    for(const x of raw){const z=x.trim();if(!z)continue;
-      if(z.length<=220){parts.push(z);continue}
-      let cur='';for(const w of z.split(/(?<=,)\s+/)){if((cur+' '+w).length>200&&cur){parts.push(cur.trim());cur=w}else cur+=(cur?' ':'')+w}
-      if(cur)parts.push(cur.trim())}
     const lang=(BOT_VOICE&&BOT_VOICE.lang)||(/^es/i.test(navigator.language||'')?navigator.language:'es-US');
-    parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;
-      u.rate=/[?]$/.test(x)?0.98:0.96;u.pitch=/[?]$/.test(x)?1.06:1;u.volume=1;speechSynthesis.speak(u)})}catch(e){}}
+    /* velocidad y tono normales (1.0): modificarlos es lo que más delata la voz sintética */
+    parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1;u.pitch=1;u.volume=1;speechSynthesis.speak(u)})}catch(e){}}
+function botSpeak(t){
+  try{const s=botSpeakClean(t).slice(0,2200);if(!s)return;
+    botSpeakStop();const id=BOT_TS.seq,parts=botSpeakParts(s);
+    BOT_V.playing=true;
+    botSpeakServer(parts,id).then(rest=>{if(id!==BOT_TS.seq)return;BOT_V.playing=false;if(rest&&rest.length)botSpeakLocal(rest)})}catch(e){}}
 function botTtsUI(){const b=$('bott');if(!b)return;b.textContent=BOT_V.tts?'🔊':'🔇';b.title=BOT_V.tts?'Respuestas en voz alta: activadas':'Respuestas en voz alta: desactivadas';b.classList.toggle('on',BOT_V.tts)}
-function botTts(){BOT_V.tts=!BOT_V.tts;lsSet('bot_tts',BOT_V.tts?'1':'0');botTtsUI();if(BOT_V.tts)botSpeak('Voz activada');else try{speechSynthesis.cancel()}catch(e){}}
+function botTts(){BOT_V.tts=!BOT_V.tts;lsSet('bot_tts',BOT_V.tts?'1':'0');botTtsUI();if(BOT_V.tts)botSpeak('Voz activada');else botSpeakStop()}
 /* ----- Avisos de la web: sysNotify() los manda aquí; no hay consultas extra ----- */
 function botNotifActs(t){
   t=botNorm(t);
@@ -1717,7 +1818,7 @@ function botSummary(){
   const pt=[];if(un)pt.push(un+' aviso'+(un>1?'s':'')+' sin leer');if(ad)pt.push(ad+' solicitud'+(ad>1?'es':'')+' pendiente'+(ad>1?'s':'')+' en el panel');
   botSay('📌 Tienes '+pt.join(' y ')+'.',{acts:(un?['notifs']:[]).concat(ad?['adm']:[])})}
 function botOpen(){botBuild();$('botp').classList.add('show');const g=$('fabg'),f=$('fab');if(g)g.style.display='block';if(f)f.classList.add('bo');BOT.unread=0;botBadge();botSummary();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
-function botClose(){botMicStop();try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo')}
+function botClose(){botMicStop();botSpeakStop();const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo')}
 function botToggle(){const p=$('botp');if(p&&p.classList.contains('show'))botClose();else botOpen()}
 function bindFab(){
   const f=$('fab'),g=$('fabg'),up=$('up');if(!f)return;
@@ -2192,9 +2293,9 @@ async function viewOrders(){
 async function proofImg(path,who){
   if(!path)return`<p class="mut">${who} aún no sube la captura.</p>`;
   const{data}=await sb.storage.from('proofs').createSignedUrl(path,3600);
-  return data?`<img class="proof" loading="lazy" decoding="async" src="${data.signedUrl}" alt="Captura" data-z="${data.signedUrl}">`:'<p class="mut">No se pudo cargar la captura.</p>'}
+  return data?`<img class="proof" loading="lazy" decoding="async" src="${data.signedUrl}" alt="Captura" data-z="${data.signedUrl}"><button type="button" class="b gh sm" data-ocr="${data.signedUrl}" style="margin-top:6px">🔎 Leer texto</button>`:'<p class="mut">No se pudo cargar la captura.</p>'}
 const EVC=new Map();
-const FORENSE_URL='https://api.tororo.trade';   /* pega aquí la URL de tu Worker tororo-forense, p. ej. https://tororo-forense.TU-USUARIO.workers.dev */
+const FORENSE_URL='';   /* APAGADO: el servicio forense (archivo + proof_forensics) no existe en api.tororo.trade; con '' no se llama ni se muestra el aviso "sin registro de la captura". Para reactivarlo, pon la URL de un Worker que acepte multipart en /analyze-proof. */
 const FORENSE_DESDE='2026-11-10';   /* operaciones anteriores a esta fecha no se avisan por "sin análisis" */
 async function forense(orderId,role,file){
   if(!FORENSE_URL||String(orderId).startsWith('trade/')||!['buyer','mediation','evidence'].includes(role))return;
@@ -2398,7 +2499,7 @@ async function viewOrder(){
     const box=$('chatbox');if(!box||my!==NAV)return;
     if(ce){box.innerHTML=med?`<div class="warnbox bad">El chat no está disponible: falta crear la tabla order_messages (ver archivo SQL).</div>`:'';return}
     if(!ms.length&&!med)return box.innerHTML='';
-    const sig=ms.length+':'+(ms[ms.length-1]?.id||'')+':'+dcF+':'+(fin_?1:0);
+    const sig=ms.length+':'+(ms[ms.length-1]?.id||'')+':'+dcF+':'+(fin_?1:0)+':'+TRV.n;
     if(!force&&sig===dcSig&&box.querySelector('.dc'))return;dcSig=sig;
     fcStore(o,ms);
     chatRisk(o.id,ms.filter(x=>dcParse(x).k!=='ai').map(x=>({sender:DCR(x.sender_id),text:String(x.body||'').replace(/\[img:[^\]]*\]/g,'').slice(0,500)})));
@@ -2420,11 +2521,12 @@ async function viewOrder(){
       if(p.k==='event'){html+=`<div class="dc-ev">🛡️ Mediación solicitada · ${esc(nm)} · ${tm}<br><span>${esc(p.text)}</span></div>`;prev=null;return}
       const first=!prev||prev.sender_id!==x.sender_id;prev=x;
       html+=`<div class="dc-row ${me?'me':''}"><div class="dc-b r-${role} ${me?'me':''}">${first?`<div class="dc-n">${role==='admin'?'🛡️ ':''}${role==='admin'?'Administrador':DCL[role]+' · '+nm}</div>`:''}
-        ${p.k==='proof'?`<div class="dc-pt">📎 Prueba</div><img class="dc-img" data-ev="${p.path}" alt="Prueba">${p.text?`<div class="dc-t">${esc(p.text)}</div>`:''}`:`<div class="dc-t">${evBody(p.text)}</div>`}
+        ${p.k==='proof'?`<div class="dc-pt">📎 Prueba</div><img class="dc-img" data-ev="${p.path}" alt="Prueba">${p.text?`<div class="dc-t">${esc(p.text)}</div>`:''}`:`<div class="dc-t">${evBody(p.text)}</div>${p.text?trHtml(x.id):''}`}
         <span class="dc-tm">${tm}</span></div></div>`});
     const tabs=[['all','Todo'],['proof','📎 Pruebas '+nProof],['admin','🛡️ Admin'],['ai','🤖 Análisis']];
     box.innerHTML=`<div class="card dc"><div class="dc-h"><h3>🛡️ Sala de mediación</h3>${fin_?'<span class="dc-chip">Cerrada</span>':med?'<span class="dc-chip warn">En curso</span>':''}</div>
       ${med?`<div class="dc-pp"><span class="dc-chip r-buyer">Comprador ${name(o.buyer_id)}</span><span class="dc-chip r-seller">Vendedor ${name(o.seller_id)}</span><span class="dc-chip r-admin">🛡️ Administrador</span></div>`:''}
+      ${ms.some(x=>dcParse(x).k==='text')?'<div class="dc-ia"><button type="button" class="b gh sm" id="dcSent">🧠 Analizar chat</button><button type="button" class="b gh sm" id="dcSum">📝 Resumir</button></div>':''}
       ${nReqOpen?`<div class="dc-sum">📌 ${nReqOpen} solicitud(es) del administrador sin responder</div>`:''}
       <div class="dc-tabs">${tabs.map(([k,l])=>`<button data-dcf="${k}" class="${dcF===k?'on':''}">${l}</button>`).join('')}</div>
       <div class="dc-chat" id="cl">${html||'<div class="dc-empty">Sin mensajes en esta vista.</div>'}</div>
@@ -2434,6 +2536,15 @@ async function viewOrder(){
     const cl=$('cl');if(stick||force)cl.scrollTop=cl.scrollHeight;else if(old)cl.scrollTop=old.scrollTop;
     box.querySelectorAll('[data-dcf]').forEach(b=>b.onclick=()=>{dcF=S._dcf=b.dataset.dcf;drawChat(true)});
     cl.querySelectorAll('img[data-ev]').forEach(async im=>{const pa=im.dataset.ev;let u=EVC.get(pa);if(!u){const{data}=await sb.storage.from('proofs').createSignedUrl(pa,3600);u=data&&data.signedUrl;if(u)EVC.set(pa,u)}if(u){im.onload=()=>{if(stick)cl.scrollTop=cl.scrollHeight};im.src=u;im.onclick=()=>zoom(u)}});
+    const chatTxt=()=>ms.filter(x=>['text','dispute','proof'].includes(dcParse(x).k)).map(x=>{const q=dcParse(x);return DCL[DCR(x.sender_id)]+': '+String(q.text||'').replace(/\[img:[^\]]*\]/g,'').trim()}).filter(l=>/:\s*\S/.test(l)).join('\n').slice(-4000);
+    const chatAI=(id,fn)=>{const b=$(id);if(b)b.onclick=ev=>aiBtn(ev.currentTarget,async()=>{const t=chatTxt();if(t.length<10)return toast('Todavía no hay mensajes suficientes','err');await fn(t)})};
+    chatAI('dcSent',async t=>sentModal(await apiSentiment(t)));
+    chatAI('dcSum',async t=>summModal(await apiSummarize(t)));
+    box.querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{const id=b.dataset.tr,d=b.dataset.d;
+      if(d==='hide'){TRC.delete(id);TRV.n++;return drawChat()}
+      const x=ms.find(q=>String(q.id)===String(id));if(!x)return;const tx=String(dcParse(x).text||'').replace(/\[img:[^\]]*\]/g,'').trim();if(!tx)return;
+      const[s,t]=d==='en-es'?['en','es']:['es','en'];
+      aiBtn(b,async()=>{const r=await apiTranslate(tx,t,s),tr=r&&(r.translated_text||r.translation);if(!tr)throw new Error('traducción vacía');TRC.set(id,{t:String(tr)});TRV.n++;await drawChat()})});
     if(!open)return;
     KB.fit($('cm'));if(wasF){const t=$('cm');t.focus();try{t.setSelectionRange(t.value.length,t.value.length)}catch(_){}}
     const go_=()=>act($('cs'),async()=>{const b=$('cm').value.trim();if(!b)return;if(!navigator.onLine){OBX.add({t:'chat',order_id:o.id,body:b});$('cm').value='';KB.fit($('cm'));toast('Sin internet: tu mensaje se enviará solo cuando vuelva la conexión','good');return false}if(!await contentOK(b))throw new Error(FC_BAD);const{error}=await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:b});if(error)throw error;await drawChat(true)},null,true);
