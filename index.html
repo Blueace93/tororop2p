@@ -4616,10 +4616,12 @@ async function staffTopups(my){
     if(/could not find|does not exist|schema cache|not found/i.test(error.message||'')){const h=$('s-rec');if(h)h.remove();box.remove()}
     else box.innerHTML='<div class="card mut">No se pudieron cargar las recargas. Cambia de pestaña y vuelve a intentarlo.</div>';
     return}
-  let L=Array.isArray(data)?data:[];
+  const meU=String(S.profile?.username||'').toLowerCase(),ALL=Array.isArray(data)?data:[];
+  let L=ALL.filter(x=>x.user_id!==S.user.id&&x.payer_id!==S.user.id&&String(x.username||'').toLowerCase()!==meU);
+  const own=ALL.length-L.length;
   const dd=c=>c==='USD'?2:0;
   const draw=()=>{
-    box.innerHTML=L.length?L.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,dd(x.currency))} ${esc(x.currency)}</b><span class="mut">@${esc(x.username||'?')}</span></div><div class="mut">${x.card?esc(x.card)+' · ':''}${when(x.created_at)}</div>${x.proof_path?`<button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button>`:''}<div class="grid2" style="margin-top:8px"><button class="b ok sm" data-sa="${x.id}">Acreditar</button><button class="b bad sm" data-sx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>';
+    box.innerHTML=(own?`<div class="warnbox">🔒 ${own} recarga${own>1?'s':''} hecha${own>1?'s':''} por tu propio usuario no se muestra${own>1?'n':''} aquí: solo el dueño puede acreditarla${own>1?'s':''}.</div>`:'')+(L.length?L.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,dd(x.currency))} ${esc(x.currency)}</b><span class="mut">@${esc(x.username||'?')}</span></div><div class="mut">${x.card?esc(x.card)+' · ':''}${when(x.created_at)}</div>${x.proof_path?`<button class="b gh sm" data-pv="${esc(x.proof_path)}" style="margin-top:6px">Ver captura</button>`:''}<div class="grid2" style="margin-top:8px"><button class="b ok sm" data-sa="${x.id}">Acreditar</button><button class="b bad sm" data-sx="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguna.</div>');
     const drop=id=>{L=L.filter(x=>String(x.id)!==String(id));draw()};
     box.querySelectorAll('[data-pv]').forEach(b=>b.onclick=async()=>{const{data:u}=await sb.storage.from('proofs').createSignedUrl(b.dataset.pv,600);u?zoom(u.signedUrl):toast('No se pudo cargar la captura','err')});
     box.querySelectorAll('[data-sa]').forEach(b=>b.onclick=async()=>{const m=await ask('Acreditar recarga','<p>Confirma que el dinero ya llegó a tu tarjeta. El saldo se acreditará al usuario y no se puede deshacer.</p>','Acreditar','ok');if(!m)return;m.remove();
