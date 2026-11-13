@@ -713,6 +713,44 @@ html[data-theme=light] .dc-sum{background:#fff1d6}
 #botp .bn{font-size:11px;color:var(--mut);text-align:center;padding:0 12px 9px;flex:none}
 html.lite #fabm,html.lite #fabbd,html.lite .bm.nw,html.lite .bm.bt i,html.lite #botp.show,html.lite #botl .bw i,html.lite #botmic.on{animation:none!important}
 </style>
+<style id="resp">
+/* ===== Adaptable: móvil, tablet y PC ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden}
+main{min-width:0;overflow-wrap:anywhere}
+main table{display:block;max-width:100%;overflow-x:auto}
+main img,main video{max-width:100%}
+input,select,textarea{max-width:100%;font-size:16px}
+@media(max-width:380px){main{padding:12px}.tiles,.qa{gap:6px}}
+/* Tablet vertical: columna centrada y un poco más amplia */
+@media(min-width:600px) and (max-width:899px){main{max-width:720px;padding:20px}.md{max-width:480px}}
+/* PC / tablet horizontal: menú lateral fijo y contenido centrado y más ancho */
+@media(min-width:900px){
+  :root{--sbw:232px}
+  body{padding-bottom:32px!important}
+  header{padding:12px 28px}
+  nav{z-index:4;top:0;bottom:0;left:0;right:auto;width:var(--sbw);max-width:none;margin:0;height:auto;flex-direction:column;justify-content:flex-start;gap:4px;padding:78px 12px 16px;border-radius:0;border-width:0 1px 0 0;border-style:solid;border-color:var(--line);box-shadow:none;overflow-y:auto}
+  nav button,nav:has(button:nth-child(6)) button{flex:none;width:100%;display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px 14px!important;font-size:14px!important;text-align:left;border-radius:14px;cursor:pointer}
+  nav button:hover{background:rgba(124,108,255,.10)}
+  nav svg{margin:0!important;flex:none}
+  nav .bd{left:auto;right:12px;top:calc(50% - 8px)}
+  main{max-width:960px;margin:0 0 0 max(var(--sbw),calc((100% + var(--sbw) - 960px)/2));padding:28px 24px}
+  h2{font-size:26px}
+  .md{max-width:520px}
+  .cwrap{height:min(72vh,760px);min-height:420px}
+  .dc-chat{max-height:min(62vh,620px)}
+  .tile:hover,.qb:hover,.chip:hover{filter:brightness(1.08)}
+  /* botones flotantes */
+  .wa{left:calc(var(--sbw) + 16px);bottom:20px}
+  .fab{right:24px;bottom:20px}
+  .up,.fab.show~.up{right:92px;bottom:26px}
+  #botp{left:auto;right:24px;margin:0;width:400px;max-width:calc(100vw - 48px);bottom:88px;height:min(680px,calc(100dvh - 120px))}
+  #nbn{left:calc(var(--sbw) + 16px);right:16px;bottom:16px}
+  #toast{bottom:28px}
+}
+/* Pantallas muy anchas */
+@media(min-width:1500px){main{max-width:1040px;margin-left:max(var(--sbw),calc((100% + var(--sbw) - 1040px)/2))}}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#4f8dff"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
@@ -1457,7 +1495,13 @@ async function botAI(q){
   /* tras 3 fallos seguidos se pausa 60 s (antes se apagaba para toda la sesión) */
   if(BOT.aiFail>=3){if(Date.now()-(BOT.aiFailAt||0)<60000){BOT.aiErr=BOT.aiErr||'pausado tras varios fallos';return null}BOT.aiFail=0}
   const fail=why=>{BOT.aiFail++;BOT.aiFailAt=Date.now();BOT.aiErr=why;console.warn('[asistente]',why);return null};
-  const hist=BOT.msgs.filter(x=>!x.typing&&!x.n&&x.t).slice(-11,-1).map(x=>({role:x.me?'user':'assistant',text:String(x.t).slice(0,600)}));
+  let hist=[];
+  BOT.msgs.filter(x=>!x.typing&&!x.n&&x.t).slice(-11,-1).forEach(x=>{
+    const role=x.me?'user':'assistant',text=String(x.t).slice(0,600);
+    /* el historial debe empezar por el usuario y alternar roles (si no, la IA lo rechaza y el Worker responde 500) */
+    if(!hist.length&&role!=='user')return;
+    const last=hist[hist.length-1];
+    if(last&&last.role===role)last.text=(last.text+'\n'+text).slice(0,900);else hist.push({role,text})});
   let ses;try{ses=(await sb.auth.getSession()).data.session}catch(e){}
   if(!ses)return fail('sin sesión');
   const c=new AbortController(),tm=setTimeout(()=>c.abort(),25000);
