@@ -1795,8 +1795,9 @@ function botListen(){
   try{r.start()}catch(e){BOT_V.on=false;BOT_V.rec=null;BOT_V.conv=false;botListenUI(false)}}
 /* espera a que el asistente termine de hablar para no escucharse a sí mismo */
 function botSpeechWait(){return new Promise(res=>{const t0=Date.now();
-  const chk=()=>{const sp=BOT_V.tts&&(BOT_V.playing||(window.speechSynthesis&&(speechSynthesis.speaking||speechSynthesis.pending))||(BOT_V.pend&&BOT_V.pend.length));
-    if(!sp&&Date.now()-t0>700||Date.now()-t0>30000)return res();setTimeout(chk,250)};
+  const chk=()=>{const au=BOT_V.audio,sp=BOT_V.tts&&(BOT_V.playing||(au&&!au.paused&&!au.ended)||(window.speechSynthesis&&(speechSynthesis.speaking||speechSynthesis.pending))||(BOT_V.pend&&BOT_V.pend.length));
+    /* el tope (3 min) es solo un seguro: antes eran 30 s y el micrófono se reabría a mitad de una respuesta larga, cortando la voz */
+    if(!sp&&Date.now()-t0>700||Date.now()-t0>180000)return res();setTimeout(chk,250)};
   setTimeout(chk,400)})}
 function botMicStop(){BOT_V.conv=false;const r=BOT_V.rec;if(r){r.onend=null;r.onresult=null;r.onerror=null;try{r.abort()}catch(e){}}BOT_V.rec=null;BOT_V.on=false;botListenUI(false)}
 function botSpeakSoon(t){if(!BOT_V.tts)return;const p=$('botp');if(!p||!p.classList.contains('show'))return;BOT_V.pend=(BOT_V.pend||[]).concat(String(t||''));clearTimeout(BOT_V.sp);BOT_V.sp=setTimeout(()=>{const all=BOT_V.pend.join('. ');BOT_V.pend=[];botSpeak(all)},350)}
@@ -1870,7 +1871,10 @@ function botSpeakLocal(parts){
     if(!BOT_VOICE)BOT_VOICE=botPickVoice();
     const lang=(BOT_VOICE&&BOT_VOICE.lang)||(/^es/i.test(navigator.language||'')?navigator.language:'es-US');
     /* velocidad y tono normales (1.0): modificarlos es lo que más delata la voz sintética */
-    parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1;u.pitch=1;u.volume=1;speechSynthesis.speak(u)})}catch(e){}}
+    /* se guardan las frases en BOT_V.utts hasta que acaben: si no, Chrome las recoge (garbage collector) y la voz se corta a mitad */
+    const us=parts.map(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1;u.pitch=1;u.volume=1;return u});
+    BOT_V.utts=us;if(us.length)us[us.length-1].onend=()=>{if(BOT_V.utts===us)BOT_V.utts=null};
+    us.forEach(u=>speechSynthesis.speak(u))}catch(e){}}
 function botSpeak(t){
   try{const s=botSpeakClean(t).slice(0,2200);if(!s)return;
     botSpeakStop();const id=BOT_TS.seq,parts=botSpeakParts(s);
