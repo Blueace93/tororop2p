@@ -540,6 +540,7 @@ header .ib{font-size:18px}@media(max-width:420px){header .pill small{display:non
 .msg{max-width:84%;padding:7px 11px 6px;border-radius:16px 16px 16px 5px;font-size:14px;line-height:1.35;box-shadow:0 1px 2px rgba(0,0,0,.12)}.msg small{font-size:10.5px;font-weight:600;margin-bottom:2px}
 .msg.me{background:var(--acc);color:#fff;border-radius:16px 16px 5px 16px}.msg.me small{color:rgba(255,255,255,.78)}
 .cmp{gap:6px}.cmp textarea{border-radius:22px;padding:10px 14px;min-height:40px}.cmp .b{border-radius:22px;padding:11px 16px}
+.msg .mf .tk{font-style:normal;font-weight:800;margin-left:6px;letter-spacing:-1.5px;opacity:.75;white-space:nowrap}.msg .mf .tk.sn{color:#7dffc4;opacity:1;letter-spacing:-1px}
 </style>
 <style>body[data-blocked] nav button:not([data-v="wallet"]),body[data-blocked] #fab,body[data-blocked] #fabg{display:none!important}body[data-blocked][data-view="wallet"] main>*:not(h2):not(#blkr):not(#blkb):not(#wcard):not(#hist){display:none!important}</style><style id="wa">
 /* ===== Chat estilo WhatsApp ===== */
@@ -3860,7 +3861,7 @@ async function viewComm(){
   main().innerHTML=`${pcTabs('u')}<h2 style="margin:0 0 4px">Comunidad</h2><p class="mut" style="margin:0 0 12px">Quiénes están en la plataforma ahora mismo.</p><div class="comm">${statsHtml()}</div><p class="mut" style="font-size:12px">Se actualiza solo cada pocos segundos.</p>`;
   bindPcTabs();setActU();loadActU();liveTick()}
 async function viewPcon(){
-  const my=NAV,me=S.user.id,id=S.pcRoom;let last=0,MSGS=[],MXc=null,lastKey='';
+  const my=NAV,me=S.user.id,id=S.pcRoom;let last=0,MSGS=[],MXc=null,lastKey='',peerRead=0,peerAt=0;
   if(!id)return go('pchat');
   const who=S.pcName||'Usuario';
   main().innerHTML=`<div class="pcrow-top"><a href="#" id="pcb">← Chats</a><b>🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
@@ -3877,16 +3878,25 @@ async function viewPcon(){
     if(force)MSGS=L.slice();else if(L.length)MSGS=MSGS.concat(L.filter(x=>!MSGS.some(m=>String(m.mid)===String(x.mid))));
     if(L.length){last=Math.max(last,...L.map(x=>Number(x.mid)));if(!force&&L.some(x=>x.msender!==me))chatDing()}
     const ex=await msgExtras('p',id,MSGS.map(x=>Number(x.mid)));if(my!==NAV||!$('cl'))return;MXc=ex;
+    {const mi=MSGS.filter(x=>x.msender===me).map(x=>Number(x.mid)),mx=mi.length?Math.max(...mi):0;
+     if(!S.prOff&&mx>peerRead&&(force||Date.now()-peerAt>7000)){peerAt=Date.now();
+       try{peerRead=Number(await rpc('pchat_peer_read',{p_room:id}))||0}
+       catch(e){if(/pchat_peer_read|does not exist|schema cache/i.test(e.message))S.prOff=true}
+       if(my!==NAV||!$('cl'))return}}
     paint(force,atEnd);
     if(force)pcSummary()};
   const NWp={};
+  const tick=()=>{const cl=$('cl');if(!cl)return;const ms=[...cl.querySelectorAll('.msg.me[data-id]')];
+    ms.forEach((m,i)=>{const fl=m.querySelector('.mf');if(!fl)return;const seen=Number(m.dataset.id)<=peerRead,last=i===ms.length-1;
+      let t=fl.querySelector('.tk');if(!t){t=document.createElement('i');fl.appendChild(t)}
+      t.className='tk'+(seen?' sn':'');t.textContent=(seen?'✓✓':'✓')+(last?(seen?' Visto':' Enviado'):'')})};
   const paint=async(force,atEnd0,keep)=>{
-    const key=MSGS.map(x=>x.mid).join(',')+'|'+(MXc?JSON.stringify(MXc):'');
+    const key=MSGS.map(x=>x.mid).join(',')+'|'+(MXc?JSON.stringify(MXc):'')+'|'+peerRead;
     if(!force&&key===lastKey)return;
     if(!force){await idle();if(my!==NAV||!$('cl'))return}
     lastKey=key;const cl=$('cl'),atEnd=atEnd0!=null?atEnd0:cl.scrollHeight-cl.scrollTop-cl.clientHeight<80,st0=cl.scrollTop;let pk='';
     cl.innerHTML=MSGS.length?MSGS.map(x=>{const dk=dayKey(x.mat),sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.mat)}</span></div>`):'';return sp+row(x)}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
-    mxNew(cl,NWp);
+    mxNew(cl,NWp);tick();
     if(keep)cl.scrollTop=st0;else if(force||atEnd)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   const curP=mid=>{const x=MSGS.find(m=>Number(m.mid)===mid);if(!x)return null;const v=mxView(x.mid,x.msender,x.mbody,MXc);return{author:x.msender,raw:v.raw,del:v.del}};
   const ctxP={scope:'p',room:id,redraw:()=>draw(false),max:1000,cur:curP,mx:()=>MXc,mod:false,pu:false,delMod:()=>{},opt:(mid,e)=>{mxOpt(MXc,mid,e);paint(true,null,true)}};
@@ -4610,7 +4620,7 @@ async function viewAdmin(){
   const mkSub=(k,items)=>{mm.insertAdjacentHTML('beforeend',`<div class="chips" data-tab="${k}" data-sub="*" style="margin:6px 0 12px">${items.map(([v,l])=>`<button class="chip" data-subchip="${v}" data-tabk="${k}">${l}</button>`).join('')}</div>`);mm.lastElementChild.querySelectorAll('[data-subchip]').forEach(b=>b.onclick=()=>{S.sub[k]=b.dataset.subchip;refreshSub();window.scrollTo({top:0,behavior:'instant'})})};
   const LD={
     sta:()=>adminStats(mm,my),
-    usr:()=>{adminUsrSummary();mkSub('usr',[['kyc','🪪 Verificaciones'],['unv','👤 Sin verificar'],['risk','🚨 Riesgo']]);adminRiskShell();adminRisk(my);mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my)},
+    usr:()=>{adminUsrSummary();adminOnline(my);mkSub('usr',[['kyc','🪪 Verificaciones'],['unv','👤 Sin verificar'],['risk','🚨 Riesgo']]);adminRiskShell();adminRisk(my);mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my)},
     stf:()=>{mkSub('stf',[['team','👥 Equipo y saldo'],['duty','🕒 Turnos y permisos'],['ops','⚖️ Operaciones'],['act','📜 Actividad'],['rules','🔒 Reglas de control']]);adminStaffMgmt();adminBalances();adminDuty(my);adminStfOps(my);adminAuditShell();adminStfRules();setTimeout(()=>{const g=$('auditGo');if(g)g.click()},60)},
     cfg:async()=>{adminBlocks();adminMaint();adminPayout();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
@@ -4871,6 +4881,22 @@ async function staffTopups(my){
 
 /* ---------- Dueño: añadir y quitar administradores ---------- */
 /* ---------- Panel del dueño: resumen de usuarios, control de administradores secundarios ---------- */
+async function adminOnline(my){
+  if($('s-onl')||S.onlOff)return;
+  main().insertAdjacentHTML('beforeend','<div id="s-onl" data-sub="*" class="card" style="margin-bottom:10px;display:none"><div class="row"><b>🟢 En línea ahora <span class="mut" id="onlN"></span></b><span class="mut" style="font-size:12px">🔒 Solo tú lo ves</span></div><div id="onlL" style="margin-top:6px"></div></div>');
+  let T=null;
+  const load=async()=>{
+    if(my!==NAV||!$('s-onl')){clearInterval(T);return}
+    if(document.hidden)return;
+    try{
+      const d=await rpc('owner_online_users');
+      if(my!==NAV||!$('s-onl'))return;
+      $('s-onl').style.display='';$('onlN').textContent='· '+d.length;
+      $('onlL').innerHTML=d.length?d.map(u=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none"></span><b>@${esc(u.username)}${u.user_id===S.user.id?' (tú)':''}</b>${u.role==='admin'?' <span class="tag warn">🛡️ Admin</span>':u.role==='staff'?' <span class="tag">Soporte</span>':''}<span class="mut" style="margin-left:auto;font-size:12px">${u.secs<15?'ahora':'hace '+u.secs+' s'}</span></div>`).join(''):'<span class="mut">Nadie conectado en este momento.</span>'
+    }catch(e){clearInterval(T);const c=$('s-onl');if(c)c.remove();if(/owner_online_users|does not exist|schema cache|No autorizado/i.test(e.message))S.onlOff=true}
+  };
+  await load();T=setInterval(load,15000);
+}
 async function adminUsrSummary(){
   if($('s-usum'))return;
   main().insertAdjacentHTML('beforeend','<div id="s-usum" data-sub="*" class="grid2" style="margin-bottom:10px">'+['Total','Verificados','En revisión','Sin verificar'].map((l,i)=>`<div class="card" style="margin:0"><div class="mut">${l}</div><div class="big" id="us${i}">…</div></div>`).join('')+'</div>');
