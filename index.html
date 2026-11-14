@@ -947,7 +947,7 @@ const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=
 try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
-const wfeeTxt=(a,u,d)=>a>0?`Comisión ${FE('withdraw')}%: ${n(a*FE('withdraw')/100,d)} ${u} · Recibirás: ${n(a-a*FE('withdraw')/100,d)} ${u}`:'';
+const wfeeTxt=(a,u,d)=>a>0?`Comisión ${n(FE('withdraw'),2)}%: ${n(a*FE('withdraw')/100,d)} ${u} · Recibirás: ${n(a-a*FE('withdraw')/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-FE('withdraw')/100);
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
 const wtile=(l,v,u,d)=>`<div class="wt"><div class="mut">${l}</div><div class="big">${n(v,d)}</div><div class="mut">${u}</div></div>`;
@@ -2959,7 +2959,7 @@ async function viewWallet(){
     <label>Monto (USDT) <button class="b gh sm" id="wmax" type="button">Máx</button></label><input id="wa" type="number" step="any" inputmode="decimal"><div class="mut" id="wfee" style="margin:-4px 0 8px"></div>
     <label>Red</label><select id="wn"><option value="BEP20">BNB Smart Chain (BEP20)</option><option value="ARBITRUM">Arbitrum One</option></select>
     <label>Dirección de destino (0x…, de la red elegida)</label><input id="wd" placeholder="0x...">
-    <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${FE('withdraw')}%.</div><button class="b w${needKyc()?' lk':''}" id="wit">${needKyc()?'🔒 ':''}Solicitar retiro</button></div>
+    <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${n(FE('withdraw'),2)}%.</div><button class="b w${needKyc()?' lk':''}" id="wit">${needKyc()?'🔒 ':''}Solicitar retiro</button></div>
   <div id="hist">${skel(2)}</div>`;
   bindCopy(main());
   const upd=()=>{$('wfee').textContent=wfeeTxt(+$('wa').value,'USDT',2)};$('wa').oninput=upd;$('wmax').onclick=()=>{const L=S.wlim;$('wa').value=L&&L.limited?Math.min(S.wallet.available,L.available):S.wallet.available;upd()};
@@ -2976,7 +2976,7 @@ async function viewWallet(){
       if(!(a>0))throw new Error('Indica un monto válido');
       if(a>S.wallet.available)throw new Error('Saldo insuficiente');
       if(!/^0x[a-fA-F0-9]{40}$/.test(ad))throw new Error('Dirección inválida: debe empezar por 0x y tener 42 caracteres');
-      const m=await ask('Confirmar retiro',`<p>Se descontarán <b>${n(a,2)} USDT</b> de tu saldo (comisión ${FE('withdraw')}%) y recibirás <b>${n(a*(1-FE('withdraw')/100),2)} USDT</b> por <b>${esc(net)}</b> a:</p><p><code>${esc(ad)}</code></p><p class="mut">Verifica la dirección: los envíos a una red equivocada no se recuperan.</p>`,'Solicitar retiro');
+      const m=await ask('Confirmar retiro',`<p>Se descontarán <b>${n(a,2)} USDT</b> de tu saldo (comisión ${n(FE('withdraw'),2)}%) y recibirás <b>${n(a*(1-FE('withdraw')/100),2)} USDT</b> por <b>${esc(net)}</b> a:</p><p><code>${esc(ad)}</code></p><p class="mut">Verifica la dirección: los envíos a una red equivocada no se recuperan.</p>`,'Solicitar retiro');
       if(m){m.remove();await pinGate();ready=true}
     }catch(e){toast(friendly(e),'err')}finally{bt.dataset.ask=''}
     if(!ready)return;
@@ -3403,8 +3403,8 @@ const FAQ=()=>[
  ['¿Qué pasa si no pago a tiempo?','Tienes 30 minutos para pagar y subir la captura. Si no, la operación se cancela sola y la oferta vuelve al mercado.'],
  ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
  ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual) o «Depósito automático» (sin TxID, con una comisión de 0,4 % + 0,10 USDT). Si algo falla, usa el depósito manual y avisa con el TxID.'],
- ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+S.fees.withdraw+'%. Puedes ver el estado en Billetera y en Historial.'],
- ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+S.fees.withdraw+'%.'],
+ ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+n(S.fees.withdraw,2)+'%. Puedes ver el estado en Billetera y en Historial.'],
+ ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+n(S.fees.withdraw,2)+'%.'],
  ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
  ['¿Cómo protejo mi cuenta?','En Más → Seguridad puedes crear un PIN para los retiros y activar la verificación en dos pasos. También verás tus accesos recientes.'],
  ['¿Para qué sirven las estrellas?','Al terminar una operación puedes calificar a la otra persona. Las estrellas y el número de operaciones se ven en cada oferta para que elijas con confianza.']];
@@ -4306,6 +4306,38 @@ async function adminBlocks(){
     act(b,async()=>{await rpc('admin_set_block',{p_key:b.dataset.bk,p_blocked:on});viewAdmin()},on?'Bloqueado':'Desbloqueado')})}
 
 
+/* ---------- Admin: porcentajes de la plataforma (solo dueño) ----------
+   Lee y guarda la tabla fee_rates (kind, pct). Guardar usa la función admin_set_fee_rate (porcentajes_admin.sql), que comprueba que seas el dueño. */
+const RATE_LB={
+  trade:['Comisión por operación en el Mercado','La paga el vendedor en cada venta de USDT.'],
+  withdraw:['Comisión de retiros','La pagan los usuarios al retirar USDT. Tú y los administradores secundarios no pagan.']};
+async function adminRates(){
+  if(!S.profile.is_admin)return;
+  const t=main().querySelector('.tiles');if(!t)return;
+  const{data,error}=await sb.from('fee_rates').select('kind,pct');
+  if(!main().contains(t))return;
+  if(error){t.insertAdjacentHTML('afterend','<div class="card" id="s-pct" data-tab="cfg"><h3 style="margin:0 0 4px">💲 Porcentajes de la plataforma</h3><div class="warnbox bad">No se pudo leer la tabla de porcentajes. Ejecuta <code>porcentajes_admin.sql</code> en Supabase.</div></div>');return}
+  const cur={trade:+(S.fees&&S.fees.trade)||0,withdraw:+(S.fees&&S.fees.withdraw)||0};(data||[]).forEach(x=>cur[x.kind]=Number(x.pct));
+  const kinds=['trade','withdraw'].concat(Object.keys(cur).filter(k=>k!=='trade'&&k!=='withdraw'));
+  const rows=kinds.map(k=>{const[lb,hint]=RATE_LB[k]||[k,''];
+    return`<div style="padding:10px 0;border-top:1px solid var(--line)"><label style="margin:0 0 2px"><b>${esc(lb)}</b></label>${hint?`<div class="mut" style="margin:0 0 6px">${esc(hint)}</div>`:''}
+      <div class="row" style="gap:8px;align-items:center"><input type="number" inputmode="decimal" step="0.01" min="0" max="100" value="${cur[k]}" data-rk="${esc(k)}" style="flex:1;margin:0"><span class="mut">%</span><button type="button" class="b sm" data-rs="${esc(k)}">Guardar</button></div></div>`}).join('');
+  t.insertAdjacentHTML('afterend',`<div class="card" id="s-pct" data-tab="cfg"><h3 style="margin:0 0 4px">💲 Porcentajes de la plataforma</h3>
+    <p class="mut" style="margin:0 0 4px">Cambia, pon o quita comisiones cuando quieras. Pon <b>0</b> para quitar una comisión. Se aplica desde ese momento a las operaciones nuevas; lo ya cobrado no cambia.</p>${rows}
+    <div class="row" style="padding-top:10px;border-top:1px solid var(--line)"><span class="mut">Referidos</span><button type="button" class="b gh sm" id="pctRef">Ajustar porcentaje de referidos</button></div>
+    <p class="mut" style="margin:8px 0 0;font-size:12px">Tú y los administradores secundarios no pagan comisión de retiro. La comisión del depósito automático (Trondealer) se configura en el servicio de pagos, no aquí.</p></div>`);
+  $('pctRef').onclick=()=>toEl('s-ref');
+  main().querySelectorAll('[data-rs]').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.rs,inp=main().querySelector(`[data-rk="${k}"]`),pct=Math.round(+inp.value*100)/100,old=cur[k],lb=(RATE_LB[k]||[k])[0];
+    if(inp.value===''||!(pct>=0&&pct<=100)){toast('Porcentaje inválido: escribe un número de 0 a 100','err');return}
+    if(pct===old){toast('Ya está en '+n(pct,2)+' %');return}
+    const m=await ask('Cambiar porcentaje',`<p><b>${esc(lb)}</b></p><p>De <b>${n(old,2)} %</b> a <b>${n(pct,2)} %</b>.</p><p class="mut">${pct===0?'Quedará SIN comisión. ':''}Se aplica desde ahora a las operaciones nuevas.</p>`,'Cambiar',pct>old?'bad':'ok');
+    if(!m)return;m.remove();
+    act(b,async()=>{
+      try{await rpc('admin_set_fee_rate',{p_kind:k,p_pct:pct})}
+      catch(e){if(/admin_set_fee_rate|does not exist|schema cache/i.test(String((e&&e.message)||e)))throw new Error('Falta ejecutar porcentajes_admin.sql en Supabase.');throw e}
+      S.fees[k]=pct;await viewAdmin();toEl('s-pct')},'Guardado')})}
+
 /* ---------- Admin: retiros automáticos (solo dueño) ---------- */
 async function adminPayout(){
   if(!S.profile.is_admin)return;
@@ -4622,7 +4654,7 @@ async function viewAdmin(){
     sta:()=>adminStats(mm,my),
     usr:()=>{adminUsrSummary();adminOnline(my);mkSub('usr',[['kyc','🪪 Verificaciones'],['unv','👤 Sin verificar'],['risk','🚨 Riesgo']]);adminRiskShell();adminRisk(my);mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my)},
     stf:()=>{mkSub('stf',[['team','👥 Equipo y saldo'],['duty','🕒 Turnos y permisos'],['ops','⚖️ Operaciones'],['act','📜 Actividad'],['rules','🔒 Reglas de control']]);adminStaffMgmt();adminBalances();adminDuty(my);adminStfOps(my);adminAuditShell();adminStfRules();setTimeout(()=>{const g=$('auditGo');if(g)g.click()},60)},
-    cfg:async()=>{adminBlocks();adminMaint();adminPayout();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
+    cfg:async()=>{adminBlocks();adminMaint();adminPayout();adminRates();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}refreshSub();if(id)toEl(id)};
   mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
