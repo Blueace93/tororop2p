@@ -1263,7 +1263,7 @@ async function loadMe(){
   try{S.feeEx=!!(b2.value&&b2.value.data===true)}catch(e){S.feeEx=false}}
 const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
 sb.auth.onAuthStateChange(ev=>{
-  if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);clearInterval(LT);renderAuth()}
+  if(ev==='SIGNED_OUT'){S.user=null;clearInterval(POLL);clearInterval(NP);clearInterval(LT);try{botReset()}catch(e){}renderAuth()}
   if(ev==='PASSWORD_RECOVERY')renderReset()});
 
 /* ---- Logos de moneda y tarjeta de billetera ---- */
@@ -1956,7 +1956,20 @@ function botSummary(){
   BOT._sm=now;
   const pt=[];if(un)pt.push(un+' aviso'+(un>1?'s':'')+' sin leer');if(ad)pt.push(ad+' solicitud'+(ad>1?'es':'')+' pendiente'+(ad>1?'s':'')+' en el panel');
   botSay('📌 Tienes '+pt.join(' y ')+'.',{acts:(un?['notifs']:[]).concat(ad?['adm']:[])})}
-function botOpen(){botBuild();$('botp').classList.add('show');const g=$('fabg'),f=$('fab');if(g)g.style.display='block';if(f)f.classList.add('bo');BOT.unread=0;botBadge();botSummary();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
+/* Limpia todo rastro del asistente (conversación, voz, micrófono, gestión a medias y panel) al cerrar sesión o al cambiar de cuenta.
+   La conversación vive solo en memoria (BOT.msgs), no en localStorage; sin esto, como la app no recarga la página, la siguiente cuenta veía el chat anterior. */
+function botReset(){
+  try{botMicStop()}catch(e){}try{botSpeakStop()}catch(e){}
+  clearTimeout(BOT_V.sp);BOT_V.pend=[];BOT_V.conv=false;
+  BOT.msgs=[];BOT.fl=null;BOT.ai=0;BOT.aiFail=0;BOT.aiFailAt=0;BOT.aiErr='';BOT.busy=false;BOT.unread=0;BOT.voiceIn=false;BOT.uid=null;
+  const p=$('botp');if(p)p.remove();BOT.built=false;
+  const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo');
+  try{TRC.clear();TRV.n++}catch(e){}
+  try{botAlertsInit()}catch(e){}
+  try{botBadge()}catch(e){}}
+/* Si el asistente se abre con otra cuenta distinta a la de la conversación guardada en memoria, se empieza de cero */
+function botGuard(){const u=(S.user&&S.user.id)||null;if(BOT.uid&&u&&BOT.uid!==u)botReset();BOT.uid=u}
+function botOpen(){botGuard();botBuild();$('botp').classList.add('show');const g=$('fabg'),f=$('fab');if(g)g.style.display='block';if(f)f.classList.add('bo');BOT.unread=0;botBadge();botSummary();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
 function botClose(){botMicStop();botSpeakStop();const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo')}
 function botToggle(){const p=$('botp');if(p&&p.classList.contains('show'))botClose();else botOpen()}
 function bindFab(){
@@ -2376,14 +2389,19 @@ async function soundDiag(){
   if(IOS)add(standalone,'Abierta desde el icono de la pantalla de inicio','En iPhone los avisos con la app cerrada solo funcionan así: en Safari pulsa Compartir → Añadir a pantalla de inicio, y abre la plataforma desde ese icono (no desde Safari).');
   add(perm==='granted','Permiso de notificaciones: '+({granted:'concedido',denied:'bloqueado',default:'sin decidir',unsupported:'no disponible'}[perm]||perm),
     perm==='denied'?'Está bloqueado: ve a los ajustes del navegador o de la app → Notificaciones → Permitir, y vuelve a abrir la plataforma.':perm==='unsupported'?'Este navegador no las admite. Usa Chrome en Android o instala la plataforma desde Safari en iPhone.':'Pulsa “Activar notificaciones”.');
-  let reg=null,sub=null;
+  const wv=/; wv\)/.test(navigator.userAgent),hasPM='serviceWorker' in navigator&&'PushManager' in window,short=e=>((e&&e.name)?e.name+': ':'')+String((e&&e.message)||e||'').slice(0,150);
+  let reg=null,sub=null,subErr=null;
   try{reg=await Promise.race([navigator.serviceWorker.getRegistration(),sleep(1500)]);sub=reg&&reg.pushManager?await reg.pushManager.getSubscription():null}catch(e){}
   add(!!reg,'Archivo sw.js instalado en el teléfono','Sube sw.js a la misma carpeta que index.html y recarga la plataforma.');
-  add(!!sub,'Teléfono suscrito a los avisos con la app cerrada','Activa las notificaciones (permiso concedido) y recarga la plataforma para que se suscriba.');
+  add(hasPM&&!!(reg&&reg.pushManager),'Este navegador permite avisos con la app cerrada (Push)',wv?'Estás dentro de una app tipo APK (WebView), como la hecha con AppMint: Android no deja que esas apps reciban avisos push de una web. Para recibirlos abre tororo.trade en Chrome e instálala desde ahí (menú ⋮ → Instalar app o Añadir a pantalla de inicio), o activa las notificaciones nativas si AppMint las ofrece.':'Usa Chrome en Android, o en iPhone instala la plataforma desde Safari (Compartir → Añadir a pantalla de inicio).');
+  /* si todo está permitido pero no hay suscripción, se intenta ahora y se muestra el error real (antes fallaba en silencio) */
+  if(!sub&&hasPM&&reg&&reg.pushManager&&perm==='granted'){
+    try{await pushSubscribe();sub=await reg.pushManager.getSubscription()}catch(e){subErr=e;console.warn('[push] no se pudo suscribir',e)}}
+  add(!!sub,'Teléfono suscrito a los avisos con la app cerrada',subErr?'No se pudo suscribir ('+short(subErr)+').'+(/push service|abort|network/i.test(String(subErr&&(subErr.name+subErr.message)))?' Chrome no pudo conectar con el servicio de avisos de Google: revisa tu conexión y que Google Play Services esté actualizado.':''):hasPM?'Activa las notificaciones (permiso concedido) y recarga la plataforma para que se suscriba.':'Depende del punto anterior: este navegador no admite avisos con la app cerrada.');
   if(reg&&perm==='granted'){
     try{await reg.showNotification('🔔 Prueba de aviso',{body:'Si ves este aviso y suena, las notificaciones del teléfono funcionan.',icon:(window.iconoUrl?iconoUrl():'icon-192.png'),vibrate:[200,100,200],tag:'prueba',renotify:true,silent:false});
       add(true,'Aviso de prueba enviado al teléfono (mira la barra de notificaciones)')}
-    catch(e){add(false,'No se pudo mostrar el aviso de prueba','Revisa el permiso de notificaciones del navegador.')}}
+    catch(e){console.warn('[push] aviso de prueba',e);add(false,'No se pudo mostrar el aviso de prueba',short(e)+(wv?' · Los WebView no muestran notificaciones de la web.':' · Revisa el permiso de notificaciones del navegador.'))}}
   return R}
 async function viewNotifs(){
   const my=NAV;main().innerHTML='<h2>Notificaciones</h2>'+skel(3);
