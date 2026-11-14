@@ -1,0 +1,39 @@
+# Archivo _headers para optimización de caché en tororop2p
+# Coloca este archivo en la RAÍZ de tu repositorio de GitHub
+# Cloudflare lo detecta automáticamente en el despliegue
+
+# Páginas HTML: no cachear para que los usuarios siempre vean la última versión
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# CSS y JS: cachear 1 día (como no tienen hash, usamos TTL corto)
+/*.css
+  Cache-Control: public, max-age=86400
+/*.js
+  Cache-Control: public, max-age=86400
+
+# Imágenes: cachear 7 días (no cambian frecuentemente)
+/*.png
+  Cache-Control: public, max-age=604800
+/*.jpg
+  Cache-Control: public, max-age=604800
+/*.jpeg
+  Cache-Control: public, max-age=604800
+/*.gif
+  Cache-Control: public, max-age=604800
+/*.svg
+  Cache-Control: public, max-age=604800
+/*.webp
+  Cache-Control: public, max-age=604800
+/*.ico
+  Cache-Control: public, max-age=604800
+
+# Fuentes: cachear 1 año (nunca cambian)
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+/*.ttf
+  Cache-Control: public, max-age=31536000, immutable
+/*.eot
+  Cache-Control: public, max-age=31536000, immutable
