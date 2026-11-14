@@ -813,6 +813,18 @@ input,select,textarea{max-width:100%;font-size:16px}
 .dc-trb{background:transparent;border:0;color:inherit;opacity:.55;font-size:12px;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer}.dc-trb:hover{opacity:1;background:rgba(127,127,127,.18)}.dc-trb:disabled{opacity:.35}
 .dc-trx{margin-top:4px;padding:6px 8px;border-radius:10px;background:rgba(127,127,127,.15);color:var(--mut);font-size:13px;white-space:pre-wrap;border-left:3px solid var(--acc)}
 </style>
+<style id="botkbd">
+#botp.kbd{border-radius:20px;box-shadow:0 12px 36px -10px #000}
+#botp.kbd .bh{padding:8px 12px}
+#botp.kbd .bav{width:32px;height:32px;border-radius:10px}
+#botp.kbd .bav svg{width:18px;height:18px}
+#botp.kbd .bh b{font-size:14px}
+#botp.kbd .bh button{width:30px;height:30px}
+#botp.kbd .bh small,#botp.kbd .bn{display:none}
+#botp.kbd #botq{padding:6px 12px}
+#botp.kbd .bi{padding:7px 10px 10px}
+body.bkb nav,body.bkb .wa,body.bkb .up,body.bkb #nbn,body.bkb .fab{display:none!important}
+</style>
 <style id="ui3">
 /* ===== UI v3: paletas refinadas (claro y oscuro) y acabado coherente. Solo colores, sombras y transiciones: no cambia la estructura ===== */
 body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -1932,6 +1944,7 @@ function botBuild(){
   $('botmn').onclick=()=>{botMenu();botDraw()};
   const sendIn=()=>{const i=$('boti'),v=i.value;i.value='';botSend(v)};
   $('bots').onclick=sendIn;$('boti').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sendIn()}};
+  $('boti').addEventListener('focus',()=>{botFit();setTimeout(botFit,120);setTimeout(botFit,400)});$('boti').addEventListener('blur',()=>setTimeout(botFit,150));
   $('botq').onclick=e=>{
     const c=e.target.closest('button');if(!c)return;
     if(c.dataset.a){const a=BOT_ACTS[c.dataset.a];if(!a[2])botClose();a[1]();return}
@@ -1945,7 +1958,8 @@ function botBuild(){
     const mn=e.target.closest('[data-mn]');if(!mn)return;const k=mn.dataset.mn;
     if(k==='bal')botSend('mi saldo');else if(k==='safe')botSend('¿Esta plataforma es segura?');else if(k==='help'){botClose();go('help')}else BOT_ACTS[k][1]()};
   if(!window._botEsc){window._botEsc=1;addEventListener('keydown',e=>{if(e.key==='Escape')botClose()});
-    if(window.visualViewport)visualViewport.addEventListener('resize',()=>{const p=$('botp');if(!p||!p.classList.contains('show'))return;const kb=innerHeight-visualViewport.height-visualViewport.offsetTop;p.style.bottom=kb>80?(kb+8)+'px':''})}
+    if(window.visualViewport){visualViewport.addEventListener('resize',botFit);visualViewport.addEventListener('scroll',botFit)}
+    addEventListener('orientationchange',()=>{BK.base=0;setTimeout(botFit,350)})}
   if(!BOT.msgs.length){const nm=(S.profile&&S.profile.username)||'';
     botSay(`¡Hola${nm?' '+nm:''}! 👋 Soy tu asistente de ${APP_NAME}. Resuelvo tus dudas y hago gestiones por ti. Escríbeme o toca 🎙️ para hablarme.`,{menu:1})}}
 function botSummary(){
@@ -1962,15 +1976,29 @@ function botReset(){
   try{botMicStop()}catch(e){}try{botSpeakStop()}catch(e){}
   clearTimeout(BOT_V.sp);BOT_V.pend=[];BOT_V.conv=false;
   BOT.msgs=[];BOT.fl=null;BOT.ai=0;BOT.aiFail=0;BOT.aiFailAt=0;BOT.aiErr='';BOT.busy=false;BOT.unread=0;BOT.voiceIn=false;BOT.uid=null;
-  const p=$('botp');if(p)p.remove();BOT.built=false;
+  try{botFitOff()}catch(e){}const p=$('botp');if(p)p.remove();BOT.built=false;
   const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo');
   try{TRC.clear();TRV.n++}catch(e){}
   try{botAlertsInit()}catch(e){}
   try{botBadge()}catch(e){}}
 /* Si el asistente se abre con otra cuenta distinta a la de la conversación guardada en memoria, se empieza de cero */
 function botGuard(){const u=(S.user&&S.user.id)||null;if(BOT.uid&&u&&BOT.uid!==u)botReset();BOT.uid=u}
-function botOpen(){botGuard();botBuild();$('botp').classList.add('show');const g=$('fabg'),f=$('fab');if(g)g.style.display='block';if(f)f.classList.add('bo');BOT.unread=0;botBadge();botSummary();botDraw();if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
-function botClose(){botMicStop();botSpeakStop();const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo')}
+function botOpen(){botGuard();botBuild();$('botp').classList.add('show');const g=$('fabg'),f=$('fab');if(g)g.style.display='block';if(f)f.classList.add('bo');BOT.unread=0;botBadge();botSummary();botDraw();BK.base=window.visualViewport?visualViewport.height:innerHeight;if(matchMedia('(pointer:fine)').matches)$('boti').focus()}
+/* Teclado: con el teclado abierto el panel ocupa justo la parte visible de la pantalla (cabecera arriba, lo que escribes abajo, pegado al teclado) */
+const BK={base:0,raf:0};
+function botFitOff(){const p=$('botp');if(p){p.classList.remove('kbd');p.style.top='';p.style.bottom='';p.style.height='';p.style.maxHeight=''}document.body.classList.remove('bkb')}
+function botFit(){
+  if(BK.raf)return;
+  BK.raf=requestAnimationFrame(()=>{BK.raf=0;
+    const p=$('botp'),v=window.visualViewport;
+    if(!p||!v||!p.classList.contains('show')){botFitOff();return}
+    const h=v.height,foc=document.activeElement===$('boti');
+    if(!foc||!BK.base)BK.base=h;
+    if(!(foc&&BK.base-h>100&&matchMedia('(pointer:coarse)').matches)){botFitOff();return}
+    p.classList.add('kbd');document.body.classList.add('bkb');
+    p.style.top=Math.round(v.offsetTop+6)+'px';p.style.bottom='auto';p.style.height=Math.max(240,Math.round(h-12))+'px';p.style.maxHeight='none';
+    const m=$('botm');if(m)m.scrollTop=m.scrollHeight})}
+function botClose(){botFitOff();botMicStop();botSpeakStop();const p=$('botp');if(p){p.classList.remove('show');p.style.bottom=''}const g=$('fabg'),f=$('fab');if(g)g.style.display='none';if(f)f.classList.remove('bo')}
 function botToggle(){const p=$('botp');if(p&&p.classList.contains('show'))botClose();else botOpen()}
 function bindFab(){
   const f=$('fab'),g=$('fabg'),up=$('up');if(!f)return;
