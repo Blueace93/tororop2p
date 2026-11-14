@@ -6,7 +6,24 @@
 <meta name="theme-color" content="#090a10">
 <script>try{var t=localStorage.getItem('tema')||'light';document.documentElement.setAttribute('data-theme',t);document.querySelector('meta[name=theme-color]').content=t==='dark'?'#090a10':'#ffffff'}catch(e){document.documentElement.setAttribute('data-theme','light')}</script>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" id="ati" href="icon-192.png">
+<link rel="icon" type="image/png" id="fav" href="ic-claro-192.png">
+<script>
+/* Iconos por temporada (favicon, icono de iPhone, avisos y color del logo dentro de la app).
+   Para cambiar fechas edita ICON_TEMPORADAS: formato MM-DD, ambos días incluidos; puede cruzar el fin de año (12-01 a 01-06).
+   Si no hay temporada activa se usa ic-oscuro o ic-claro según el tema. Mantén la misma tabla en sw.js. */
+window.ICON_TEMPORADAS=[{icono:'dorado',desde:'12-31',hasta:'01-01'},{icono:'festivo',desde:'12-01',hasta:'01-06'}]; /* gana la primera que coincida: el dorado (Año Nuevo) va antes que el festivo */
+window.iconoActual=function(){try{
+  var d=new Date(),k=('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  for(var i=0;i<ICON_TEMPORADAS.length;i++){var t=ICON_TEMPORADAS[i],ok=t.desde<=t.hasta?(k>=t.desde&&k<=t.hasta):(k>=t.desde||k<=t.hasta);if(ok)return t.icono}
+  }catch(e){}
+  return document.documentElement.getAttribute('data-theme')==='dark'?'oscuro':'claro'};
+window.iconoUrl=function(){return 'ic-'+iconoActual()+'-192.png'};
+window.iconoApply=function(){try{var u=iconoUrl(),a=document.getElementById('fav'),b=document.getElementById('ati');if(a)a.href=u;if(b)b.href=u;
+  var s=document.querySelectorAll('#lgG stop'),f=iconoActual()==='festivo';
+  if(s.length===2){s[0].setAttribute('stop-color',f?'#f05252':'#8b7cff');s[1].setAttribute('stop-color',f?'#c81e1e':'#4f8dff')}}catch(e){}};
+iconoApply();document.addEventListener('DOMContentLoaded',iconoApply);
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -1232,14 +1249,16 @@ async function boot(){
   render();afterLogin().catch(()=>{});maybeTuto();setTimeout(checkAnnPopup,1800)}
 async function loadMe(){
   const fresh=S._cfgAt&&Date.now()-S._cfgAt<30000;
-  const[p,w,st,cw,fr,sf]=await Promise.all([
+  const[p,w,st,cw,fr,sf,[b1,b2]]=await Promise.all([
     sb.rpc('my_profile').then(r=>(r.error||!r.data)?sb.from('profiles').select('username,is_admin,avatar_path,full_name,kyc_status,kyc_note').eq('id',S.user.id).single():r),
     sb.from('wallets').select('available,locked').eq('user_id',S.user.id).single(),
-    fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle()]);
+    fresh?null:sb.rpc('get_public_settings'),sb.from('fiat_wallets').select('currency,available').eq('user_id',S.user.id),fresh?null:sb.from('fee_rates').select('kind,pct'),sb.from('profiles').select('is_staff').eq('id',S.user.id).maybeSingle(),
+    /* my_block y my_fee_exempt van en la MISMA ronda de red (antes esperaban a que terminaran las otras 6 consultas) */
+    Promise.allSettled([sb.rpc('my_block'),sb.rpc('my_fee_exempt')])]);
   const netErr=r=>r&&r.error&&/fetch|network|abort|timed? ?out|load failed|connection/i.test(String(r.error.message||r.error));
   if(netErr(p)&&netErr(w)){if(S.profile&&S.profile.username)return;const ce=new Error('conn');ce.conn=1;throw ce}
   if(p.error){let q=await sb.from('profiles').select('username,is_admin,kyc_status,kyc_note').eq('id',S.user.id).single();if(q.error)q=await sb.from('profiles').select('username,is_admin').eq('id',S.user.id).single();p.data=q.data;S.kycOff=!!(q.data&&q.data.kyc_status===undefined)}else S.kycOff=false;
-  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}if(S.fees&&(S.profile.is_admin||S.profile.is_staff))S.fees.withdraw=0;{const[b1,b2]=await Promise.allSettled([sb.rpc('my_block'),sb.rpc('my_fee_exempt')]);
+  S.profile=p.data||{username:'usuario',is_admin:false};S.wallet=w.data||{available:0,locked:0};if(!fresh)S.settings=(st&&st.data)||{};S.bal={CUP:0,USD:0};(cw?.data||[]).forEach(r=>S.bal[r.currency]=Number(r.available));S.profile.is_staff=!!(sf&&sf.data&&sf.data.is_staff);if(!fresh){S.fees={trade:1,withdraw:3};(fr?.data||[]).forEach(r=>S.fees[r.kind]=Number(r.pct));if(st&&!st.error&&fr&&!fr.error)S._cfgAt=Date.now()}if(S.fees&&(S.profile.is_admin||S.profile.is_staff))S.fees.withdraw=0;{
   try{const bk=b1.value&&b1.value.data;S.blocked=!!(bk&&bk.blocked);S.blockWhy=(bk&&bk.reason)||'';document.body.toggleAttribute('data-blocked',S.blocked)}catch(e){}
   try{S.feeEx=!!(b2.value&&b2.value.data===true)}catch(e){S.feeEx=false}}
 const hb=$('hb');if(hb)hb.textContent=n(S.wallet.available,2)}
@@ -2016,7 +2035,7 @@ function render(){
     ${admin?`<button data-v="admin">${IC.admin}Admin<i class="bd" id="adbd" style="display:none"></i></button>`:''}</nav>`;
   bindFab();
   $('bal').onclick=()=>go('wallet');$('bell').onclick=()=>go('notifs');
-  {const R=document.documentElement,ap=t=>{R.classList.add('tt');setTimeout(()=>R.classList.remove('tt'),400);R.setAttribute('data-theme',t);try{localStorage.setItem('tema',t)}catch(e){}const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t==='dark'?'#090a10':'#ffffff';$('thm').textContent=t==='dark'?'☀️':'🌙'};
+  {const R=document.documentElement,ap=t=>{R.classList.add('tt');setTimeout(()=>R.classList.remove('tt'),400);R.setAttribute('data-theme',t);try{localStorage.setItem('tema',t)}catch(e){}window.iconoApply&&iconoApply();const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t==='dark'?'#090a10':'#ffffff';$('thm').textContent=t==='dark'?'☀️':'🌙'};
   $('thm').textContent=R.getAttribute('data-theme')==='dark'?'☀️':'🌙';$('thm').onclick=()=>ap(R.getAttribute('data-theme')==='dark'?'light':'dark')}
   $('av').onclick=e=>{e.preventDefault();go('profile')};
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const t=Date.now();if(b.dataset.v===S.view&&t-(S._nt||0)<500)return;S._nt=t;go(b.dataset.v)});
@@ -2298,7 +2317,7 @@ async function sysNotify(title,body){
   toast('🔔 '+title);ding();try{botNotify(title,body)}catch(e){}
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
-    if(reg)await reg.showNotification(title,{body,icon:'icon-192.png',vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
+    if(reg)await reg.showNotification(title,{body,icon:(window.iconoUrl?iconoUrl():'icon-192.png'),vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
 let NPB=false;
 async function pollNotifs(){
   if(!S.user||document.hidden||!navigator.onLine)return;
@@ -2358,7 +2377,7 @@ async function soundDiag(){
   add(!!reg,'Archivo sw.js instalado en el teléfono','Sube sw.js a la misma carpeta que index.html y recarga la plataforma.');
   add(!!sub,'Teléfono suscrito a los avisos con la app cerrada','Activa las notificaciones (permiso concedido) y recarga la plataforma para que se suscriba.');
   if(reg&&perm==='granted'){
-    try{await reg.showNotification('🔔 Prueba de aviso',{body:'Si ves este aviso y suena, las notificaciones del teléfono funcionan.',icon:'icon-192.png',vibrate:[200,100,200],tag:'prueba',renotify:true,silent:false});
+    try{await reg.showNotification('🔔 Prueba de aviso',{body:'Si ves este aviso y suena, las notificaciones del teléfono funcionan.',icon:(window.iconoUrl?iconoUrl():'icon-192.png'),vibrate:[200,100,200],tag:'prueba',renotify:true,silent:false});
       add(true,'Aviso de prueba enviado al teléfono (mira la barra de notificaciones)')}
     catch(e){add(false,'No se pudo mostrar el aviso de prueba','Revisa el permiso de notificaciones del navegador.')}}
   return R}
