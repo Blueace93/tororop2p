@@ -1486,14 +1486,14 @@ function botIntent(q){
   const want=/ (quier|quisier|necesit|dese|gustaria|ayudame|ayudas|puedes)\w* /.test(t)||['pon','ponme','poner','crea','creame','crear','publica','publicame','publicar','haz','hazme','hacer','vende','vendeme','vender','abre','abreme','abrir','agrega','agregame','agregar','anade','anadir','registra','registrame','registrar','guarda','guardame','guardar','cancela','cancelame','cancelar','elimina','eliminar','quita','quitar','borra','borrar','solicito','solicitar'].includes(first);
   if(/ (mis alertas|alertas activas|ver alertas|ver mis alertas) /.test(t)||/ (quit|borr|elimin|cancel|desactiv)\w* .*alerta/.test(t))return{k:'alerts'};
   if(!ask&&/ (avis\w*|notific\w*|alert\w*|me avisas|me avisen|dejame saber) /.test(t)&&/ (oferta|ofertas|usdt|precio|cup|mlc|saldo|hay|alguna|aparezca|publiquen|baje|suba|llegue) /.test(t))return{k:'alert',pre:{raw:q}};
-  if(/ (mis operaciones|operaciones activas|operaciones en curso|ordenes activas|mis ordenes|estado de mis|que operaciones tengo|tengo operaciones) /.test(t))return{k:'ops'};
-  if(!ask&&(want||w<=4)&&/ (cancel|elimin|quit|borr|despublic)\w* .*(oferta|anuncio|publicacion|orden de venta)/.test(t))return{k:'cancel'};
+  if(/ (mis operaciones|operaciones activas|operaciones en curso|operaciones abiertas|ordenes activas|ordenes en curso|ordenes abiertas|mis ordenes|ver mis ordenes|ver mis operaciones|mis compras|mis ventas|estado de mis|estado de mi orden|estado de mi operacion|que operaciones tengo|tengo operaciones|tengo ordenes|abrir mis operaciones) /.test(t))return{k:'ops'};
+  if(!ask&&(want||w<=4)&&/ (cancel|elimin|quit|borr|despublic)\w* .*(oferta|anuncio|publicacion|orden)/.test(t))return{k:'cancel'};
   if(!ask&&(want||w<=3)&&/ (agreg|anad|registr|guard|nueva|crear|crea|poner|pon)\w* .*tarjeta/.test(t))return{k:'card'};
   if(/ solicitud(es)? de compra | (publicar|crear|hacer|poner|pon|crea|haz) .*solicitud /.test(t)){const pre={},r=String(q).replace(/,/g,'.'),ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];const c=botCur(' '+r+' ');if(c)pre.c=c;return{k:'breq',pre}};
   if(!ask&&(want||w<=5)&&/ (quiero comprar|quieren comprar|para comprar|a comprar|de compra|comprar|compra) /.test(t)&&/ (oferta|solicitud|anuncio|orden|pedido|publicar|publica|publicame|poner|pon|ponme|crear|crea|creame|abre|abreme|abrir|haz|hazme) /.test(t)&&!/ (vender|vendo|vende) /.test(t)){
     const pre={},r=String(q).replace(/,/g,'.'),ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];
     const c=botCur(' '+r+' ');if(c)pre.c=c;return{k:'breq',pre}}
-  if(!ask&&(want||w<=3)&&/ (vender|vendo|vende|venta|publicar|publica|poner|pon|ponme|crear|crea|hacer|haz|abre|abreme|abrir) /.test(t)&&/ (usdt|oferta|anuncio|orden|venta|vender|vendo|vende) /.test(t)){
+  if(!ask&&(want||w<=3)&&/ (vender|vendo|vende|vendeme|venta|publicar|publica|publicame|poner|pon|ponme|crear|crea|creame|hacer|haz|hazme|abre|abreme|abrir) /.test(t)&&/ (usdt|oferta|anuncio|orden|venta|vender|vendo|vende) /.test(t)){
     const pre={},r=String(q).replace(/,/g,'.');
     const ma=r.match(/(\d+(?:\.\d+)?)\s*usdt/i);if(ma)pre.a=+ma[1];
     const c=botCur(' '+r+' ');if(c)pre.c=c;
