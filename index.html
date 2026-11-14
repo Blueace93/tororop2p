@@ -1173,7 +1173,7 @@ async function voiceCheck(audioPath){
     return r;
   }catch(e){return null}}
 const $app=document.getElementById('app'),$=id=>document.getElementById(id),main=()=>$('main');
-const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',sort:'asc',mine:false},of:'all',active:0};
+const S={user:null,profile:null,wallet:null,view:'market',orderId:null,settings:{},offers:[],f:{q:'',m:'',c:'',sort:'asc',mine:false},of:'all',active:0};
 let NAV=0,POLL=null,NP=null;
 S.seen=new Set();S.np0=true;S.st={};
 
@@ -1185,6 +1185,40 @@ const STATUS={
   released:['Completada','ok'],refunded:['Devuelta al vendedor','bad'],cancelled:['Cancelada','bad']};
 const METHODS=['Transfermóvil','EnZona','Efectivo'];
 const CURS=['CUP','MLC','Saldo Clásica','Saldo Móvil'];
+/* ---------- Monedas y métodos de pago internacionales (Zelle, PayPal, euros, pesos mexicanos, rublos…) ---------- */
+const FX={
+  USD:{l:'USD · Dólares',m:['Zelle','PayPal','Cash App','Wise','Efectivo (USD)']},
+  EUR:{l:'EUR · Euros',m:['Transferencia SEPA','Bizum','Revolut','Wise','PayPal','Efectivo (EUR)']},
+  MXN:{l:'MXN · Pesos mexicanos',m:['SPEI','Mercado Pago','Depósito OXXO','Efectivo (MXN)']},
+  CAD:{l:'CAD · Dólares canadienses',m:['Interac e-Transfer','PayPal','Wise','Efectivo (CAD)']},
+  GBP:{l:'GBP · Libras esterlinas',m:['Faster Payments','Revolut','Wise','PayPal','Efectivo (GBP)']},
+  RUB:{l:'RUB · Rublos rusos',m:['Sberbank','Tinkoff','SBP (pagos rápidos)','Efectivo (RUB)']}};
+const isFx=c=>!!FX[c];
+const CURS_ALL=[...CURS,...Object.keys(FX)];
+const curLb=c=>FX[c]?FX[c].l:c==='Saldo Clásica'?'Saldo Clásica (USD)':c;
+const methodsFor=c=>FX[c]?FX[c].m:METHODS;
+const ALLM=[...new Set([...METHODS,...Object.values(FX).flatMap(x=>x.m)])];
+/* Datos que se piden por método: id = cuenta, nm = titular, bk = banco o dato extra */
+const PM={
+  'Zelle':{rev:1,f:[['id','Correo o teléfono de Zelle','correo@ejemplo.com o +1…'],['nm','Nombre del titular','Como aparece en su banco']]},
+  'PayPal':{rev:1,f:[['id','Correo de PayPal','correo@ejemplo.com'],['nm','Nombre del titular','Como aparece en PayPal']]},
+  'Cash App':{rev:1,f:[['id','$Cashtag','$usuario'],['nm','Nombre del titular','']]},
+  'Wise':{f:[['id','Correo o @wisetag',''],['nm','Nombre del titular','']]},
+  'Transferencia SEPA':{f:[['id','IBAN','ES00 0000 0000 0000 0000 0000'],['nm','Nombre del titular','']]},
+  'Bizum':{f:[['id','Teléfono de Bizum','+34…'],['nm','Nombre del titular','']]},
+  'Revolut':{f:[['id','@revtag o teléfono',''],['nm','Nombre del titular','']]},
+  'SPEI':{f:[['id','CLABE (18 dígitos)',''],['nm','Nombre del titular',''],['bk','Banco','']]},
+  'Mercado Pago':{f:[['id','CLABE, alias o correo',''],['nm','Nombre del titular','']]},
+  'Depósito OXXO':{f:[['id','Número de tarjeta',''],['nm','Nombre del titular','']]},
+  'Interac e-Transfer':{f:[['id','Correo o teléfono de Interac',''],['nm','Nombre del titular','']]},
+  'Faster Payments':{f:[['id','Sort code y número de cuenta',''],['nm','Nombre del titular','']]},
+  'Sberbank':{f:[['id','Número de tarjeta o teléfono',''],['nm','Nombre y apellido del titular','']]},
+  'Tinkoff':{f:[['id','Número de tarjeta o teléfono',''],['nm','Nombre y apellido del titular','']]},
+  'SBP (pagos rápidos)':{f:[['id','Teléfono',''],['nm','Nombre y apellido del titular',''],['bk','Banco','']]}};
+const pmF=m=>(PM[m]&&PM[m].f)||[['id','Ciudad y punto de encuentro',''],['nm','Tu nombre','']];
+const isRev=m=>!!(PM[m]&&PM[m].rev);
+const REVW_S='⚠️ <b>Este método puede revertirse.</b> El comprador (o su banco) puede reclamar la devolución del pago incluso semanas o meses después de que liberes los USDT. <b>Tororo no se hace responsable</b> de devoluciones, reclamaciones ni contracargos: si aceptas este método, el riesgo es tuyo. Confirma el pago solo cuando el dinero figure como <b>completado</b> en tu cuenta.';
+const REVW_B='⚠️ <b>Este método puede revertirse.</b> Si reclamas la devolución de un pago ya confirmado o permites que se revierta, tu cuenta será suspendida. Tororo no se hace responsable de reclamaciones ni devoluciones de pagos hechos por estos métodos.';
 const SEP=' | Moneda: ';
 const BSEP=' | Banco: ';
 const parseM=s=>{const[a,bank]=String(s||'').split(BSEP);const [m,c]=a.split(SEP);return{m:m||'',c:c||'CUP',bank:(bank||'').trim()}};
@@ -1327,6 +1361,8 @@ const botSayN=(t,acts)=>{const z=botNudge(),a=(acts||[]).slice();
 const botNum=t=>{const m=String(t).replace(/,/g,'.').match(/\d+(\.\d+)?/);return m?+m[0]:NaN};
 const botMsk=c=>'···· '+String(c||'').replace(/\D/g,'').slice(-4);
 const botCl=c=>c==='Saldo Clásica'?'Saldo Clásica (USD)':c;
+const botFx=t=>/ (zelle|paypal|cash app|euros?|mxn|cad|rublos?|rub|gbp|libras?|wise|bizum|sepa|spei|interac|oxxo|sberbank|sber|tinkoff|mexicanos?|canadienses?) /.test(t);
+const BOT_FXMSG='Para cobrar o pagar en esa moneda (Zelle, PayPal, euros, pesos mexicanos, rublos…) primero guarda tus datos en Perfil → Mis datos de pago y hazlo desde el Mercado, donde eliges el método. Te llevo allí.';
 const botCur=raw=>{const t=botNorm(raw);return/ (clasica|usd|dolar|dolares) /.test(t)?'Saldo Clásica':/ movil /.test(t)?'Saldo Móvil':/ saldo /.test(t)?'Saldo Móvil':/ mlc /.test(t)?'MLC':/ (cup|pesos) /.test(t)?'CUP':null};
 const botMed=c=>{const a=(S.offers||[]).filter(o=>parseM(o.methods).c===c).map(o=>Number(o.price_cup)||0).filter(x=>x>0).sort((x,y)=>x-y);if(a.length<3)return 0;const h=a.length>>1;return a.length%2?a[h]:(a[h-1]+a[h])/2};
 /* Números dichos en voz ("novecientos cincuenta" → 950) */
@@ -1396,9 +1432,9 @@ const BOT_KB=[
  {k:['que es blockchain','que es la blockchain','que es el blockchain','que es una blockchain','que es block','que es la block','que es el block','que cosa es la blockchain','que cosa es blockchain','que cosa es el blockchain','que significa blockchain','que es la cadena de bloques','que es cadena de bloques','explicame la blockchain','explicame que es blockchain'],
   a:()=>'Una blockchain (cadena de bloques) es un registro digital donde quedan anotadas todas las transacciones de una criptomoneda. Está copiado en miles de computadoras a la vez, así que nadie puede borrar ni alterar lo que ya se registró. Cada movimiento tiene un código único llamado TXID, con el que puedes ver tu transacción. En Tororo, las compras y ventas entre usuarios se hacen dentro de la plataforma; los depósitos y retiros de USDT sí pasan por la blockchain.',acts:['dep']},
  {k:['que es p2p','=p2p','como funciona tororo','como funciona la plataforma','que es tororo','para que sirve tororo','que hace tororo'],
-  a:()=>'Tororo es una plataforma P2P: compradores y vendedores de USDT se conectan directamente. El vendedor publica una oferta con sus USDT bloqueados, el comprador paga por Transfermóvil o EnZona y sube su captura, y al confirmar el pago los USDT llegan a su billetera. Si hay un problema, el administrador media.',acts:['tuto','help']},
+  a:()=>'Tororo es una plataforma P2P: compradores y vendedores de USDT se conectan directamente. El vendedor publica una oferta con sus USDT bloqueados, el comprador paga por Transfermóvil, EnZona, Zelle, PayPal o tu banco y sube su captura, y al confirmar el pago los USDT llegan a su billetera. Si hay un problema, el administrador media.',acts:['tuto','help']},
  {k:['metodos de pago','formas de pago','que monedas','que moneda','aceptan','=transfermovil','=enzona','como se paga'],
-  a:()=>'Métodos de pago: '+METHODS.join(', ')+'. Monedas en las que se puede cobrar: '+CURS.map(botCl).join(', ')+'.',acts:['mkt']},
+  a:()=>'Métodos de pago: '+METHODS.join(', ')+'. Monedas en las que se puede cobrar: '+CURS.map(botCl).join(', ')+'. También hay pagos internacionales: '+Object.keys(FX).map(c=>c+' ('+FX[c].m.join(', ')+')').join('; ')+'. Para esos métodos debes guardar antes tus datos en Perfil → Mis datos de pago. Zelle, PayPal y Cash App pueden revertirse: Tororo no se responsabiliza de devoluciones.',acts:['mkt']},
  {k:['que puedes hacer','que sabes hacer','que haces','como te uso','como usar el asistente','comandos de voz','por voz','microfono','hablar contigo','dictar','=voz','=comandos','ayuda con el asistente'],
   a:()=>'Respondo tus dudas y hago gestiones por ti: vender USDT, agregar tarjetas, publicar solicitudes de compra, cancelar ofertas, ver tus operaciones y crear alertas. También puedes hablarme con el micrófono 🎙️. Prueba:\n• “Avísame si hay una oferta de 10 USDT”\n• “Avísame si hay una con el USDT a 950 CUP”\n• “Ábreme una orden con mis 20 USDT a 360 CUP de saldo”\n• “¿Es segura la plataforma?”\nLas gestiones con dinero siempre te piden confirmar con un botón.',acts:['menu','alerts']},
  {k:['crear alerta','crear una alerta','como funcionan las alertas','alerta de precio','alerta de oferta','avisarme cuando','como me avisan'],
@@ -1602,7 +1638,7 @@ async function botSellIn(x,raw){
   const bad=m=>botSay(m+' (o toca Cancelar para salir).'),nx=botNorm(x);
   switch(f.s){
     case 'amt':{const a=botNum(x);if(!(a>0))return bad('Necesito un número de USDT');if(a>mx)return bad(`Con tu saldo puedes publicar hasta ${n(mx,2)} USDT`);d.a=a;break}
-    case 'cur':{const c=botCur(x)||CURS.find(k=>k===x);if(!c)return bad('Elige una de las monedas');d.c=c;break}
+    case 'cur':{if(botFx(nx)){BOT.fl=null;return botSay(BOT_FXMSG,{acts:['mkt']})}const c=botCur(x)||CURS.find(k=>k===x);if(!c)return bad('Elige una de las monedas');d.c=c;break}
     case 'price':{const p=botNum(x);if(!(p>0))return bad('Necesito un precio válido');d.p=p;break}
     case 'met':{
       if(x==='m:ok'||/ (listo|ok|ya|continuar|siguiente) /.test(nx)){if(!d.m.length)return bad('Elige al menos un método de pago');d.mok=1;break}
@@ -1685,7 +1721,7 @@ async function botBreqIn(x,raw){
   const f=BOT.fl,d=f.d,bad=m=>botSay(m+' (o toca Cancelar para salir).'),nx=botNorm(x);
   switch(f.s){
     case 'amt':{const a=botNum(x);if(!(a>0))return bad('Necesito un número de USDT');d.a=a;break}
-    case 'cur':{const c=botCur(x)||CURS.find(k=>k===x);if(!c)return bad('Elige una de las monedas');d.c=c;break}
+    case 'cur':{if(botFx(nx)){BOT.fl=null;return botSay(BOT_FXMSG,{acts:['mkt']})}const c=botCur(x)||CURS.find(k=>k===x);if(!c)return bad('Elige una de las monedas');d.c=c;break}
     case 'ok':{
       if(x==='no'||/ (no|cancelar) /.test(nx)){BOT.fl=null;return botSay('Listo, no publiqué nada.')}
       if(!botConf(x,nx,'Publicar solicitud'))return;
@@ -2101,42 +2137,164 @@ function go(v,orderId){if(S.blocked&&!['wallet','hist'].includes(v))v='wallet';
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
 
 /* ---------- Mercado ---------- */
-const chipsHtml=(sel,id)=>`<div class="chips" id="${id}">${METHODS.map(m=>`<button type="button" class="chip ${m.startsWith('Saldo')?'sc':''} ${sel.includes(m)?'on':''}" data-m="${m}">${m}</button>`).join('')}</div>`;
+const chipsHtml=(sel,id,c)=>`<div class="chips" id="${id}">${methodsFor(c||'CUP').map(m=>`<button type="button" class="chip ${m.startsWith('Saldo')?'sc':''} ${sel.includes(m)?'on':''}" data-m="${esc(m)}">${esc(m)}${isRev(m)?' ⚠️':''}</button>`).join('')}</div>`;
+/* ---------- Datos de pago guardados dentro de Tororo (obligatorios para operar con métodos internacionales) ---------- */
+async function loadPay(force){
+  if(S.pay&&S.payUid===S.user.id&&!force)return S.pay;
+  const{data,error}=await sb.from('pay_accounts').select('id,method,currency,holder_name,account_ref,extra').order('created_at',{ascending:false});
+  S.pay=error?[]:(data||[]);S.payErr=!!error;S.payUid=S.user.id;return S.pay}
+const payOf=(m,c)=>(S.pay||[]).filter(a=>a.method===m&&a.currency===c);
+const payLine=a=>`${a.method}: ${a.account_ref}${a.extra?' ('+a.extra+')':''} · Titular: ${a.holder_name}`;
+function payForm(c,m,done){
+  const fl=pmF(m);
+  const md=modal(`<h3>Tus datos de ${esc(m)} (${esc(c)})</h3><p class="mut" style="margin-top:0">Se guardan en tu cuenta de Tororo. Solo los verá la otra parte de una operación en la que uses este método.</p>
+   ${fl.map(([k,l,p])=>`<label>${esc(l)}</label><input data-pf="${k}" placeholder="${esc(p||'')}" maxlength="80" autocomplete="off">`).join('')}
+   <div class="grid2" style="margin-top:12px"><button class="b gh" id="pcx">Cancelar</button><button class="b" id="pcs">Guardar</button></div>`);
+  md.querySelector('#pcx').onclick=()=>md.remove();
+  md.querySelector('#pcs').onclick=ev=>act(ev.target,async()=>{
+    const v={};md.querySelectorAll('[data-pf]').forEach(i=>v[i.dataset.pf]=i.value.replace(/[|]/g,' ').replace(/\s+/g,' ').trim());
+    if((v.id||'').length<3)throw new Error('Escribe los datos de la cuenta');
+    if((v.nm||'').length<3)throw new Error('Escribe el nombre del titular');
+    if(/mail|correo/i.test((fl.find(x=>x[0]==='id')||[])[1]||'')&&/@/.test(v.id)&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.id))throw new Error('Ese correo no parece válido');
+    if(/^(PayPal)$/.test(m)&&!/@/.test(v.id))throw new Error('Escribe el correo de tu cuenta de PayPal');
+    const q=await sb.from('pay_accounts').insert({method:m,currency:c,holder_name:v.nm,account_ref:v.id,extra:v.bk||null});
+    if(q.error){if(/duplicate|unique/i.test(String(q.error.message)))throw new Error('Ya tienes guardados esos datos');throw needSql(q.error)}
+    await loadPay(true);md.remove();if(done)done()},'Datos guardados')}
+/* Pide al usuario guardar al menos una cuenta en esa moneda antes de continuar */
+function payNeed(c,done){
+  const md=modal(`<h3>Guarda tus datos de pago</h3><p class="mut" style="margin-top:0">Para operar en ${esc(c)} primero debes guardar tus datos dentro de Tororo.</p><label>Método</label><select id="pnm">${methodsFor(c).map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select><div class="grid2" style="margin-top:12px"><button class="b gh" id="pnx">Ahora no</button><button class="b" id="png">Continuar</button></div>`);
+  md.querySelector('#pnx').onclick=()=>md.remove();
+  md.querySelector('#png').onclick=()=>{const m=md.querySelector('#pnm').value;md.remove();payForm(c,m,done)}}
+const payHtml=()=>`<p class="mut">Guarda aquí tus datos para pagar o cobrar en otras monedas (Zelle, PayPal, euros, pesos mexicanos, rublos…). Son <b>obligatorios</b> para comprar o vender con esos métodos. Si paga por ti un familiar o amigo, guarda sus datos.</p><div id="pyl">${skel(1)}</div>
+  <div class="card"><h3>➕ Añadir datos de pago</h3><label>Moneda</label><select id="pyc">${Object.keys(FX).map(c=>`<option value="${c}">${esc(FX[c].l)}</option>`).join('')}</select><label>Método</label><select id="pym"></select><button class="b w" id="pyb">Continuar</button></div>`;
+async function bindPay(my){
+  const fillM=()=>{const c=$('pyc');if(c&&$('pym'))$('pym').innerHTML=methodsFor(c.value).map(m=>`<option value="${esc(m)}">${esc(m)}${isRev(m)?' ⚠️':''}</option>`).join('')};
+  if(!$('pyc'))return;fillM();$('pyc').onchange=fillM;
+  const draw=()=>{const b=$('pyl');if(!b)return;
+    if(S.payErr){b.innerHTML='<div class="warnbox bad">Esta función todavía no está activada. Ejecuta <code>metodos_pago.sql</code> en Supabase (SQL Editor).</div>';return}
+    const l=S.pay||[];
+    b.innerHTML=l.length?l.map(a=>`<div class="card"><div class="row"><b>${esc(a.method)} · ${esc(a.currency)}</b>${isRev(a.method)?'<span class="tag bad">⚠️ reversible</span>':''}</div><div class="mut">${esc(a.account_ref)}${a.extra?' ('+esc(a.extra)+')':''} · Titular: ${esc(a.holder_name)}</div><button class="b bad sm" data-pyd="${a.id}" style="margin-top:8px">Eliminar</button></div>`).join(''):'<div class="card mut">Aún no has guardado datos de pago internacionales.</div>';
+    b.querySelectorAll('[data-pyd]').forEach(x=>x.onclick=async ev=>{const m=await ask('Eliminar datos','<p>¿Quitar estos datos de pago?</p>','Eliminar','bad');if(!m)return;m.remove();act(ev.target,async()=>{const q=await sb.from('pay_accounts').delete().eq('id',x.dataset.pyd);if(q.error)throw q.error;await loadPay(true);draw()},'Datos eliminados')})};
+  $('pyb').onclick=()=>payForm($('pyc').value,$('pym').value,draw);
+  await loadPay(true);if(my===NAV)draw()}
+/* Mercado: formulario de venta para monedas internacionales */
+async function mkFxOffer(c){
+  const a=+$('oa').value,p=+$('op').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m);
+  if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
+  {const f=rnd(a*FPO()/100,4),av=S.wallet?.available||0;if(a+f>av)throw new Error(`Necesitas ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%). Puedes publicar hasta ${n(Math.floor(av/(1+FPO()/100)*100)/100,2)} USDT`)}
+  if(!ms.length)throw new Error('Elige al menos un método de pago');
+  await loadPay();if(S.payErr)throw new Error('Falta activar los datos de pago: ejecuta metodos_pago.sql en Supabase');
+  const parts=[];
+  for(const m of ms){const s=document.querySelector(`[data-fxs="${CSS.escape(m)}"]`),acc=(S.pay||[]).find(x=>x.id===(s&&s.value));
+    if(!acc)throw new Error(`Falta tu cuenta de ${m}: toca “Añadir datos” y guárdala en Tororo primero`);parts.push(payLine(acc))}
+  const rev=ms.some(isRev);
+  if(rev&&!($('rvok')&&$('rvok').checked))throw new Error('Debes aceptar el aviso de riesgo de reversión para ofrecer ese método');
+  await rpc('create_offer',{p_amount:a,p_price:p,p_methods:ms.join(', ')+SEP+c,p_details:parts.join(' · ')+(rev?' · ⚠️ Riesgo de reversión aceptado por el vendedor':'')})}
+async function fxSync(){
+  const oc=$('oc'),w=$('fxw'),lg=$('lgw');if(!oc||!w||!lg)return;
+  const c=oc.value,fx=isFx(c);lg.style.display=fx?'none':'';w.style.display=fx?'block':'none';if(!fx)return;
+  await loadPay();if(!$('fxw'))return;
+  const ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),cur={};w.querySelectorAll('[data-fxs]').forEach(s=>cur[s.dataset.fxs]=s.value);
+  const rv=!!($('rvok')&&$('rvok').checked);
+  w.innerHTML=(S.payErr?'<div class="warnbox bad">Falta ejecutar <code>metodos_pago.sql</code> en Supabase para guardar datos de pago.</div>':'')
+    +`<p class="mut">Para vender en ${esc(c)} tus datos de cobro deben estar guardados dentro de Tororo. El comprador los verá al iniciar la compra.</p>`
+    +(ms.length?ms.map(m=>{const l=payOf(m,c);return`<label>Tu cuenta de ${esc(m)}</label><select data-fxs="${esc(m)}">${l.length?l.map(a=>`<option value="${a.id}" ${cur[m]===a.id?'selected':''}>${esc(a.account_ref)} · ${esc(a.holder_name)}</option>`).join(''):'<option value="">— Aún no tienes datos guardados —</option>'}</select><button type="button" class="b gh sm" data-fxa="${esc(m)}" style="margin-top:6px">➕ Añadir datos de ${esc(m)}</button>`}).join(''):'<p class="mut">Elige arriba al menos un método de pago.</p>')
+    +(ms.some(isRev)?`<div class="warnbox bad" style="margin-top:10px">${REVW_S}<label style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="rvok" style="width:auto;margin:3px 0 0" ${rv?'checked':''}><span>Entiendo y acepto el riesgo. Tororo no se responsabiliza por devoluciones o reclamaciones del pago.</span></label></div>`:'');
+  w.querySelectorAll('[data-fxa]').forEach(b=>b.onclick=()=>payForm(c,b.dataset.fxa,()=>fxSync()))}
+function renderOM(){
+  const om=$('om'),oc=$('oc');if(!om||!oc)return;
+  const keep=new Set([...om.querySelectorAll('.on')].map(x=>x.dataset.m));
+  om.innerHTML=methodsFor(oc.value).map(m=>`<button type="button" class="chip ${m.startsWith('Saldo')?'sc':''} ${keep.has(m)?'on':''}" data-m="${esc(m)}">${esc(m)}${isRev(m)?' ⚠️':''}</button>`).join('')}
+/* Mercado: comprar una oferta en moneda internacional (método + cuenta desde la que se paga) */
+async function buyFx(o,b){
+  const{c,m:ml}=parseM(o.methods),ms=ml.split(', ').filter(Boolean);await loadPay();
+  if(S.payErr)return toast('Falta activar los datos de pago: ejecuta metodos_pago.sql en Supabase','err');
+  const md=modal(`<h3>Confirmar compra</h3><p>Recibirás <b>${n(o.amount,2)} USDT</b>. Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>
+   <label>¿Con qué método pagarás?</label><select id="bm">${ms.map(m=>`<option value="${esc(m)}">${esc(m)}${isRev(m)?' ⚠️':''}</option>`).join('')}</select>
+   <div id="bpw"></div><div id="brv"></div>
+   <div class="grid2" style="margin-top:12px"><button class="b gh" id="bx">Cancelar</button><button class="b" id="bgo">Iniciar compra</button></div>`);
+  const draw=()=>{const m=md.querySelector('#bm').value,l=payOf(m,c);
+    md.querySelector('#bpw').innerHTML=`<label>Cuenta desde la que pagarás (guardada en Tororo)</label>`+(l.length?`<select id="bpa">${l.map(a=>`<option value="${a.id}">${esc(a.account_ref)} · ${esc(a.holder_name)}</option>`).join('')}</select>`:`<div class="warnbox bad">Para comprar con ${esc(m)} primero debes guardar tus datos.</div>`)+`<button type="button" class="b gh sm" id="bad" style="margin-top:6px">➕ Añadir datos de ${esc(m)}</button><p class="mut" style="font-size:12px">Si paga un familiar o amigo, guarda SU nombre y cuenta: el vendedor comprobará que el pago salga de ahí.</p>`;
+    md.querySelector('#brv').innerHTML=isRev(m)?`<div class="warnbox bad">${REVW_B}</div>`:'';
+    md.querySelector('#bad').onclick=()=>payForm(c,m,draw)};
+  md.querySelector('#bm').onchange=draw;draw();
+  md.querySelector('#bx').onclick=()=>md.remove();
+  md.querySelector('#bgo').onclick=ev=>{const aid=md.querySelector('#bpa')&&md.querySelector('#bpa').value,acc=(S.pay||[]).find(x=>x.id===aid);
+    if(!acc)return toast('Guarda primero tus datos de pago para ese método','err');
+    act(ev.target,async()=>{const id=await rpc('take_offer',{p_offer:o.id});
+      try{await sb.from('order_messages').insert({order_id:id,sender_id:S.user.id,body:'[Pagador] '+acc.method+' · Titular: '+acc.holder_name+' · Cuenta: '+acc.account_ref+(acc.extra?' ('+acc.extra+')':'')})}catch(e){}
+      md.remove();go('order',id)})}}
+/* Revisión con IA: comprobaciones extra para Zelle, PayPal, euros, pesos mexicanos, rublos, etc. */
+function fxChecks(t,o){
+  const P=parseM(o&&o.methods),c=P.c;if(!isFx(c))return[];
+  const R=[],T=String(t||''),ms=P.m.split(', ').filter(Boolean);
+  const KW={'Zelle':/zelle/i,'PayPal':/pay\s*pal/i,'Cash App':/cash\s*app/i,'Wise':/\bwise\b|transferwise/i,'Transferencia SEPA':/sepa|iban/i,'Bizum':/bizum/i,'Revolut':/revolut/i,'SPEI':/spei|\bcep\b|clabe/i,'Mercado Pago':/mercado\s*pago/i,'Depósito OXXO':/oxxo/i,'Interac e-Transfer':/interac|e-?transfer/i,'Faster Payments':/faster\s*payments|sort\s*code/i,'Sberbank':/sber|сбер/i,'Tinkoff':/tinkoff|тинькофф|т-банк/i,'SBP (pagos rápidos)':/\bsbp\b|сбп/i};
+  const known=ms.filter(m=>KW[m]);
+  if(known.length){const hit=known.filter(m=>KW[m].test(T)),other=Object.keys(KW).filter(m=>!ms.includes(m)&&KW[m].test(T));
+    if(hit.length)R.push(['ok',`Método: en la captura aparece ${hit.join(' / ')}.`]);
+    else R.push(['warn',`Método: no se ve el nombre de ${known.join(' / ')} en la captura. Confirma que el pago salió por ese método.`]);
+    if(!hit.length&&other.length)R.push(['warn',`Método: la captura parece de otro servicio (${other.join(' / ')}), no del acordado.`])}
+  const bad=/\b(pending|processing|in progress|failed|declined|denied|cancel+ed|on hold|reversed|returned|unsuccessful|expired|not completed|scheduled)\b/i.test(T),good=/\b(sent|completed|complete|delivered|paid|success(?:ful)?|transferred|enviado|completado)\b/i.test(T);
+  if(bad&&!good)R.push(['warn','Estado: la captura parece indicar que el pago NO se completó (pendiente, en proceso, fallido o similar).']);
+  else if(good&&!bad)R.push(['ok','Estado: la captura indica que el pago fue enviado o completado.']);
+  else if(bad&&good)R.push(['na','Estado: aparecen palabras de pago completado y de pago pendiente. Revísalo con cuidado.']);
+  const codes=[...new Set((T.match(/\b(USD|EUR|MXN|CAD|GBP|RUB)\b/g)||[]))];
+  if(codes.length&&!codes.includes(c))R.push(['warn',`Moneda: la captura muestra ${codes.join(', ')} y la operación es en ${c}.`]);
+  const det=String(o&&o.payment_details||''),em=det.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  if(em){const e=em[0].toLowerCase(),lc=T.toLowerCase();lc.includes(e)?R.push(['ok','Destino: aparece el correo del vendedor.']):R.push(['na',`Destino: no se ve el correo completo del vendedor (${em[0].slice(0,3)}…); puede estar oculto.`])}
+  const nameHit=(nm,txt)=>String(nm||'').split(/\s+/).filter(w=>w.length>=3).some(w=>txt.toLowerCase().includes(w.toLowerCase()));
+  const hm=det.match(/Titular:\s*([^·]+)/);
+  if(hm){nameHit(hm[1],T)?R.push(['ok','Destino: aparece el nombre del titular que cobra.']):R.push(['na','Destino: no aparece el nombre del titular que cobra (puede estar oculto).'])}
+  const pm=String(o&&o._payer||'').match(/Titular:\s*([^·]+)/);
+  if(pm){nameHit(pm[1],T)?R.push(['ok',`Pagador: aparece el nombre registrado (${pm[1].trim()}).`]):R.push(['warn',`Pagador: no aparece el nombre registrado (${pm[1].trim()}). El pago podría haber salido de otra persona.`])}
+  const MS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},ds=[];
+  T.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})\b/gi,(m,mo,d,y)=>{ds.push(`${y}-${String(MS[mo.toLowerCase().slice(0,3)]).padStart(2,'0')}-${String(d).padStart(2,'0')}`);return m});
+  T.replace(/\b(20\d{2})-(\d{2})-(\d{2})\b/g,(m,y,mo,d)=>{ds.push(`${y}-${mo}-${d}`);return m});
+  if(ds.length){const dt=ds.sort().pop(),cr=o&&o.created_at?HAV(o.created_at):null,hoy=HAV(Date.now());
+    if(dt>hoy)R.push(['warn',`Fecha: la captura dice ${fmtD(dt)}, que es una fecha futura.`]);
+    else if(cr&&dt<cr)R.push(['warn',`Fecha: la captura es del ${fmtD(dt)}, anterior a la operación (${fmtD(cr)}). Puede ser una captura vieja.`]);
+    else R.push(['ok',`Fecha: ${fmtD(dt)}, coincide con la operación.`])}
+  const cf=T.match(/confirmation\s*(?:number|no\.?|#|code)?\s*[:#]?\s*([A-Z0-9]{6,20})/i);if(cf)R.push(['na',`Confirmación: ${cf[1].toUpperCase()}.`]);
+  if(c==='RUB')R.push(['na','Rublos: el lector de texto no lee letras rusas. Comprueba a mano el nombre del titular y el estado; el monto y los números sí se leen.']);
+  const rv=ms.filter(isRev);if(rv.length)R.push(['na',`⚠️ ${rv.join(' / ')} puede revertirse: aunque la captura parezca correcta, Tororo no cubre devoluciones. Confirma solo cuando el dinero figure como completado en tu cuenta.`]);
+  return R}
+
 async function viewMarket(){
   const my=NAV,F=S.f;
   main().innerHTML=`${topHtml()}
   <div class="mkact"><button class="b${needKyc()?' lk':''}" id="tg">${needKyc()?'🔒 ':''}💰 Vender USDT</button><button class="b gh${needKyc()?' lk':''}" id="tb">${needKyc()?'🔒 ':''}🙋 Quiero comprar</button></div>
   <div id="sell" class="card hide" style="display:none"><b>Vender USDT</b><div class="mut">Disponible: ${n(S.wallet?.available,2)} USDT</div>
       <label>Cantidad de USDT <button class="b gh sm" id="omax" type="button">Máx</button></label><input id="oa" type="number" min="1" step="any" inputmode="decimal">
-      <label>Moneda que quieres recibir</label><select id="oc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
+      <label>Moneda que quieres recibir</label><select id="oc"><optgroup label="Cuba">${CURS.map(c=>`<option value="${c}">${curLb(c)}</option>`).join('')}</optgroup><optgroup label="Internacional (Zelle, PayPal, bancos…)">${Object.keys(FX).map(c=>`<option value="${c}">${FX[c].l}</option>`).join('')}</optgroup></select>
       <label id="opl">Precio por 1 USDT (en CUP)</label><input id="op" type="number" min="1" step="any" inputmode="decimal">
       <div class="mut" id="otot"></div>
       <label>Métodos de pago que aceptas</label>${chipsHtml([],'om')}
-      <div id="ocw" style="display:none"><label>💳 Mis tarjetas</label><select id="ocs"></select></div>
+      <div id="lgw"><div id="ocw" style="display:none"><label>💳 Mis tarjetas</label><select id="ocs"></select></div>
       <label>Banco de tu tarjeta (lo verá el comprador)</label><input id="obk" placeholder="Ej: BPA, Metropolitano, BANDEC" autocomplete="off" maxlength="40">
       <label>Datos donde recibirás el pago (solo los verá quien te compre)</label>
       <div id="odcw"><input id="odc" inputmode="numeric" placeholder="Número de tarjeta" autocomplete="off"></div>
       <input id="odp" inputmode="tel" placeholder="Número de teléfono (para confirmar)" autocomplete="off">
-      <label id="osvw" style="display:none;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="osv" style="width:auto;margin:0"> Guardar esta tarjeta en Mis tarjetas</label>
+      <label id="osvw" style="display:none;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="osv" style="width:auto;margin:0"> Guardar esta tarjeta en Mis tarjetas</label></div><div id="fxw" style="display:none"></div>
       <p class="mut">Al publicar, queda bloqueado el monto <b>más la comisión</b> de la plataforma (la paga el vendedor desde su saldo). Si no te alcanza para el %, publica un poco menos: por ejemplo, 99 en vez de 100.</p>
       <button class="b w" id="mk">Publicar oferta</button></div>
   <div id="buy" class="card" style="display:none"><b>Comprar USDT</b><div class="mut">Publica cuántos USDT quieres y con qué moneda pagarás</div>
       <label>Cantidad de USDT que quieres comprar</label><input id="ba" type="number" min="1" step="any" inputmode="decimal">
-      <label>Moneda con la que pagarás</label><select id="bc">${CURS.map(c=>`<option value="${c}">${c==='Saldo Clásica'?'Saldo Clásica (USD)':c}</option>`).join('')}</select>
+      <label>Moneda con la que pagarás</label><select id="bc"><optgroup label="Cuba">${CURS.map(c=>`<option value="${c}">${curLb(c)}</option>`).join('')}</optgroup><optgroup label="Internacional (Zelle, PayPal, bancos…)">${Object.keys(FX).map(c=>`<option value="${c}">${FX[c].l}</option>`).join('')}</optgroup></select>
       <p class="mut">Tu solicitud la verán todos los usuarios con tu etiqueta (verificado o sin verificar). Dura 48 horas y puedes cancelarla cuando quieras.</p>
       <button class="b w" id="bk">Publicar solicitud</button></div>
   <div class="seg" id="mkT"><button data-mt="s">🟢 Ofertas de venta <span id="cS"></span></button><button data-mt="b">🙋 Quieren comprar <span id="cB"></span></button></div>
   <div id="pnS"><details class="card" style="padding:12px 14px"${F.q||F.m||F.mine?' open':''}><summary style="cursor:pointer;font-weight:700">🔎 Buscar y filtrar</summary><div style="height:10px"></div><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
     <div class="row"><select id="srt" style="width:auto;margin:0"><option value="asc">Precio: menor primero</option><option value="desc">Precio: mayor primero</option><option value="amt">Mayor cantidad</option></select>
-    <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="mine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div>
-    <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${METHODS.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></details></details><div id="offers">${skel(3)}</div></div>
+    <select id="fcu" style="width:auto;margin:0"><option value="">Todas las monedas</option>${CURS_ALL.map(c=>`<option value="${c}">${curLb(c)}</option>`).join('')}</select><label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="mine" style="width:auto;margin:0" ${F.mine?'checked':''}> Solo mis ofertas</label></div>
+    <details><summary class="mut" style="cursor:pointer;margin:8px 0">Filtrar por método de pago</summary><div class="chips" id="fm" style="margin-bottom:0"><button class="chip ${F.m?'':'on'}" data-m="">Todos</button>${ALLM.map(m=>`<button class="chip ${m.startsWith('Saldo')?'sc':''} ${F.m===m?'on':''}" data-m="${esc(m)}">${esc(m)}</button>`).join('')}</div></details></details><div id="offers">${skel(3)}</div></div>
   <div id="pnB" style="display:none"><div id="breqs">${skel(1)}</div></div>`;
-  $('srt').value=F.sort;bindTop();
+  $('srt').value=F.sort;$('fcu').value=F.c||'';bindTop();
   $('tg').onclick=()=>{if(gate())return;loadCards().then(()=>{if($('oc'))syncCards()});const s=$('sell');$('buy').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   $('tb').onclick=()=>{if(gate())return;const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none'};
   const setMt=t=>{S.mt=t;$('pnS').style.display=t==='s'?'':'none';$('pnB').style.display=t==='b'?'':'none';$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t))};
   $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'s');
   $('bk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('ba').value,c=$('bc').value;if(!(a>0))throw new Error('Indica cuántos USDT quieres comprar');
+    if(isFx(c)){await loadPay();if(S.payErr)throw new Error('Falta activar los datos de pago: ejecuta metodos_pago.sql en Supabase');if(!(S.pay||[]).some(x=>x.currency===c)){payNeed(c);throw new Error('Primero guarda tus datos de pago en '+c+' para poder comprar')}}
     await rpc('buy_req_create',{p_amount:a,p_currency:c});$('ba').value='';$('buy').style.display='none';setMt('b');await loadBuyReqs(my)},'Solicitud publicada');
   loadBuyReqs(my);
   if(S.openSell){S.openSell=0;if(!gate())$('sell').style.display='block'}
@@ -2149,10 +2307,11 @@ async function viewMarket(){
     sel.innerHTML='<option value="">✍️ Escribir otra tarjeta…</option>'+l.map(x=>`<option value="${x.id}">${esc((x.alias||x.bank)+' · ····'+x.card_number.replace(/\D/g,'').slice(-4))}</option>`).join('');
     w.style.display=l.length?'block':'none';sv.style.display='flex'};
   $('ocs').onchange=()=>{const x=(S.cards||[]).find(k=>k.id===$('ocs').value);if(x){$('obk').value=x.bank;$('odc').value=x.card_number;if(x.phone)$('odp').value=x.phone}$('osvw').style.display=x?'none':'flex'};
-  $('oc').addEventListener('change',syncCards);
+  $('oc').addEventListener('change',syncCards);$('oc').addEventListener('change',()=>{renderOM();fxSync()});fxSync();
   if($('sell').style.display==='block')loadCards().then(()=>{if($('oc'))syncCards()});
-  $('om').onclick=e=>{const b=e.target.closest('.chip');if(b)b.classList.toggle('on')};
+  $('om').onclick=e=>{const b=e.target.closest('.chip');if(b){b.classList.toggle('on');fxSync()}};
   $('mk').onclick=ev=>act(ev.target,async()=>{kycChk();
+    {const c0=$('oc').value;if(isFx(c0)){await mkFxOffer(c0);S.mt='s';await loadBal();viewMarket();return}}
     const a=+$('oa').value,p=+$('op').value,c=$('oc').value,ms=[...$('om').querySelectorAll('.on')].map(x=>x.dataset.m),card=($('odc').value||'').replace(/\s+/g,' ').trim(),ph=($('odp').value||'').trim(),d=(c!=='Saldo Móvil'&&card?'Tarjeta: '+card+' · ':'')+(ph?'Teléfono: '+ph:'');
     if(!(a>0)||!(p>0))throw new Error('Indica cantidad y precio válidos');
     {const f=rnd(a*FPO()/100,4),av=S.wallet?.available||0;if(a+f>av)throw new Error(`Necesitas ${n(a+f,4)} USDT (${n(a,4)} + comisión ${FPO()}%). Puedes publicar hasta ${n(Math.floor(av/(1+FPO()/100)*100)/100,2)} USDT`)}
@@ -2166,7 +2325,7 @@ async function viewMarket(){
     if(c!=='Saldo Móvil'&&$('osv')&&$('osv').checked&&!$('ocs').value){try{const dg=card.replace(/\D/g,'');if(!(S.cards||[]).some(x=>x.card_number.replace(/\D/g,'')===dg)){await sb.from('user_cards').insert({currency:c,bank,card_number:card,phone:ph});S.cards=null}}catch(e){}}
     S.mt='s';await loadBal();viewMarket()},'Oferta publicada');
   const rf=()=>drawOffers();
-  $('q').oninput=e=>{F.q=e.target.value;rf()};$('srt').onchange=e=>{F.sort=e.target.value;rf()};
+  $('q').oninput=e=>{F.q=e.target.value;rf()};$('srt').onchange=e=>{F.sort=e.target.value;rf()};$('fcu').onchange=e=>{F.c=e.target.value;rf()};
   $('mine').onchange=e=>{F.mine=e.target.checked;rf()};
   $('fm').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;F.m=b.dataset.m;$('fm').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));rf()};
   bindOffers();
@@ -2174,7 +2333,7 @@ async function viewMarket(){
   await loadOffers(my)}
 function drawOffers(){
   const box=$('offers');if(!box)return;const F=S.f,q=F.q.toLowerCase();
-  let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
+  let l=S.offers.filter(o=>(!F.mine||o.seller_id===S.user.id)&&(!F.m||o.methods.includes(F.m))&&(!F.c||parseM(o.methods).c===F.c)&&(!q||(o.methods+(o.profiles?.username||'')).toLowerCase().includes(q)));
   l.sort((a,b)=>F.sort==='asc'?a.price_cup-b.price_cup:F.sort==='desc'?b.price_cup-a.price_cup:b.amount-a.amount);
   if(!l.length){box.dataset.h='';box.innerHTML='<div class="card mut">No hay ofertas con esos filtros. Prueba otro método o publica la tuya.</div>';return}
   const fee=FPO();
@@ -2194,7 +2353,7 @@ function drawOffers(){
     ${mine?`<button class="b ob1 qo-btn own" data-cancel="${o.id}">Cancelar oferta</button>`:`<button class="b ob1 qo-btn${needKyc()?' lk':''}" data-buy="${o.id}">${needKyc()?'🔒 ':''}Comprar</button>`}</div>
     <div class="qo-g"><div class="qo-k"><span>Precio por USDT</span><b><i class="qo-ci" style="background:hsl(${hue(c)} 55% 42%)">${esc(String(c).charAt(0).toUpperCase())}</i>${mny(o.price_cup,c)} ${esc(c)}${dl!=null&&Math.abs(dl)>=0.05?`<em class="qo-d ${dl<0?'dn':'up'}" title="Frente a la mediana de las ofertas en ${esc(c)}">${dl>0?'+':''}${dl.toFixed(1)}%</em>`:''}</b></div>
     <div class="qo-k"><span>Total a pagar</span><b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b></div></div>
-    <div class="qo-m">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
+    <div class="qo-m">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${isRev(x)?'bad':x.startsWith('Saldo')?'warn':''}">${esc(x)}${isRev(x)?' ⚠️':''}</span>`).join('')}${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
     <div class="qo-a"><button class="b gh sm" data-det="${o.id}">Detalles</button>${mine?'':`<button class="b gh sm" data-chat="${o.seller_id}" data-cn="${esc(nm)}">Chat</button>`}</div></div>`}}),feeH=fee?`<p class="mut">Comisión de la plataforma: ${fee}%. La paga el vendedor desde su saldo; el comprador recibe el monto completo.</p>`:'';
   const key=items.map(i=>i.html).join('')+feeH;
   if(box.dataset.h===key)return;box.dataset.h=key;
@@ -2216,6 +2375,7 @@ function bindOffers(){const box=$('offers');if(!box||box._b)return;box._b=1;
 async function buyOffer(b){if(gate())return;
   const o=(S.offers||[]).find(x=>x.id===b.dataset.buy);if(!o)return toast('Esa oferta ya no está disponible','err');
   const{c,bank}=parseM(o.methods),net=o.amount;
+  if(isFx(c))return buyFx(o,b);
   const m=await ask('Confirmar compra',`<p>Recibirás <b>${n(net,2)} USDT</b></p><p>Pagarás <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b> al vendedor y deberás <b>subir la captura de tu pago</b>.</p>${bank?`<p class="warnbox">🏦 Enviarás a <b>${esc(bank)}</b>. Si tu tarjeta es de un banco distinto, la acreditación puede demorar hasta <b>72 h</b>.</p>`:''}`,'Iniciar compra');
   if(!m)return;m.remove();
   act(b,async()=>{const id=await rpc('take_offer',{p_offer:o.id});go('order',id)})}
@@ -2240,7 +2400,8 @@ function offerDetail(id){
   const mm=modal(`<h3>${n(o.amount,2)} USDT</h3>
    <div class="mut" style="line-height:1.9">💵 Precio: <b>${mny(o.price_cup,c)} ${esc(c)}</b> por USDT<br>🧾 Total: <b>${mny(o.amount*o.price_cup,c)} ${esc(c)}</b><br>👤 Vendedor: <b>@${esc(o.profiles?.username)}</b>${mine?' (tú)':''}<br>${repTxt(o.seller_id)?repTxt(o.seller_id)+'<br>':''}🕒 Publicada: ${when(o.created_at)}</div>
    <div style="margin:8px 0 0">${roleTag(rl,o.profiles?.kyc_status)}</div>
-   <div class="chips" style="margin:10px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${x.startsWith('Saldo')?'warn':''}">${esc(x)}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
+   <div class="chips" style="margin:10px 0">${m.split(', ').filter(Boolean).map(x=>`<span class="tag ${isRev(x)?'bad':x.startsWith('Saldo')?'warn':''}">${esc(x)}${isRev(x)?' ⚠️':''}</span>`).join('')}<span class="tag ok">Recibe: ${esc(c)}</span>${bank?`<span class="tag">🏦 ${esc(bank)}</span>`:''}</div>
+   ${m.split(', ').some(isRev)?`<div class="warnbox bad">${mine?REVW_S:REVW_B}</div>`:''}
    ${fee?`<p class="mut" style="font-size:12px">Comisión de la plataforma: ${fee}%. La paga el vendedor.</p>`:''}
    <div class="grid2"><button class="b gh" id="dx">Cerrar</button>${mine?'':'<button class="b" id="db">Comprar</button>'}</div>`);
   mm.querySelector('#dx').onclick=()=>mm.remove();
@@ -2551,7 +2712,8 @@ async function viewOrder(){
   const[{data:ps},{data:xb}]=await Promise.all([sb.from('profiles').select('id,username').in('id',[o.buyer_id,o.seller_id]),sb.from('order_xbank').select('flagged_at').eq('order_id',o.id).maybeSingle()]);
   const name=id=>'@'+esc((ps||[]).find(p=>p.id===id)?.username||'?');
   let stfIds=[];if(admin){try{const r=await sb.from('profiles').select('id,is_staff').in('id',[o.buyer_id,o.seller_id]);stfIds=(r.data||[]).filter(x=>x.is_staff).map(x=>x.id)}catch(e){}}
-  const{m:meths,c:cur,bank}=parseM(o.methods),showDetails=isBuyer||admin;
+  const{m:meths,c:cur,bank}=parseM(o.methods),showDetails=isBuyer||admin,fxo=isFx(cur),revM=meths.split(', ').some(isRev);
+  let payer=null;if(fxo){try{const{data:pm}=await sb.from('order_messages').select('body').eq('order_id',o.id).like('body','[Pagador]%').order('created_at',{ascending:true}).limit(1);payer=pm&&pm[0]?String(pm[0].body).replace(/^\[Pagador\]\s*/,''):null}catch(e){}o._payer=payer}
   const xbank=xb?.flagged_at?new Date(xb.flagged_at).getTime():0,H72=72*3600000,xdue=xbank&&Date.now()-xbank>=H72;
   const[bp,sp,mp]=await Promise.all([proofImg(o.buyer_proof,'El comprador'),proofImg(o.seller_proof,'El vendedor'),o.mediation_proof?proofImg(o.mediation_proof,'El comprador'):Promise.resolve('')]);
   if(my!==NAV)return;
@@ -2573,7 +2735,7 @@ async function viewOrder(){
   if(admin&&o.status==='awaiting_payment')act_+=`<button class="b bad sm" id="ref">Devolver al vendedor</button>`;
   if(med&&!fin_&&(isBuyer||isSeller)){
     const need=isBuyer?(!o.mediation_proof):true;
-    act_+=`<div class="warnbox ${need?'bad':''}">${isBuyer?'📎 <b>El administrador necesita ver tus últimas 10 operaciones</b> de Transfermóvil, EnZona o tu banco (la captura donde aparezca el pago). Súbela aquí. Puedes añadir más pruebas cuando quieras.':'📎 <b>Sube la captura de los movimientos de tu cuenta</b> (donde se vea que el pago no llegó, o que sí). Puedes añadir más pruebas cuando quieras.'} Se verán en el chat de mediación.</div><button class="b w" id="evB">📎 ${isBuyer?'Subir captura de mis últimas operaciones':'Subir captura de mis movimientos'}</button>`;
+    act_+=`<div class="warnbox ${need?'bad':''}">${isBuyer?'📎 <b>El administrador necesita ver tus últimas 10 operaciones</b> de Transfermóvil, EnZona, Zelle, PayPal, tu banco o tu app de pago (la captura donde aparezca el pago). Súbela aquí. Puedes añadir más pruebas cuando quieras.':'📎 <b>Sube la captura de los movimientos de tu cuenta</b> (donde se vea que el pago no llegó, o que sí). Puedes añadir más pruebas cuando quieras.'} Se verán en el chat de mediación.</div><button class="b w" id="evB">📎 ${isBuyer?'Subir captura de mis últimas operaciones':'Subir captura de mis movimientos'}</button>`;
     if(isSeller&&o.buyer_proof)act_+=`<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>`}
 
   if(o.cup_paid>0)act_=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">💰 Pagado con saldo de la plataforma (${n(o.cup_paid,2)} ${o.bal_cur==='USD'?'USD':'CUP'}). ${isSeller?'Lo recibirás en tu saldo cuando se liberen los USDT.':''}</div>`+act_;
@@ -2585,6 +2747,7 @@ async function viewOrder(){
     <div>${mny(due(o,cur),cur)} ${esc(cur)} <span class="mut">(${mny(o.price_cup,cur)} por USDT)</span></div>
     ${o.fee_usdt>0?`<div class="mut">Comisión: ${n(o.fee_usdt,4)} USDT</div>`:''}
     <p class="mut">Métodos: ${esc(meths)} · Moneda: ${esc(cur)}</p>
+    ${payer?`<p class="mut">Pagará con: <b>${esc(payer)}</b></p>`:''}${revM&&(isBuyer||isSeller||admin)?`<div class="warnbox bad">${isSeller?REVW_S:REVW_B}</div>`:''}
     ${showDetails?`<div class="row"><span><b>Datos para pagar:</b><br><code>${esc(o.payment_details)}</code></span>${cpBtn(o.payment_details||'')}</div>`:''}
   </div>${stepper}
   ${med&&!fin_?'<div class="warnbox bad">🛡️ Esta operación está en <b>mediación</b>. Comprador, vendedor y administrador hablan juntos en el chat de abajo. Aporta tus pruebas y espera la decisión.</div>':dis?'<div class="warnbox bad">Esta operación está en disputa. Habla con el administrador en el chat de abajo y aporta pruebas.</div>':''}
@@ -2604,7 +2767,7 @@ async function viewOrder(){
   if($('sendB'))$('sendB').onclick=ev=>act(ev.target,async()=>{if(bank&&!$('xb').checked&&!$('xs').checked)throw new Error('Marca si tu tarjeta es de otro banco o del mismo');
     if(bank&&$('xb').checked)await rpc('flag_cross_bank',{p_order:o.id});
     const p=await uploadProof(o.id,'buyer',$('f').files[0]);await rpc('submit_buyer_proof',{p_order:o.id,p_path:p});await reload()},'Captura de pago enviada');
-  if($('sOk'))$('sOk').onclick=async ev=>{const m=await ask('Confirmar pago recibido',`<p>Confirmas que recibiste <b>${mny(due(o,cur),cur)} ${esc(cur)}</b>. Los <b>${n(o.amount,2)} USDT</b> se liberarán al comprador ahora mismo y no se puede deshacer.</p>`,'Sí, lo recibí','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_confirm',{p_order:o.id});await reload()},'USDT liberados al comprador')};
+  if($('sOk'))$('sOk').onclick=async ev=>{const m=await ask('Confirmar pago recibido',`<p>Confirmas que recibiste <b>${mny(due(o,cur),cur)} ${esc(cur)}</b>. Los <b>${n(o.amount,2)} USDT</b> se liberarán al comprador ahora mismo y no se puede deshacer.</p>${revM?`<div class="warnbox bad">${REVW_S}</div>`:''}`,'Sí, lo recibí','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_confirm',{p_order:o.id});await reload()},'USDT liberados al comprador')};
   if($('sAI'))warmOcr();
   /* La revisión con IA arranca sola al abrir la operación con captura; el botón queda para repetirla */
   if($('sAI')){
@@ -2627,7 +2790,7 @@ async function viewOrder(){
       const{error:er}=await sb.rpc('seller_deny_with_proof',{p_order:o.id,p_reason:why,p_path:pth});
       if(er){if(/does not exist|schema cache|Could not find the function/i.test(String(er.message))){await rpc('seller_deny',{p_order:o.id})}else throw new Error(friendly(er))}
       await reload()},'Operación en pausa: el administrador revisará tu evidencia')};
-  if($('med'))$('med').onclick=async ev=>{const m=await ask('Solicitar mediación',`<p class="mut">Sube una captura de tus <b>últimas operaciones</b> de Transfermóvil o EnZona y escribe el <b>número de referencia</b> del pago (6 a 12 dígitos). El administrador lo revisará.</p><label>Número de referencia</label><input id="mref" inputmode="numeric" maxlength="12" placeholder="Ej: 12345678"><label>Captura del historial</label><input type="file" id="mf" accept="image/*">`,'Enviar a mediación','ok');
+  if($('med'))$('med').onclick=async ev=>{const m=await ask('Solicitar mediación',`<p class="mut">Sube una captura de tus <b>últimas operaciones</b> de Transfermóvil, EnZona, Zelle, PayPal o tu banco y escribe el <b>número de referencia</b> del pago (6 a 12 dígitos). El administrador lo revisará.</p><label>Número de referencia</label><input id="mref" inputmode="numeric" maxlength="12" placeholder="Ej: 12345678"><label>Captura del historial</label><input type="file" id="mf" accept="image/*">`,'Enviar a mediación','ok');
     if(!m)return;const ref=m.querySelector('#mref').value.replace(/\D/g,''),f=m.querySelector('#mf').files[0];
     if(ref.length<6||ref.length>12){m.remove();return toast('Escribe el número de referencia (6 a 12 dígitos) y vuelve a intentarlo','err')}if(!f){m.remove();return toast('Sube la captura de tus últimas operaciones y vuelve a intentarlo','err')}m.remove();
     act(ev.target,async()=>{const p=await uploadProof(o.id,'mediation',f);await rpc('request_mediation',{p_order:o.id,p_ref:ref,p_path:p});try{await sb.from('order_messages').insert({order_id:o.id,sender_id:S.user.id,body:'[Mediación solicitada] Referencia del pago: '+ref+'. Adjunté la captura de mis últimas operaciones.'})}catch(e){}await reload()},'Mediación solicitada: el administrador la revisará')};
@@ -2954,12 +3117,13 @@ async function viewProfile(){
    <button class="b gh sm" id="cpb">Guardar teléfono</button>
    <p class="mut" style="font-size:12px;margin:10px 0 0">Los demás usuarios no ven estos datos. Si cambias el correo, te enviaremos un enlace para confirmarlo.</p></div>
   <h3 style="margin:18px 0 6px">💳 Mis tarjetas</h3>${cardsHtml()}
+  <h3 style="margin:18px 0 6px">🌎 Mis datos de pago (Zelle, PayPal, otras monedas)</h3>${payHtml()}
   <div class="card" id="myrep"><h3>Mi reputación</h3><span class="mut">Cargando…</span></div>
   <button class="b gh w" id="mrb" style="margin-bottom:12px">⋯ Más herramientas (referidos, historial, ayuda…)</button>
   <div class="card"><h3>Cambiar contraseña</h3><input id="np" type="password" autocomplete="new-password" placeholder="Nueva contraseña"><button class="b gh w" id="npb">Actualizar contraseña</button></div>
   <button class="b gh w" id="lo" style="margin-bottom:12px">Cerrar sesión</button>`;
   $('lo').onclick=async()=>{await pushUnbind();sb.auth.signOut()};$('mrb').onclick=()=>go('more');
-  bindCards(my);
+  bindCards(my);bindPay(my);
   sb.from('user_contact').select('phone').eq('user_id',S.user.id).maybeSingle().then(r=>{if(my!==NAV||!$('cp'))return;if(r.error){$('cp').placeholder='Falta activar en Supabase';return}if(r.data&&r.data.phone)$('cp').value=r.data.phone});
   $('cpb').onclick=ev=>act(ev.target,async()=>{const v=$('cp').value.trim(),d=v.replace(/\D/g,'');
     if(v&&(d.length<8||d.length>15||!/^[+\d\s().-]+$/.test(v)))throw new Error('Escribe un número de teléfono válido');
@@ -3231,7 +3395,7 @@ function renderMfa(){
 
 /* ----- Ayuda y tutorial ----- */
 const FAQ=()=>[
- ['¿Cómo compro USDT?','En Mercado elige una oferta y toca “Comprar”. Verás los datos del vendedor: haz el pago por Transfermóvil o EnZona dentro de 30 minutos y sube la captura. Cuando el vendedor confirme que recibió el dinero, los USDT llegan solos a tu billetera.'],
+ ['¿Cómo compro USDT?','En Mercado elige una oferta y toca “Comprar”. Verás los datos del vendedor: haz el pago por Transfermóvil, EnZona, Zelle, PayPal o tu banco dentro de 30 minutos y sube la captura. Cuando el vendedor confirme que recibió el dinero, los USDT llegan solos a tu billetera.'],
  ['¿Cómo vendo USDT?','En Mercado toca “+ Vender USDT”, elige la moneda en la que quieres cobrar (CUP, MLC, Saldo Clásica o Saldo móvil), pon tu precio y tus datos de cobro: tarjeta y teléfono, o solo el teléfono si es saldo. Tus USDT quedan bloqueados mientras la oferta esté publicada.'],
  ['¿Qué hago cuando me pagan?','Revisa la captura del comprador y comprueba en tu cuenta que el dinero llegó. Si llegó, toca “Pago recibido” y los USDT se liberan al comprador. Si no, toca “No he recibido”.'],
  ['¿Y si el vendedor no confirma mi pago?','Si ya pagaste y el vendedor marca “No he recibido” o no responde en 15 minutos, toca “Solicitar mediación”: sube una captura de tus últimas operaciones y el número de referencia del pago. El administrador lo revisa y decide.'],
@@ -3254,7 +3418,7 @@ const gl=(ic,t,d,ok)=>`<div class="gd-li ${ok?'ok':''}"><span class="gd-s">${ic}
 const TUTO=[
  ()=>`<div style="display:flex;justify-content:center;margin-bottom:12px;filter:drop-shadow(0 14px 22px rgba(79,141,255,.55))">${logoSvg(84)}</div><h3>¡Bienvenido a ${esc(APP_NAME)}!</h3><p class="mut">Compra y vende USDT entre personas, pagando en CUP, MLC, Clásica o saldo móvil, con un administrador que respalda cada operación.</p><div class="gd-coins">${cIco('USDT',44)}${cIco('CUP',44)}${cIco('USD',44)}${cIco('MOVIL',44)}</div><p class="mut" style="font-size:13px">USDT · pagos en CUP · MLC · Clásica · Saldo móvil</p>`,
  ()=>`<div class="gd-ic">${IC.market}</div><h3>Así funciona</h3><p class="mut">Tres pasos y ya estás operando.</p>${gl(GI.id,'1. Verifica tu identidad','Una sola vez, desde Perfil. Así todos los usuarios son personas reales.')}${gl(IC.wallet,'2. Deposita tus USDT','Si vas a vender, deposita USDT en Billetera. Si vas a comprar, no necesitas saldo.')}${gl(IC.market,'3. Compra o vende','En Mercado toma una oferta o publica la tuya con tu precio y tus datos de cobro.')}`,
- ()=>`<div class="gd-ic">${IC.orders}</div><h3>Comprar y vender</h3><p class="mut">Pagas directo al vendedor y los USDT te llegan solos.</p>${gl(IC.market,'Elige una oferta','Verás los datos de cobro del vendedor.')}${gl(IC.orders,'Paga y sube la captura','Tienes 30 minutos para pagar por Transfermóvil o EnZona.')}${gl(IC.wallet,'Recibe tus USDT','Cuando el vendedor confirma, los USDT llegan a tu billetera.')}`,
+ ()=>`<div class="gd-ic">${IC.orders}</div><h3>Comprar y vender</h3><p class="mut">Pagas directo al vendedor y los USDT te llegan solos.</p>${gl(IC.market,'Elige una oferta','Verás los datos de cobro del vendedor.')}${gl(IC.orders,'Paga y sube la captura','Tienes 30 minutos para pagar por Transfermóvil, EnZona, Zelle, PayPal o tu banco.')}${gl(IC.wallet,'Recibe tus USDT','Cuando el vendedor confirma, los USDT llegan a tu billetera.')}`,
  ()=>`<div class="gd-hero"><i></i><i></i><i></i><div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.shield}</div></div><h3>Aquí tu dinero está protegido</h3><p class="mut">Antes de nada, te contamos <b>por qué puedes operar tranquilo</b>. Dura menos de un minuto.</p><div class="gd-stats"><div><b data-n="100">0</b><span>% de los USDT en custodia mientras operas</span></div><div><b data-n="1">0</b><span>administrador revisa cualquier problema</span></div><div><b data-n="2">0</b><span>capas extra para tu cuenta: PIN y verificación en dos pasos</span></div><div><b data-n="72">0</b><span>horas de protección en pagos entre bancos</span></div></div>`,
  ()=>`<div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.lock}</div><h3>Así protegemos cada operación</h3><div class="gd-flow"><div class="gd-n" data-k="0"><em>👤</em><small>Vendedor</small></div><span class="gd-ar" data-k="0">➜</span><div class="gd-n" data-k="1"><em>🔒</em><small>Custodia</small></div><span class="gd-ar" data-k="1">➜</span><div class="gd-n" data-k="2"><em>🙂</em><small>Comprador</small></div></div><div class="gd-cap" id="gcap"></div><p class="mut" style="font-size:12px">Se reproduce solo · toca un paso para verlo</p>`,
  ()=>`<div class="gd-ic">${GI.shield}</div><h3>¿Y si algo sale mal?</h3><p class="mut">Toca cada situación y mira cómo te protegemos.</p><div class="gd-q"><button><b>🕒 El vendedor no responde</b><div class="a">Puedes pedir la <b>mediación del administrador</b> con tu captura y tu número de referencia. Los USDT siguen bloqueados mientras tanto: nadie puede llevárselos.</div></button><button><b>🏦 Pago desde otro banco</b><div class="a">Te pedimos marcarlo antes de pagar. La operación se <b>congela</b> hasta que el vendedor confirme que le llegó. Si pasan 72 h sin respuesta, te avisamos y puedes pedir mediación.</div></button><button><b>⚠️ Alguien me pide pagar fuera</b><div class="a">Es una estafa. Paga <b>solo a los datos que muestra la operación</b>. Ni soporte ni administradores te pedirán claves, PIN ni pagos por otra vía.</div></button><button><b>🙅 Dicen que no recibieron mi pago</b><div class="a">El administrador revisa las capturas de ambos y el chat de la operación, y decide si libera los USDT o los devuelve. Nada se decide sin pruebas.</div></button></div>`,
@@ -3825,7 +3989,7 @@ function extraChecks(t,o){
   if(mk&&card.length>=8){
     if(card.slice(0,4)!==mk[1])R.push(['warn',`Destino: la captura empieza por ${mk[1]} pero los datos de cobro empiezan por ${card.slice(0,4)}.`]);
     else if(card.slice(-4)===mk[2])R.push(['ok',`Destino: empieza por ${mk[1]} y termina en ${mk[2]}, igual que los datos de cobro.`])}
-  return R}
+  return R.concat(fxChecks(t,o))}
 /* ---------- Detector de señales de edición (revisa el archivo ORIGINAL, sin servidor) ---------- */
 const FX_ED=/(Adobe Photoshop|Photoshop|Adobe Illustrator|Adobe Express|Lightroom|Photopea|Canva|PicsArt|Snapseed|Pixelmator|Paint\.NET|GIMP \d|Affinity|Figma|Facetune|Remini|PhotoRoom|Fotor|Pixlr|BeFunky|InShot|Microsoft Paint|Krita|Sketch|ImageMagick|Fake|Editor)/i;
 function fxScan(u8,createdAt){
@@ -3944,7 +4108,7 @@ const aiAdvCard=d=>{
     ${d&&d.resumen?`<p style="margin:6px 0 8px">${esc(d.resumen)}</p>`:''}
     ${ck.map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}
     ${ex.length?`<details style="margin-top:8px"><summary class="mut">Datos que leyó la IA</summary>${ex.map(r=>`<div class="mut" style="padding:2px 0">${r[0]}: <b>${esc(r[1])}</b></div>`).join('')}</details>`:''}
-    <div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura editada con cuidado puede pasar la revisión, y la IA puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div>
+    <div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura editada con cuidado puede pasar la revisión, y la IA puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona, Zelle, PayPal, tu banco o tu app de pago) y comprueba que el dinero ya está ahí.</div>
     <p class="mut" style="font-size:11px;margin-bottom:0">Este análisis envía la imagen a Cloudflare (Workers AI).${d&&d.modelo?' Modelo: '+esc(String(d.modelo).replace('@cf/','')):''}</p></div>`};
 /* Revisión avanzada: solo cuando el vendedor toca el botón (cada operación permite 3 análisis) */
 function advAI(o){
@@ -3973,7 +4137,7 @@ const AIR=new Map(),AIW=new Set();   /* resultados de la revisión automática y
 const PRC=new Map();
 async function getProof(path){if(PRC.has(path))return PRC.get(path);const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');const b=await r.blob();PRC.set(path,b);if(PRC.size>8)PRC.delete(PRC.keys().next().value);return b}
 const aiCard=d=>{const ic={ok:'✅',warn:'⚠️',na:'➖'};
-  return`<div class="card" style="margin-top:10px"><h3>🤖 Revisión con IA</h3><p class="mut" style="font-size:12px;margin-top:0">Lectura automática (OCR) de la captura del comprador.</p>${(d.checks||[]).map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}<div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura puede estar editada o ser falsa, y el lector puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona o tu banco) y comprueba que el dinero ya está ahí.</div><p class="mut" style="font-size:11px;margin-bottom:0">Esta revisión se hace en tu dispositivo (OCR): la imagen no sale de él. (La «Revisión avanzada» sí envía la imagen a Cloudflare.)</p></div>`};
+  return`<div class="card" style="margin-top:10px"><h3>🤖 Revisión con IA</h3><p class="mut" style="font-size:12px;margin-top:0">Lectura automática (OCR) de la captura del comprador.</p>${(d.checks||[]).map(c=>`<div style="padding:4px 0">${ic[c.level]||'➖'} ${esc(c.text)}</div>`).join('')}<div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura puede estar editada o ser falsa, y el lector puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona, Zelle, PayPal, tu banco o tu app de pago) y comprueba que el dinero ya está ahí.</div><p class="mut" style="font-size:11px;margin-bottom:0">Esta revisión se hace en tu dispositivo (OCR): la imagen no sale de él. (La «Revisión avanzada» sí envía la imagen a Cloudflare.)</p></div>`};
 async function analyzeProofs(o,cur){
   const[t,f]=await Promise.all([analyzeProofs0(o,cur),forenseLines(o).catch(()=>[])]);if(!f.length)return t;
   const ic={ok:'✅',warn:'⚠️',na:'ℹ️'},i=t.indexOf('\n\nSolo es un an'),blk='\n\n🔬 Análisis del archivo (servicio forense)\n'+f.map(([l,x])=>(x.startsWith('   ')?'':ic[l]+' ')+x).join('\n');
