@@ -1263,7 +1263,7 @@ async function blobToDataUrl(blob,max){
 /* Botón con estado de carga: muestra "…" mientras trabaja; si la API falla, toast genérico */
 async function aiBtn(b,fn){
   if(!b||b.disabled)return;const t=b.innerHTML;b.disabled=true;b.textContent='…';
-  try{await fn()}catch(e){toast('No disponible en este momento','err');console.warn('[ia]',e)}
+  try{await fn()}catch(e){toast('No disponible en este momento'+(e&&e.reason?' · '+e.reason:''),'err');console.warn('[ia]',e)}
   finally{if(b.isConnected){b.disabled=false;b.innerHTML=t}}}
 /* Sentimiento del chat: verde=positivo, rojo=negativo, gris=neutral/mixto */
 function sentModal(d){
@@ -1285,12 +1285,26 @@ function summModal(d){
     <p class="mut" style="font-size:11px">Resumen automático: revisa los mensajes originales antes de decidir.</p>
     <button class="b gh w" style="margin-top:6px" onclick="this.closest('.ov').remove()">Cerrar</button>`)}
 /* OCR de una captura: baja la imagen, la reduce a base64 y muestra el texto leído */
+function ocrWhy(e){const m=String((e&&e.message)||e||'');
+  if(e&&e.name==='AbortError')return 'el servicio tardó más de 30 s';
+  if(/No hay sesión/.test(m))return 'sesión caducada, vuelve a entrar';
+  if(/^img /.test(m))return 'no se pudo bajar la imagen ('+m.slice(4)+')';
+  const h=m.match(/Error en la API \((\d+)\)/);if(h)return 'el servicio de IA respondió '+h[1]+' en /ocr';
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m))return 'sin conexión o bloqueado por el navegador';
+  return m.slice(0,90)}
 async function ocrRun(b){
   aiBtn(b,async()=>{
-    const r=await fetch(b.dataset.ocr);if(!r.ok)throw new Error('img '+r.status);
-    const d=await apiOcr(await blobToDataUrl(await r.blob()));
-    const t=String((d&&d.text)||'').trim();
+    let t='',loc=false;
+    try{
+      const r=await fetch(b.dataset.ocr);if(!r.ok)throw new Error('img '+r.status);
+      const blob=await r.blob();
+      try{const d=await apiOcr(await blobToDataUrl(blob));t=String((d&&d.text)||'').trim()}
+      catch(e){console.warn('[ocr] el servicio de IA falló, uso el lector del teléfono:',e);
+        try{t=String(await ocrBlob(blob)||'').trim();loc=true}
+        catch(e2){const er=new Error('ocr');er.reason=ocrWhy(e)+'; el lector del teléfono tampoco pudo';throw er}}
+    }catch(e){if(!e.reason)e.reason=ocrWhy(e);throw e}
     modal(`<h3>🔎 Texto de la captura</h3>${t?`<pre style="white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;font-family:inherit;font-size:14px">${esc(t)}</pre><button class="b gh w" data-cp="${esc(t)}">Copiar texto</button>`:'<p class="mut">No se pudo leer texto en esta imagen.</p>'}
+      ${loc?'<p class="mut" style="font-size:11px">Leído en tu teléfono porque el servicio de IA no respondió.</p>':''}
       <p class="mut" style="font-size:11px">Lectura automática: puede equivocarse con números y referencias. Compara con la imagen.</p>
       <button class="b gh w" style="margin-top:6px" onclick="this.closest('.ov').remove()">Cerrar</button>`)})}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ocr]');if(b)ocrRun(b)});
