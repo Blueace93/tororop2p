@@ -1097,6 +1097,31 @@ html[data-theme] #offers .qo.qr .qo-btn:not(.own){box-shadow:inset 0 1px 0 rgba(
 html[data-theme=dark] *{scrollbar-color:#3a3f47 transparent}
 html[data-theme=light] *{scrollbar-color:#b4bbc5 transparent}
 </style>
+<style id="tcard">
+/* ---------- Tarjeta de operación completada (verde = venta, rojo = compra) ---------- */
+.tcard{--a:#0ECB81;--a2:#06A064;--d:#07553c;--dd:#021510;--ag:14,203,129;position:relative;overflow:hidden;border-radius:26px;padding:16px 16px 14px;margin:0 0 14px;color:#fff;border:1px solid rgba(255,255,255,.18);background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.09) 42%,transparent 54%),radial-gradient(120% 90% at 100% 0%,rgba(var(--ag),.5),transparent 60%),linear-gradient(155deg,var(--d),var(--dd) 72%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 18px 36px -22px rgba(var(--ag),.7)}
+.tcard.buy{--a:#F6465D;--a2:#C92E45;--d:#6e1424;--dd:#190408;--ag:246,70,93}
+.tc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+html[data-theme] .tcard .logo{-webkit-text-fill-color:#fff!important;color:#fff!important;font-size:17px}
+html[data-theme] .tcard .logo i{-webkit-text-fill-color:var(--a)!important;color:var(--a)!important}
+.tc-pill{font-size:11px;font-weight:800;letter-spacing:.04em;padding:5px 10px;border-radius:99px;background:var(--a);color:#032a1d;white-space:nowrap}
+.tcard.buy .tc-pill,.tcard.buy .tc-ref{color:#fff}
+.tc-amt{font-size:40px;font-weight:800;line-height:1.1;margin:14px 0 2px;text-shadow:0 6px 28px rgba(var(--ag),.6);overflow-wrap:anywhere}
+.tc-amt small{font-size:17px;font-weight:700;opacity:.85}
+.tc-sub{font-size:13px;opacity:.7}
+.tc-user{display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px 12px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.tc-av{width:44px;height:44px;border-radius:50%;flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;background:linear-gradient(145deg,var(--a),var(--a2));color:#fff;box-shadow:0 0 0 2px var(--a)}.tc-av img{width:100%;height:100%;object-fit:cover}
+.tc-user b{display:block;font-size:16px}
+.tc-bd{display:inline-block;margin-top:3px;padding:2px 10px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3)}
+.tc-rows>div{display:flex;justify-content:space-between;gap:10px;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.1);font-size:13.5px}
+.tc-rows>div:last-child{border-bottom:0}
+.tc-rows span{opacity:.65;flex:none}.tc-rows b{text-align:right;overflow-wrap:anywhere}
+.tc-ref{margin-top:10px;padding:9px 12px;border-radius:14px;background:linear-gradient(135deg,var(--a),var(--a2));color:#032a1d;font-size:13px;font-weight:600}
+.tc-act{display:flex;gap:8px;margin-top:12px}.tc-act .b{flex:1}
+html[data-theme] .tcard button.b{background:#fff;color:#111;box-shadow:none}
+html[data-theme] .tcard button.b.gh{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+</style>
+
 
 
 
@@ -2777,7 +2802,7 @@ async function viewTrade(){
   ${mv&&live&&(isB||isS)?`<div class="card"><p class="mut" style="margin-top:0">${isS?'Envía el saldo móvil al número indicado y sube la foto del envío (obligatoria).':'Cuando recibas el saldo, sube la captura de la recepción.'}</p><button class="b w" id="med">🛡️ Mediación de admin · subir foto</button></div>`:''}<div id="ratebox"></div>`;
   main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   $('back').onclick=e=>{e.preventDefault();go('orders')};
-  if(t.status==='released'&&(isB||isS))drawRate('trade',t.id,isB?t.seller_id:t.buyer_id);
+  if(t.status==='released'&&(isB||isS)){drawRate('trade',t.id,isB?t.seller_id:t.buyer_id);shPop('t',t)}
   if($('med'))$('med').onclick=async ev=>{
     const m=await ask('Mediación de admin',`<p class="mut">El administrador revisará la foto y aprobará la operación.</p><label>${isS?'Foto del envío del saldo':'Captura de la recepción del saldo'}</label><input type="file" id="mf" accept="image/*">`,'Enviar foto','ok');
     if(!m)return;const fl=m.querySelector('#mf').files[0];m.remove();
@@ -2957,6 +2982,109 @@ async function viewNotifs(){
 
 /* ---------- Operaciones ---------- */
 const ACTIVE=['awaiting_payment','payment_sent','seller_confirmed','disputed'];
+/* ---------- Tarjeta compartible de operación completada (verde = venta, rojo = compra) ---------- */
+const OPI=new Map();
+async function shareCtx(){
+  const me=S.user.id,p=S.profile||{};let role=(S.roles||{})[me]||(p.is_admin?'admin':'user'),code='';
+  try{await loadRoles([me]);role=(S.roles||{})[me]||role}catch(e){}
+  try{const d=await rpc('my_referral_stats');code=String((d&&d.code)||'')}catch(e){}
+  return{uid:me,name:p.username||'usuario',role,kyc:p.kyc_status,code,link:location.origin+location.pathname+(code?'?ref='+encodeURIComponent(code):''),av:p.avatar_path?avUrl(p.avatar_path):''}}
+const opBadge=c=>c.role==='owner'?{t:'Creador Tororo',e:'👑'}:c.role==='admin'?{t:'Admin',e:'🛡️'}:c.kyc==='approved'?{t:'Verificado',e:'✓'}:null;
+function opItem(k,x){
+  const sell=x.buyer_id!==S.user.id,kind=sell?'Venta':'Compra';
+  if(k==='o'){const cu=parseM(x.methods).c;return{key:'o:'+x.id,id:x.id,go:'order',sell,kind,amount:n(x.amount,2),unit:'USDT',price:mny(x.price_cup,cu)+' '+cu,total:mny(due(x,cu),cu)+' '+cu,at:new Date(x.created_at)}}
+  const A=ASSETS[x.asset]?.label||x.asset;
+  return{key:'t:'+x.id,id:x.id,go:'trade',sell,kind,amount:n(x.amount,2),unit:A,price:n(x.price,x.price<1?4:2)+' '+x.quote,total:n(x.total,qd(x.quote))+' '+x.quote,at:new Date(x.created_at)}}
+function opCardHtml(it,ctx){
+  OPI.set(it.key,it);const b=opBadge(ctx),nm=esc(ctx.name);
+  return`<div class="tcard ${it.sell?'sell':'buy'}"><div class="tc-top"><span class="lg">${logoSvg(28)}<span class="logo">Tororo<i> P2P</i></span></span><span class="tc-pill">${it.sell?'VENTA':'COMPRA'} COMPLETADA</span></div>
+  <div class="tc-amt">${esc(it.amount)} <small>${esc(it.unit)}</small></div><div class="tc-sub">${it.kind} de ${esc(it.unit)} · ${when(it.at)}</div>
+  <div class="tc-user"><span class="tc-av">${ctx.av?`<img src="${esc(ctx.av)}" alt="" loading="lazy">`:esc(nm.charAt(0).toUpperCase())}</span><div><b>@${nm}</b>${b?`<span class="tc-bd">${b.e} ${b.t}</span>`:''}</div></div>
+  <div class="tc-rows"><div><span>Precio por ${esc(it.unit)}</span><b>${esc(it.price)}</b></div><div><span>Total</span><b>${esc(it.total)}</b></div><div><span>Referencia</span><b>${esc(String(it.id).slice(0,8).toUpperCase())}</b></div></div>
+  ${ctx.code?`<div class="tc-ref">🎁 Invita a tus amigos con tu código <b>${esc(ctx.code)}</b></div>`:''}
+  <div class="tc-act"><button class="b sm" data-sh="${esc(it.key)}">📤 Compartir</button><button class="b gh sm" data-go="${esc(it.key)}">Ver detalle</button></div></div>`}
+async function opCardBlob(it,ctx,hide){
+  const W=1080,H=1560,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const F=(w,s)=>`${w} ${s}px "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif`;
+  try{await Promise.race([document.fonts.load(F(700,40)),new Promise(r=>setTimeout(r,800))])}catch(e){}
+  const T=it.sell?{a:'#0ECB81',a2:'#06A064',d:'#07553c',dd:'#021510',on:'#032a1d',ag:'14,203,129'}:{a:'#F6465D',a2:'#C92E45',d:'#6e1424',dd:'#190408',on:'#ffffff',ag:'246,70,93'};
+  const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
+  const fit=(t,w,s,wt)=>{while(s>18){g.font=F(wt,s);if(g.measureText(t).width<=w)break;s-=2}g.font=F(wt,s);return s};
+  const img=u=>new Promise(res=>{if(!u)return res(null);const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>res(null);i.src=u;setTimeout(()=>res(null),4000)});
+  let fest=false;try{fest=window.iconoActual&&iconoActual()==='festivo'}catch(e){}
+  const logoSrc='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 40 40"><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${fest?'#f05252':'#8b7cff'}"/><stop offset="1" stop-color="${fest?'#c81e1e':'#4f8dff'}"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#a)"/><circle cx="20" cy="20" r="11" fill="none" stroke="#181A20" stroke-width="2.5"/><path d="M14 17h11l-3-3M26 23H15l3 3" fill="none" stroke="#181A20" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30.5" cy="9.5" r="3" fill="#F6465D"/></svg>`);
+  const [logo,av]=await Promise.all([img(logoSrc),img(ctx.av)]);
+  /* Fondo metálico teñido */
+  let gr=g.createLinearGradient(0,0,W*.4,H);gr.addColorStop(0,T.d);gr.addColorStop(.55,T.dd);gr.addColorStop(1,'#050607');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  let rg=g.createRadialGradient(W*.85,140,0,W*.85,140,720);rg.addColorStop(0,`rgba(${T.ag},.55)`);rg.addColorStop(1,`rgba(${T.ag},0)`);g.fillStyle=rg;g.fillRect(0,0,W,H);
+  rg=g.createRadialGradient(0,H,0,0,H,820);rg.addColorStop(0,`rgba(${T.ag},.32)`);rg.addColorStop(1,`rgba(${T.ag},0)`);g.fillStyle=rg;g.fillRect(0,0,W,H);
+  gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(.30,'rgba(255,255,255,0)');gr.addColorStop(.42,'rgba(255,255,255,.10)');gr.addColorStop(.50,'rgba(255,255,255,.02)');gr.addColorStop(.58,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  g.fillStyle='rgba(255,255,255,.016)';for(let x=0;x<W;x+=4)g.fillRect(x,0,1,H);
+  gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,T.a);gr.addColorStop(.5,'rgba(255,255,255,.28)');gr.addColorStop(1,T.a2);
+  g.strokeStyle=gr;g.lineWidth=4;rr(26,26,W-52,H-52,58);g.stroke();
+  /* Cabecera: logo + nombre + etiqueta */
+  if(logo)g.drawImage(logo,72,76,100,100);
+  g.textAlign='left';g.textBaseline='alphabetic';g.font=F(700,60);g.fillStyle='#fff';g.fillText('Tororo',192,148);
+  const tw=g.measureText('Tororo ').width;g.fillStyle=T.a;g.fillText('P2P',192+tw,148);
+  const kt=it.sell?'VENTA':'COMPRA';g.font=F(800,34);const kw=g.measureText(kt).width+64;
+  rr(W-72-kw,98,kw,56,28);g.fillStyle=T.a;g.fill();g.fillStyle=T.on;g.textAlign='center';g.fillText(kt,W-72-kw/2,138);
+  /* Sello de completada */
+  rg=g.createRadialGradient(W/2,320,40,W/2,320,190);rg.addColorStop(0,`rgba(${T.ag},.55)`);rg.addColorStop(1,`rgba(${T.ag},0)`);g.fillStyle=rg;g.fillRect(W/2-200,120,400,400);
+  gr=g.createLinearGradient(W/2-92,228,W/2+92,412);gr.addColorStop(0,T.a);gr.addColorStop(1,T.a2);
+  g.beginPath();g.arc(W/2,320,92,0,Math.PI*2);g.fillStyle=gr;g.fill();g.lineWidth=5;g.strokeStyle='rgba(255,255,255,.55)';g.stroke();
+  g.beginPath();g.moveTo(W/2-40,324);g.lineTo(W/2-10,354);g.lineTo(W/2+44,292);g.lineWidth=20;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#fff';g.stroke();
+  g.fillStyle='#fff';g.textAlign='center';g.font=F(700,68);g.fillText('¡Operación completada!',W/2,500);
+  g.font=F(500,38);g.fillStyle='rgba(255,255,255,.72)';g.fillText(`${it.kind} de ${it.unit}`,W/2,560);
+  /* Monto */
+  const am=hide?'••••':it.amount;g.save();g.shadowColor=`rgba(${T.ag},.75)`;g.shadowBlur=46;
+  const us=fit(am,560,150,800),aw=g.measureText(am).width;g.font=F(700,52);const uw=g.measureText(' '+it.unit).width;
+  const sx=(W-(aw+uw))/2;g.textAlign='left';g.font=F(800,us);g.fillStyle='#fff';g.fillText(am,sx,712);g.font=F(700,52);g.fillStyle=T.a;g.fillText(' '+it.unit,sx+aw,712);g.restore();
+  /* Usuario */
+  rr(72,770,936,150,42);g.fillStyle='rgba(255,255,255,.08)';g.fill();g.lineWidth=2;g.strokeStyle='rgba(255,255,255,.16)';g.stroke();
+  const ax=152,ay=845;g.save();g.beginPath();g.arc(ax,ay,52,0,Math.PI*2);g.clip();
+  if(av)g.drawImage(av,ax-52,ay-52,104,104);else{gr=g.createLinearGradient(ax-52,ay-52,ax+52,ay+52);gr.addColorStop(0,T.a);gr.addColorStop(1,T.a2);g.fillStyle=gr;g.fillRect(ax-52,ay-52,104,104);g.fillStyle='#fff';g.font=F(800,54);g.textAlign='center';g.fillText((ctx.name||'?').charAt(0).toUpperCase(),ax,ay+19)}
+  g.restore();g.lineWidth=4;g.strokeStyle=T.a;g.beginPath();g.arc(ax,ay,54,0,Math.PI*2);g.stroke();
+  const bd=opBadge(ctx);g.textAlign='left';g.fillStyle='#fff';fit('@'+ctx.name,690,50,700);g.fillText('@'+ctx.name,232,bd?835:858);
+  if(bd){const bt=`${bd.e} ${bd.t}`;g.font=F(700,28);const bw=g.measureText(bt).width+40,col=ctx.role==='owner'?'240,185,11':ctx.role==='admin'?'255,170,0':'14,203,129';
+    rr(232,852,bw,46,23);g.fillStyle=`rgba(${col},.22)`;g.fill();g.lineWidth=2;g.strokeStyle=`rgba(${col},.9)`;g.stroke();g.fillStyle='#fff';g.fillText(bt,252,885)}
+  /* Datos de la operación */
+  rr(72,948,936,264,42);g.fillStyle='rgba(255,255,255,.08)';g.fill();g.lineWidth=2;g.strokeStyle='rgba(255,255,255,.16)';g.stroke();
+  const R=[[`Precio por ${it.unit}`,hide?'••••':it.price],['Total',hide?'••••':it.total],['Fecha',when(it.at)],['Referencia',String(it.id).slice(0,8).toUpperCase()]];
+  R.forEach(([a,b],i)=>{const y=1010+i*60;g.textAlign='left';g.font=F(500,29);g.fillStyle='rgba(255,255,255,.62)';g.fillText(a,112,y);g.textAlign='right';fit(String(b),520,33,700);g.fillStyle='#fff';g.fillText(String(b),968,y);
+    if(i<R.length-1){g.fillStyle='rgba(255,255,255,.10)';g.fillRect(112,y+20,856,2)}});
+  /* Invitación con enlace de referido */
+  gr=g.createLinearGradient(72,1244,1008,1444);gr.addColorStop(0,T.a);gr.addColorStop(1,T.a2);
+  rr(72,1244,936,204,46);g.fillStyle=gr;g.fill();g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.35)';g.stroke();
+  g.textAlign='center';g.fillStyle=T.on;fit('🎁 Regístrate con mi enlace',840,46,800);g.fillText('🎁 Regístrate con mi enlace',W/2,1308);
+  const lk=String(ctx.link||'').replace(/^https?:\/\//,'');fit(lk,860,32,700);g.fillText(lk,W/2,1364);
+  if(ctx.code){g.font=F(600,32);g.globalAlpha=.9;g.fillText('Código de invitación: '+ctx.code,W/2,1414);g.globalAlpha=1}
+  g.textAlign='center';g.font=F(500,26);g.fillStyle='rgba(255,255,255,.55)';g.fillText('Opera USDT, CUP y saldo con respaldo de un administrador',W/2,1496);
+  return new Promise(res=>cv.toBlob(res,'image/png'))}
+async function shareOp(key){
+  const it=OPI.get(key);if(!it)return;
+  if(!S.sctx||S.sctx.uid!==S.user.id||!S.sctx.code)S.sctx=await shareCtx();
+  const ctx=S.sctx,txt=`✅ ${it.kind} completada en ${APP_NAME} P2P. Únete con mi enlace y empieza a operar: ${ctx.link}`;
+  let hide=false,blob=null,url='';
+  const m=modal(`<h3>📤 Compartir operación</h3><img id="tcp" alt="Tarjeta de la operación" style="display:block;width:100%;border-radius:16px;margin:8px 0;background:var(--card2);min-height:120px">
+    <label style="display:flex;gap:8px;align-items:center;margin:4px 0 8px"><input type="checkbox" id="tch" style="width:auto;margin:0"> Ocultar montos</label>
+    <p class="mut" style="margin:0 0 10px;font-size:12px">${ctx.code?'Tus amigos podrán registrarse con tu enlace de invitación.':'Todavía no tienes código de invitación; se compartirá el enlace de la app.'}</p>
+    <div class="grid2"><button class="b" id="tcs">Compartir</button><button class="b gh" id="tcd">Guardar imagen</button></div><button class="b gh w" id="tcx" style="margin-top:8px">Cerrar</button>`);
+  const close=()=>{if(url)URL.revokeObjectURL(url);m.remove()};
+  const draw=async()=>{try{blob=await opCardBlob(it,ctx,hide);if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(blob);m.querySelector('#tcp').src=url}catch(e){toast('No se pudo crear la imagen','err')}};
+  m.querySelector('#tcx').onclick=close;
+  m.querySelector('#tch').onchange=e=>{hide=e.target.checked;draw()};
+  m.querySelector('#tcs').onclick=async()=>{if(!blob)return;
+    try{const f=new File([blob],'tororo-operacion.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:txt});else if(navigator.share)await navigator.share({text:txt});else{copy(txt)}}
+    catch(e){if(!e||e.name!=='AbortError')copy(txt)}};
+  m.querySelector('#tcd').onclick=()=>{if(!blob)return;const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tororo-operacion-'+String(it.id).slice(0,8)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
+  await draw()}
+function shPop(k,x){
+  const it=opItem(k,x);OPI.set(it.key,it);
+  let seen=false;try{seen=!!localStorage.getItem('tp_sh_'+it.key)}catch(e){}
+  if(seen||Date.now()-new Date(x.updated_at||x.created_at)>=2*864e5)return;
+  try{localStorage.setItem('tp_sh_'+it.key,'1')}catch(e){}
+  setTimeout(()=>shareOp(it.key),700)}
 async function viewOrders(){
   const my=NAV;main().innerHTML='<h2>Mis operaciones</h2>'+skel(3);await expireSweep();
   const[{data,error},tq]=await Promise.all([
@@ -2971,13 +3099,19 @@ async function viewOrders(){
   const tabs={all:'Todas',act:'Activas',ok:'Completadas',x:'Canceladas'};
   const flt=o=>S.of==='all'||(S.of==='act'&&ACTIVE.includes(o.status))||(S.of==='ok'&&o.status==='released')||(S.of==='x'&&['cancelled','refunded'].includes(o.status));
   const l=data.filter(flt);
+  const okTab=S.of==='ok';let okHtml='';
+  if(okTab){if(!S.sctx||S.sctx.uid!==S.user.id||!S.sctx.code)S.sctx=await shareCtx();if(my!==NAV)return;
+    const its=[...l.map(o=>opItem('o',o)),...TR.map(t=>opItem('t',t))].sort((x,y)=>y.at-x.at);
+    okHtml=its.length?its.map(i=>opCardHtml(i,S.sctx)).join(''):'<div class="card mut">Todavía no tienes operaciones completadas.</div>'}
   main().innerHTML='<h2>Mis operaciones</h2><div class="chips">'+Object.entries(tabs).map(([k,v])=>`<button class="chip ${S.of===k?'on':''}" data-t="${k}">${v}</button>`).join('')+'</div>'+
-    trCards+(l.length?l.map(o=>{const[t,c]=STATUS[o.status]||[o.status,''],role=o.buyer_id===S.user.id?'Compra':'Venta',cu=parseM(o.methods).c;
+    (okTab?okHtml:trCards+(l.length?l.map(o=>{const[t,c]=STATUS[o.status]||[o.status,''],role=o.buyer_id===S.user.id?'Compra':'Venta',cu=parseM(o.methods).c;
       return`<div class="card" style="cursor:pointer" data-o="${o.id}"><div class="row"><b>${role} · ${n(o.amount,2)} USDT</b><span class="tag ${c}">${t}</span></div>
-      <div class="mut">${mny(due(o,cu),cu)} ${esc(cu)} · ${when(o.created_at)}</div></div>`}).join(''):(TR.length?'':'<div class="card mut">No hay operaciones en esta lista.</div>'));
+      <div class="mut">${mny(due(o,cu),cu)} ${esc(cu)} · ${when(o.created_at)}</div></div>`}).join(''):(TR.length?'':'<div class="card mut">No hay operaciones en esta lista.</div>')));
   main().querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>go('order',el.dataset.o));
   main().querySelectorAll('[data-tr]').forEach(el=>el.onclick=()=>go('trade',el.dataset.tr));
   main().querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{S.of=b.dataset.t;viewOrders()});
+  main().querySelectorAll('[data-sh]').forEach(b=>b.onclick=e=>{e.stopPropagation();shareOp(b.dataset.sh)});
+  main().querySelectorAll('[data-go]').forEach(b=>b.onclick=e=>{e.stopPropagation();const it=OPI.get(b.dataset.go);if(it)go(it.go,it.id)});
   refreshBadge()}
 
 async function proofImg(path,who){
@@ -3273,7 +3407,7 @@ async function viewOrder(){
     $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200);
     $('chatbox').insertAdjacentHTML('afterend','<div id="fraudBox"></div>');fraudRender(o.id);fcImgScan(o);fcFlagsLoad(o);
     if(o.buyer_proof&&!$('sAI2')){$('anaB').insertAdjacentHTML('afterend','<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>');advAI(o)}}
-  if(o.status==='released'&&(isBuyer||isSeller))drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);
+  if(o.status==='released'&&(isBuyer||isSeller)){drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);shPop('o',o)}
   /* actualización automática */
   let last=o.status+o.updated_at;
   POLL=setInterval(async()=>{
