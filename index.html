@@ -770,6 +770,39 @@ input,select,textarea{max-width:100%;font-size:16px}
 /* Pantallas muy anchas */
 @media(min-width:1500px){main{max-width:1040px;margin-left:max(var(--sbw),calc((100% + var(--sbw) - 1040px)/2))}}
 </style>
+<style id="mk-compact">
+/* Chat: el navegador no reajusta el scroll por su cuenta (evita saltos al escribir) */
+.cwrap #cl,#cl{overflow-anchor:none}
+/* Mercado: más ofertas visibles por pantalla */
+body[data-view=market] .wal-h{margin-bottom:10px}
+body[data-view=market] .wal-b{font-size:32px}
+body[data-view=market] .wal-sub{margin-top:10px;gap:8px}
+body[data-view=market] .wal-c{padding:9px}
+.mkact{margin:0 0 8px}.mkact .b{padding:10px 6px}
+#mkT{margin:2px 0 8px}#mkT button{padding:9px 4px}
+#offers .qo{padding:10px 12px}
+#offers .qo-av{width:36px;height:36px;font-size:15px}
+#offers .qo-nm b{font-size:14px}
+#offers .qo-rk{margin-top:1px;padding:1px 8px;font-size:11px}
+#offers .qo-ic{margin-top:1px;gap:8px;font-size:11.5px}
+#offers .qo-s{margin-top:8px;align-items:center}
+#offers .qo-v span{font-size:11px}
+#offers .qo-v b{font-size:23px}
+#offers .qo-btn{flex:0 0 112px;padding:10px 6px;font-size:14px}
+#offers .qo-btn.own{flex-basis:134px;font-size:13px;white-space:nowrap}
+#offers .qo-g{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;margin-top:6px;border-top:0}
+#offers .qo-k{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 0;border-bottom:0;font-size:13px}
+#offers .qo-k b{justify-content:flex-start;text-align:left}
+#offers .qo-m{margin-top:4px;gap:5px}
+#offers .qo-a{margin-top:8px;gap:6px}
+#offers .qo-a .b{padding:7px 6px;font-size:12.5px}
+@media(min-width:900px){
+ #offers:has(.qo){display:grid;grid-template-columns:1fr 1fr}
+ #offers>p{grid-column:1/-1}
+ #offers .qo{border-right:1px solid var(--line)}
+ #offers .qo:nth-child(2n){border-right:0}
+}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCD535"/><stop offset="1" stop-color="#F0B90B"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
@@ -1011,6 +1044,60 @@ html[data-theme] #offers .qo.qr .qo-btn:not(.own):hover{background:#E03A52;filte
 html[data-theme] button.b.rs-b{background:#F6465D;color:#fff}
 html[data-theme] button.b.rs-b:hover{background:#E03A52}
 </style>
+<style id="metal">
+/* ---------- Acabado metálico: negro cromado (oscuro) y plata pulida (claro) ---------- */
+html[data-theme=dark]{--bg:#08090b;--card:#16181c;--card2:#1c1f24;--line:#31353c;--tx:#ECEEF1;--mut:#8D96A3;
+ --mt-face:linear-gradient(145deg,#2b2f35 0%,#17191d 42%,#101215 60%,#22262c 100%);
+ --mt-bar:linear-gradient(180deg,#2e3238 0%,#181b1f 55%,#111316 100%);
+ --mt-hi:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -1px 0 rgba(0,0,0,.65);
+ --mt-drop:0 12px 26px -16px rgba(0,0,0,.95);
+ --mt-well:linear-gradient(180deg,#0a0b0d,#14161a);
+ --mt-inset:inset 0 1px 3px rgba(0,0,0,.45);
+ --mt-glow:rgba(255,255,255,.07);
+ --mt-brush:repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,rgba(0,0,0,.03) 1px 3px)}
+html[data-theme=light]{--bg:#e4e7eb;--card:#f7f8fa;--card2:#eceff2;--line:#c6ccd4;--tx:#14171b;--mut:#566170;
+ --mt-face:linear-gradient(145deg,#ffffff 0%,#f0f2f5 45%,#e3e6ea 62%,#f7f8fa 100%);
+ --mt-bar:linear-gradient(180deg,#ffffff 0%,#e9ecf0 55%,#dbdfe4 100%);
+ --mt-hi:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(20,25,35,.08);
+ --mt-drop:0 10px 22px -16px rgba(20,25,35,.5);
+ --mt-well:linear-gradient(180deg,#d9dde2,#f1f3f6);
+ --mt-inset:inset 0 1px 2px rgba(20,25,35,.2);
+ --mt-glow:rgba(255,255,255,.95);
+ --mt-brush:repeating-linear-gradient(90deg,rgba(20,25,35,.018) 0 1px,rgba(255,255,255,.28) 1px 3px)}
+/* Equipos lentos: sin la textura cepillada */
+html.lite[data-theme]{--mt-brush:linear-gradient(transparent,transparent)}
+
+html[data-theme] body{background:var(--mt-brush),radial-gradient(130% 45% at 50% 0%,var(--mt-glow),transparent 62%),var(--bg);background-attachment:fixed;background-repeat:no-repeat,no-repeat,no-repeat}
+html[data-theme] header{background:var(--mt-brush),var(--mt-bar)!important;border-bottom:1px solid var(--line);box-shadow:var(--mt-hi),0 6px 18px -12px rgba(0,0,0,.6)}
+html[data-theme] nav{background:var(--mt-brush),var(--mt-bar)!important;border-color:var(--line);box-shadow:var(--mt-hi),0 -8px 22px -14px rgba(0,0,0,.55)}
+
+/* Tarjetas, accesos y lista del Mercado */
+html[data-theme] .card,html[data-theme] .tile,html[data-theme] .qb,html[data-theme] .wt,html[data-theme] .md,html[data-theme] #offers:has(.qo){background:var(--mt-brush),var(--mt-face);border-color:var(--line);box-shadow:var(--mt-hi),var(--mt-drop)}
+html[data-theme] .qo{border-bottom-color:var(--line)}
+html[data-theme] .qo-g,html[data-theme] .qo-k{border-color:var(--line)}
+
+/* Billetera: cromo negro con destello diagonal (en ambos temas) */
+html[data-theme] .wal{background:linear-gradient(115deg,transparent 26%,rgba(255,255,255,.14) 39%,rgba(255,255,255,.03) 47%,transparent 58%),repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0 1px,rgba(0,0,0,.03) 1px 3px),linear-gradient(135deg,#474c54 0%,#1b1d21 34%,#0a0b0d 60%,#2b2f36 100%);border-color:rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.8),0 20px 40px -24px rgba(0,0,0,.85)}
+
+/* Campos, pestañas, botones redondos y fichas */
+html[data-theme] input,html[data-theme] textarea,html[data-theme] select{background:var(--mt-well);border-color:var(--line);box-shadow:var(--mt-inset)}
+html[data-theme] .seg{background:var(--mt-well);border-color:var(--line);box-shadow:var(--mt-inset)}
+html[data-theme] .seg button.on{box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 3px 8px -3px rgba(0,0,0,.45)}
+html[data-theme] .pill,html[data-theme] .ib{background:var(--mt-bar);border-color:var(--line);box-shadow:var(--mt-hi)}
+html[data-theme=light] .pill,html[data-theme=light] .ib{background:var(--mt-bar)}
+html[data-theme] .tag{background:var(--mt-well);box-shadow:var(--mt-inset)}
+html[data-theme] .tag.ok,html[data-theme] .tag.warn,html[data-theme] .tag.bad{box-shadow:none}
+html[data-theme] .tag.ok{background:rgba(14,203,129,.16)}html[data-theme] .tag.warn{background:rgba(240,185,11,.16)}html[data-theme] .tag.bad{background:rgba(246,70,93,.16)}
+
+/* Botones con filo de luz arriba */
+html[data-theme] button.b{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.14)}
+html[data-theme] button.b.gh{background:var(--mt-face);box-shadow:var(--mt-hi)}
+html[data-theme] #offers .qo-btn:not(.own){box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.18)}
+html[data-theme] #offers .qo.qr .qo-btn:not(.own){box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.2)}
+html[data-theme=dark] *{scrollbar-color:#3a3f47 transparent}
+html[data-theme=light] *{scrollbar-color:#b4bbc5 transparent}
+</style>
+
 
 
 
@@ -3799,7 +3886,7 @@ function fitChat(){
   const v=window.visualViewport,vh=v?v.height:innerHeight,off=v?v.offsetTop:0,kb=document.body.classList.contains('kb');
   const nv=document.querySelector('nav'),res=kb||!nv?8:Math.max(8,Math.round(innerHeight-nv.getBoundingClientRect().top+8));
   const top=w.getBoundingClientRect().top-off;
-  w.style.height=Math.max(180,Math.floor(vh-top-res))+'px';
+  {const nh=Math.max(180,Math.floor(vh-top-res));if(Math.abs(nh-w.offsetHeight)>1)w.style.height=nh+'px'}
   const cl=document.getElementById('cl');if(cl&&kb&&KBSTICK)cl.scrollTop=cl.scrollHeight}
 addEventListener('resize',()=>fitChat());
 if(window.visualViewport)visualViewport.addEventListener('resize',()=>fitChat());
@@ -3807,7 +3894,12 @@ if(window.visualViewport)visualViewport.addEventListener('resize',()=>fitChat())
 const KB=(()=>{
   const coarse=matchMedia('(pointer:coarse)').matches;
   const cur=()=>window.visualViewport?visualViewport.height:innerHeight;let base=cur(),seen=false;
-  const fit=t=>{if(!t)return;t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'};
+  const fit=t=>{if(!t)return false;const h0=t.offsetHeight,grow=t.scrollHeight>t.clientHeight+1;
+    if(grow)t.style.height=Math.min(t.scrollHeight,120)+'px';
+    else if(!t.value||(t._l||0)>t.value.length){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
+    t._l=t.value.length;
+    const cl=document.getElementById('cl');if(cl&&KBSTICK)cl.scrollTop=cl.scrollHeight;
+    return t.offsetHeight!==h0};
   const upd=()=>{const v=window.visualViewport;const h=v?Math.max(0,Math.round(innerHeight-v.height-v.offsetTop)):0;document.body.style.setProperty('--kbh',(h+16)+'px')};
   const show=()=>{const t=document.activeElement;if(!t||!t.matches||!t.matches('.cmp textarea'))return;
     const c=t.closest('.cmp'),v=window.visualViewport,vb=v?v.offsetTop+v.height:innerHeight,r=c.getBoundingClientRect();
@@ -3820,7 +3912,7 @@ const KB=(()=>{
     if(coarse){base=Math.max(base,cur());seen=false;document.body.classList.add('kb')}upd();fit(e.target);later(80);later(350)});
   document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;
     if(!a||!a.matches||!a.matches('.cmp textarea')){document.body.classList.remove('kb');document.body.style.removeProperty('--kbh');fitChat()}},150));
-  document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('.cmp textarea')){fit(e.target);later(0)}});
+  document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('.cmp textarea')){if(fit(e.target))later(0)}});
   /* tocar Enviar no cierra el teclado (si no, el botón se mueve y el toque se pierde) */
   document.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.cmp .b'))e.preventDefault()});
   /* Si el teclado se cierra (gesto atrás) y la caja sigue enfocada, se quita el modo teclado para que vuelva la barra de abajo */
