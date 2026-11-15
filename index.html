@@ -35,7 +35,7 @@ iconoApply();document.addEventListener('DOMContentLoaded',iconoApply);
 <style>
 :root{--bg:#0b0e11;--card:#12131c;--card2:#1a1b28;--line:#23243a;--tx:#eceefb;--mut:#8c90a8;--ok:#34d399;--warn:#f2b84b;--bad:#f0675c;--acc:#6d5efc;--r:22px}
 *{box-sizing:border-box}
-body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(120% 55% at 50% -8%,#1c1a3d 0%,rgba(9,10,16,0) 60%) no-repeat,var(--bg);color:var(--tx);padding-bottom:84px}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(120% 55% at 50% -8%,#2b2713 0%,rgba(9,10,16,0) 60%) no-repeat,var(--bg);color:var(--tx);padding-bottom:84px}
 header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#0b0e11ee;backdrop-filter:blur(8px);z-index:5}
 .logo{font-weight:800;font-size:18px;letter-spacing:-.3px}.logo i{color:var(--ok);font-style:normal}
 main{max-width:760px;margin:0 auto;padding:16px}
@@ -382,7 +382,7 @@ button.b:active,.chip:active,.tile:active,.qb:active,.seg button:active{filter:b
 nav button:active{opacity:.7}
 /* En Billetera los botones flotantes tapaban los botones de retiro/recarga */
 body[data-view="wallet"] .fab,body[data-view="wallet"] .fab-bg,body[data-view="wallet"] .up{display:none!important}
-#mnt{position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 55% at 50% -8%,#1c1a3d 0%,rgba(9,10,16,0) 60%) no-repeat,#0b0e11;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto}
+#mnt{position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 55% at 50% -8%,#2b2713 0%,rgba(9,10,16,0) 60%) no-repeat,#0b0e11;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto}
 #mnt .mnt-c{max-width:420px;width:100%}#mnt .mnt-i{font-size:56px;margin-bottom:8px}
 #mnt h1{font-size:24px;letter-spacing:-.3px;margin:0 0 10px;line-height:1.2}#mnt .mnt-m{margin:0 0 14px}
 #mnt .mnt-w{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 16px}
@@ -391,7 +391,7 @@ body[data-view="wallet"] .fab,body[data-view="wallet"] .fab-bg,body[data-view="w
 
 
 /* ---- anuncio a pantalla completa (se puede cerrar) ---- */
-#annf{position:fixed;inset:0;z-index:9000;background:radial-gradient(120% 55% at 50% -8%,#1c1a3d 0%,rgba(9,10,16,0) 60%) no-repeat,#0b0e11;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto;animation:vin .25s ease-out}
+#annf{position:fixed;inset:0;z-index:9000;background:radial-gradient(120% 55% at 50% -8%,#2b2713 0%,rgba(9,10,16,0) 60%) no-repeat,#0b0e11;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto;animation:vin .25s ease-out}
 #annf .af-c{max-width:440px;width:100%}#annf .af-i{font-size:54px;margin-bottom:6px;display:inline-block;animation:axf 3s ease-in-out infinite}
 #annf h1{font-size:24px;line-height:1.2;margin:0 0 12px;letter-spacing:-.3px}
 #annf .af-b{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 16px;text-align:left;white-space:pre-wrap;word-break:break-word;max-height:42dvh;overflow:auto}
@@ -997,6 +997,14 @@ html[data-theme] #botl{background:linear-gradient(120deg,rgba(246,70,93,.16),rgb
 html[data-theme] .tiles .tile:nth-child(6) .tc{background:rgba(252,213,53,.14)}
 html[data-theme] .dc-pend.ai{background:rgba(252,213,53,.14);color:var(--acct)}
 </style>
+<style id="annph">
+.ph img{display:block;background:var(--card2)}
+.ph.one{grid-template-columns:1fr}.ph.one img{max-height:60dvh;object-fit:contain}
+#annf .ph{margin:0 0 14px}#annf .ph img{max-height:34dvh;object-fit:contain;cursor:zoom-in}
+#annf .af-z{position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:12px;cursor:zoom-out}
+#annf .af-z img{max-width:100%;max-height:100%;max-height:100dvh;object-fit:contain;border-radius:8px}
+</style>
+
 
 <script>setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<p id="slw" style="margin:0;max-width:280px;text-align:center;font-size:14px;opacity:.75">La conexión está lenta, sigue cargando…</p>')},8000);setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<button id="slr" style="padding:10px 18px;border-radius:12px;border:1px solid #FCD535;background:transparent;color:inherit;font-weight:700" onclick="location.reload()">Reintentar</button>')},35000)</script>
 <div id="toast"></div>
@@ -4057,13 +4065,27 @@ async function viewInfo(){
   $('back').onclick=e=>{e.preventDefault();go('market')};
   main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z))}
 const fdate=d=>new Date(d+'T00:00:00').toLocaleDateString('es',{dateStyle:'long'});
+/* Fotos en anuncios: columna photo_paths (anuncios_fotos.sql). Si aún no existe, todo sigue funcionando sin fotos */
+let ANN_PH=true;
+const annCols=()=>'id,title,body,event_date,created_at'+(ANN_PH?',photo_paths':'');
+async function annSel(build){let r=await build(annCols());if(r.error&&ANN_PH&&/photo_paths/i.test(`${r.error.message||''} ${r.error.details||''} ${r.error.hint||''}`)){ANN_PH=false;r=await build(annCols())}return r}
+async function annUrls(list){
+  const all=[...new Set((list||[]).flatMap(x=>x.photo_paths||[]))];if(!all.length)return;
+  const m={};
+  try{const{data}=await sb.storage.from('info').createSignedUrls(all,3600);(data||[]).forEach(d=>{if(d&&d.signedUrl)m[d.path]=d.signedUrl})}catch(e){}
+  const miss=all.filter(p=>!m[p]);
+  if(miss.length)await Promise.all(miss.map(async p=>{try{const{data}=await sb.storage.from('info').createSignedUrl(p,3600);if(data?.signedUrl)m[p]=data.signedUrl}catch(e){}}));
+  list.forEach(x=>{x._u=(x.photo_paths||[]).map(p=>m[p]).filter(Boolean)})}
+const annPh=u=>u&&u.length?`<div class="ph${u.length===1?' one':''}">${u.map(z=>`<img loading="lazy" decoding="async" src="${esc(z)}" alt="Foto del anuncio" data-z="${esc(z)}">`).join('')}</div>`:'';
 async function viewAnn(){
   const my=NAV,hd='<p><a href="#" id="back">← Volver</a></p><h2>Anuncios</h2>';
   main().innerHTML=hd+skel(3);
-  const{data,error}=await sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(50);
+  const{data,error}=await annSel(c=>sb.from('announcements').select(c).order('created_at',{ascending:false}).limit(50));
   if(my!==NAV)return;
-  main().innerHTML=hd+(error?'<div class="card mut">Esta sección todavía no está activada.</div>':(data||[]).length?data.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b>${x.event_date?`<span class="tag warn">📅 ${esc(fdate(x.event_date))}</span>`:''}</div>${x.body?`<div class="pre" style="margin-top:6px">${esc(x.body)}</div>`:''}<div class="mut" style="font-size:12px;margin-top:6px">${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">No hay anuncios por ahora.</div>');
+  await annUrls(data);if(my!==NAV)return;
+  main().innerHTML=hd+(error?'<div class="card mut">Esta sección todavía no está activada.</div>':(data||[]).length?data.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b>${x.event_date?`<span class="tag warn">📅 ${esc(fdate(x.event_date))}</span>`:''}</div>${x.body?`<div class="pre" style="margin-top:6px">${esc(x.body)}</div>`:''}${annPh(x._u)}<div class="mut" style="font-size:12px;margin-top:6px">${when(x.created_at)}</div></div>`).join(''):'<div class="card mut">No hay anuncios por ahora.</div>');
   $('back').onclick=e=>{e.preventDefault();go('market')};
+  main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   if((data||[]).length){lsSet('ann_seen_'+S.user.id,data[0].created_at);S.annNew=false;updAnn()}}
 
 
@@ -4327,8 +4349,9 @@ function showAnnFull(list,i=0,prev){
   document.getElementById('annf')?.remove();
   const el=document.createElement('div');el.id='annf';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
   const last=i===list.length-1;
-  el.innerHTML=`<button class="af-x" id="afx" aria-label="Cerrar">✕</button><div class="af-c"><div class="af-i">📢</div><h1>${esc(a.title)}</h1>${a.event_date?`<span class="tag warn af-d">📅 ${esc(fdate(a.event_date))}</span>`:''}${a.body?`<div class="af-b">${esc(a.body)}</div>`:''}<button class="b w" id="afo" style="padding:14px">${last?'Entendido':'Siguiente'}</button>${list.length>1?`<p class="af-n">Anuncio ${i+1} de ${list.length}</p>`:''}</div>`;
+  el.innerHTML=`<button class="af-x" id="afx" aria-label="Cerrar">✕</button><div class="af-c"><div class="af-i">📢</div><h1>${esc(a.title)}</h1>${a.event_date?`<span class="tag warn af-d">📅 ${esc(fdate(a.event_date))}</span>`:''}${annPh(a._u)}${a.body?`<div class="af-b">${esc(a.body)}</div>`:''}<button class="b w" id="afo" style="padding:14px">${last?'Entendido':'Siguiente'}</button>${list.length>1?`<p class="af-n">Anuncio ${i+1} de ${list.length}</p>`:''}</div>`;
   document.body.appendChild(el);document.body.style.overflow='hidden';
+  el.querySelectorAll('[data-z]').forEach(i=>i.onclick=ev=>{ev.stopPropagation();const z=document.createElement('div');z.className='af-z';const im=document.createElement('img');im.alt='Foto';im.src=i.dataset.z;z.appendChild(im);z.onclick=()=>z.remove();el.appendChild(z)});
   const done=()=>{el.remove();document.removeEventListener('keydown',esc_);
     if(!prev){if(a.created_at)lsSet('ann_full_'+S.user.id,a.created_at);if(last){lsSet('ann_seen_'+S.user.id,a.created_at);S.annNew=false;updAnn()}}
     if(last){document.body.style.overflow='';S.annPop=false}else showAnnFull(list,i+1,prev)};
@@ -4340,22 +4363,25 @@ async function checkAnnPopup(tries=0){
   if(!S.user||S.annPop||S.profile?.is_admin||S.profile?.is_staff||document.getElementById('mnt'))return;
   if(document.querySelector('.ov')&&tries<6)return setTimeout(()=>checkAnnPopup(tries+1),2500);
   const key='ann_full_'+S.user.id;let since=lsGet(key);if(!since)since=new Date(Date.now()-7*864e5).toISOString();
-  try{const{data,error}=await sb.from('announcements').select('id,title,body,event_date,created_at').gt('created_at',since).order('created_at',{ascending:true}).limit(5);
-    if(error||!data||!data.length||S.annPop)return;showAnnFull(data)}catch(e){}}
+  try{const{data,error}=await annSel(c=>sb.from('announcements').select(c).gt('created_at',since).order('created_at',{ascending:true}).limit(5));
+    if(error||!data||!data.length||S.annPop)return;await annUrls(data);if(S.annPop)return;showAnnFull(data)}catch(e){}}
 
 /* ---------- Admin: anuncios y mis datos ---------- */
 async function adminExtras(an,ai,rr){
   const SI=!S.profile.is_admin,infoUp=o=>SI?sb.from('staff_info').upsert({user_id:S.user.id,...o}):sb.from('admin_info').upsert({id:1,...o});
   const my=NAV,I=ai?.data||{full_name:'',about:'',photo_paths:[]},A=an?.data||[],paths=I.photo_paths||[];
   const urls=await Promise.all(paths.map(async p=>(await sb.storage.from('info').createSignedUrl(p,3600)).data?.signedUrl));
+  await annUrls(A);
   if(my!==NAV)return;
   const miss=(an?.error||ai?.error)?`<div class="warnbox bad">Falta ejecutar <code>${SI?'administradores.sql':'info_anuncios.sql'}</code> en Supabase para activar estas dos secciones.</div>`:'';
   main().insertAdjacentHTML('beforeend',`<h3 id="s-ann">Anuncios para los usuarios</h3>${miss}
   <div class="card"><label>Título</label><input id="annT" maxlength="120" placeholder="Ej: Actualización el sábado">
    <label>Mensaje</label><textarea id="annB" rows="3" placeholder="Ej: El sábado habrá actualizaciones y la app puede ir más lenta."></textarea>
    <label>Fecha a la que se refiere (opcional)</label><input id="annD" type="date">
+   <label>Fotos (opcional) · máx. 4</label><input type="file" id="annP" accept="image/*" multiple><div class="ph" id="annPh"></div>
+   <p class="mut" style="margin-top:0">Se ven dentro del anuncio solo con sesión iniciada. Máx. 6 MB cada una.</p>
    <button class="b gh w" id="annPv" style="margin-bottom:8px">👁️ Ver cómo lo verán los usuarios</button><button class="b w" id="annGo">Publicar anuncio</button></div>
-  ${A.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b><span class="mut">${when(x.created_at)}</span></div>${x.event_date?`<div class="mut">📅 ${esc(fdate(x.event_date))}</div>`:''}${x.body?`<div class="pre mut" style="margin:6px 0">${esc(x.body)}</div>`:''}<button class="b bad sm" data-annx="${x.id}">Eliminar</button></div>`).join('')||'<div class="card mut">Todavía no has publicado anuncios.</div>'}
+  ${A.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b><span class="mut">${when(x.created_at)}</span></div>${x.event_date?`<div class="mut">📅 ${esc(fdate(x.event_date))}</div>`:''}${x.body?`<div class="pre mut" style="margin:6px 0">${esc(x.body)}</div>`:''}${annPh(x._u)}<button class="b bad sm" data-annx="${x.id}">Eliminar</button></div>`).join('')||'<div class="card mut">Todavía no has publicado anuncios.</div>'}
   <h3 id="s-info">Mis datos (se ven en “Información”)</h3>
   <div class="card"><label>Nombre</label><input id="infN" value="${esc(I.full_name)}" placeholder="Tu nombre">
    <label>Texto sobre ti / datos que quieres mostrar</label><textarea id="infA" rows="6" placeholder="Quién eres, cómo contactarte, horarios, etc.">${esc(I.about)}</textarea>
@@ -4366,15 +4392,25 @@ async function adminExtras(an,ai,rr){
    <button class="b w" id="infGo">Guardar</button></div>`);
   const back=async sel=>{await viewAdmin();toEl(sel)};
   main().querySelectorAll('#s-info ~ .card [data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-  $('annPv').onclick=()=>{const t=$('annT').value.trim();if(!t)return toast('Escribe un título para ver la vista previa','err');showAnnFull([{title:t,body:$('annB').value.trim(),event_date:$('annD').value||null}],0,true)};
+  main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+  $('annP').onchange=()=>{const f=[...$('annP').files];if(f.length>4){$('annP').value='';$('annPh').innerHTML='';return toast('Máximo 4 fotos por anuncio','err')}
+    $('annPh').innerHTML=f.map(x=>`<img alt="Foto" src="${URL.createObjectURL(x)}">`).join('')};
+  $('annPv').onclick=()=>{const t=$('annT').value.trim();if(!t)return toast('Escribe un título para ver la vista previa','err');showAnnFull([{title:t,body:$('annB').value.trim(),event_date:$('annD').value||null,_u:[...$('annP').files].slice(0,4).map(f=>URL.createObjectURL(f))}],0,true)};
   $('annGo').onclick=ev=>act(ev.target,async()=>{
     const t=$('annT').value.trim(),b=$('annB').value.trim(),d=$('annD').value||null;
     if(!t)throw new Error('Escribe un título para el anuncio');
-    const{error}=await sb.from('announcements').insert({title:t,body:b,event_date:d});if(error)throw error;
+    const files=[...$('annP').files];if(files.length>4)throw new Error('Máximo 4 fotos por anuncio');
+    const up=[];
+    try{for(let i=0;i<files.length;i++)up.push(await upImg('info','anuncio'+i,files[i],6));
+      const row={title:t,body:b,event_date:d};if(up.length)row.photo_paths=up;
+      const{error}=await sb.from('announcements').insert(row);
+      if(error){if(up.length&&/photo_paths/i.test(`${error.message||''} ${error.details||''}`))throw new Error('Falta ejecutar anuncios_fotos.sql en Supabase para poder subir fotos');throw error}
+    }catch(e){if(up.length)sb.storage.from('info').remove(up).catch(()=>{});throw e}
     await back('s-ann')},'Anuncio publicado');
   main().querySelectorAll('[data-annx]').forEach(b=>b.onclick=async()=>{
     const m=await ask('Eliminar anuncio','<p>Los usuarios dejarán de verlo.</p>','Eliminar','bad');if(!m)return;m.remove();
-    act(b,async()=>{const{error}=await sb.from('announcements').delete().eq('id',b.dataset.annx);if(error)throw error;await back('s-ann')},'Anuncio eliminado')});
+    act(b,async()=>{const x=A.find(y=>String(y.id)===b.dataset.annx),{error}=await sb.from('announcements').delete().eq('id',b.dataset.annx);if(error)throw error;
+      if(x?.photo_paths?.length)sb.storage.from('info').remove(x.photo_paths).catch(()=>{});await back('s-ann')},'Anuncio eliminado')});
   main().querySelectorAll('[data-ipx]').forEach(b=>b.onclick=async()=>{
     const m=await ask('Quitar foto','<p>La foto se borrará de “Información”.</p>','Quitar','bad');if(!m)return;m.remove();
     act(b,async()=>{const i=+b.dataset.ipx,rest=paths.filter((_,k)=>k!==i);
@@ -4769,7 +4805,7 @@ async function viewAdmin(){
     sta:()=>adminStats(mm,my),
     usr:()=>{adminUsrSummary();adminOnline(my);mkSub('usr',[['kyc','🪪 Verificaciones'],['unv','👤 Sin verificar'],['risk','🚨 Riesgo']]);adminRiskShell();adminRisk(my);mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my)},
     stf:()=>{mkSub('stf',[['team','👥 Equipo y saldo'],['duty','🕒 Turnos y permisos'],['ops','⚖️ Operaciones'],['act','📜 Actividad'],['rules','🔒 Reglas de control']]);adminStaffMgmt();adminBalances();adminDuty(my);adminStfOps(my);adminAuditShell();adminStfRules();setTimeout(()=>{const g=$('auditGo');if(g)g.click()},60)},
-    cfg:async()=>{adminBlocks();adminMaint();adminPayout();adminRates();const[an2,ai2]=await Promise.all([sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
+    cfg:async()=>{adminBlocks();adminMaint();adminPayout();adminRates();const[an2,ai2]=await Promise.all([annSel(c=>sb.from('announcements').select(c).order('created_at',{ascending:false}).limit(30)),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
   const openTab=(k,id)=>{S.atab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}refreshSub();if(id)toEl(id)};
   mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
@@ -4995,7 +5031,7 @@ async function viewStaff(){
     pend:()=>staffTopups(my),
     sta:()=>staffStats(mm,my),
     cfg:async()=>{const[an,ai]=await Promise.all([
-      sb.from('announcements').select('id,title,body,event_date,created_at').order('created_at',{ascending:false}).limit(30),
+      annSel(c=>sb.from('announcements').select(c).order('created_at',{ascending:false}).limit(30)),
       sb.from('staff_info').select('full_name,about,photo_paths').eq('user_id',S.user.id).maybeSingle()]);
       if(my!==NAV)return;adminExtras(an,ai,null)}},done={};
   const openTab=k=>{S.stab=k;mm.dataset.atab=k;mm.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===k));
