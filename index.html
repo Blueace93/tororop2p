@@ -3875,16 +3875,16 @@ async function viewRefs(){
   let d;try{d=(await rpc('my_referral_stats'))||{}}catch(e){if(my===NAV){main().innerHTML=hd('Referidos')+warnSql()+`<p class="mut">${esc(e.message)}</p>`;bk()}return}
   if(my!==NAV)return;
   const link=location.origin+location.pathname+'?ref='+d.code,items=d.items||[],done=items.filter(x=>x.rewarded),tot={};
-  done.forEach(x=>{if(x.reward>0)tot[x.currency]=(tot[x.currency]||0)+Number(x.reward)});
-  const rule=d.mode==='commission'?`el ${n(d.pct,2)}% de la comisión que paga tu referido`:`el ${n(d.pct,2)}% del monto de la primera operación de tu referido (sin pasar de la comisión cobrada)`;
+  items.forEach(x=>Object.entries(x.earned||{}).forEach(([c,v])=>{if(v>0)tot[c]=(tot[c]||0)+Number(v)}));
+  const rule=`el ${n(d.pct,2)}% de cada venta de tus referidos`;
   main().innerHTML=hd('Referidos')+`
-  <div class="card hl"><h3>🎁 Tu enlace de invitación</h3><p class="mut" style="margin-top:0">Ganas ${rule}. <b>Solo cuenta la primera operación</b> de cada amigo nuevo; se paga de la comisión de la plataforma y llega directo a tu saldo.${d.enabled===false?' <b>(El programa está pausado por ahora.)</b>':''}</p>
+  <div class="card hl"><h3>🎁 Tu enlace de invitación</h3><p class="mut" style="margin-top:0">Ganas ${rule}. <b>Es de por vida</b>: cada vez que un amigo que se registró con tu enlace hace una venta, ganas ese porcentaje; se paga de la comisión de la plataforma y llega directo a tu saldo.${d.enabled===false?' <b>(El programa está pausado por ahora.)</b>':''}</p>
    <code style="display:block;margin:8px 0">${esc(link)}</code>
    <div class="grid2"><button class="b" id="rl1">Compartir enlace</button><button class="b gh" id="rl2">Copiar enlace</button></div>
    <p class="mut" style="margin:10px 0 0">Tu código: <b>${esc(d.code)}</b></p></div>
-  <div class="wts"><div class="wt"><div class="mut">Referidos</div><div class="big">${items.length}</div><div class="mut">registrados</div></div><div class="wt"><div class="mut">Ya operaron</div><div class="big">${done.length}</div><div class="mut">te pagaron</div></div><div class="wt"><div class="mut">Pendientes</div><div class="big">${items.length-done.length}</div><div class="mut">sin operar</div></div></div>
+  <div class="wts"><div class="wt"><div class="mut">Referidos</div><div class="big">${items.length}</div><div class="mut">registrados</div></div><div class="wt"><div class="mut">Ya operaron</div><div class="big">${done.length}</div><div class="mut">ya te generan</div></div><div class="wt"><div class="mut">Pendientes</div><div class="big">${items.length-done.length}</div><div class="mut">sin operar</div></div></div>
   <div class="card" style="margin-top:12px"><h3>Total recibido por referidos</h3>${Object.keys(tot).length?`<div class="wts">${Object.entries(tot).map(([c,v])=>wtile('Recibido',v,c,dcur(c))).join('')}</div>`:'<span class="mut">Todavía no has recibido nada.</span>'}</div>
-  <h3>Mis referidos</h3>`+(items.length?items.map(x=>`<div class="card"><div class="row"><b>@${esc(x.username)}</b><span class="tag ${x.rewarded?'ok':'warn'}">${x.rewarded?'Primera operación hecha':'Aún no opera'}</span></div><div class="mut">Se unió: ${when(x.joined)}</div>${x.rewarded?`<div style="margin-top:6px">Te llegó: <b>${x.reward>0?'+':''}${n(x.reward,dcur(x.currency))} ${esc(x.currency||'')}</b> <span class="mut">· ${when(x.rewarded_at)}</span></div>`:''}</div>`).join(''):'<div class="card mut">Aún no tienes referidos. Comparte tu enlace para empezar.</div>');
+  <h3>Mis referidos</h3>`+(items.length?items.map(x=>`<div class="card"><div class="row"><b>@${esc(x.username)}</b><span class="tag ${x.rewarded?'ok':'warn'}">${x.rewarded?'Ya ha vendido':'Aún no vende'}</span></div><div class="mut">Se unió: ${when(x.joined)}</div>${x.rewarded?`<div style="margin-top:6px">Te ha generado: <b>${Object.entries(x.earned||{}).map(([c,v])=>'+'+n(v,dcur(c))+' '+esc(c)).join(' · ')}</b> <span class="mut">· ${x.ops} venta${x.ops===1?'':'s'}</span></div>`:''}</div>`).join(''):'<div class="card mut">Aún no tienes referidos. Comparte tu enlace para empezar.</div>');
   bk();
   $('rl1').onclick=async()=>{const t=`Únete a ${APP_NAME} P2P y cambia USDT, CUP y saldo con respaldo de un administrador: ${link}`;try{if(navigator.share)await navigator.share({text:t});else copy(t)}catch(e){}};
   $('rl2').onclick=()=>copy(link)}
@@ -4011,7 +4011,7 @@ const FAQ=()=>[
  ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual) o «Depósito automático» (sin TxID, con una comisión de 0,4 % + 0,10 USDT). Si algo falla, usa el depósito manual y avisa con el TxID.'],
  ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+n(S.fees.withdraw,2)+'%. Puedes ver el estado en Billetera y en Historial.'],
  ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+n(S.fees.withdraw,2)+'%.'],
- ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo nuevo se registra con él y hace su primera operación, recibes una parte de la comisión. Solo cuenta la primera operación de cada amigo.'],
+ ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo se registra con él, recibes el 0,25 % de cada venta que haga, de por vida.'],
  ['¿Cómo protejo mi cuenta?','En Más → Seguridad puedes crear un PIN para los retiros y activar la verificación en dos pasos. También verás tus accesos recientes.'],
  ['¿Para qué sirven las estrellas?','Al terminar una operación puedes calificar a la otra persona. Las estrellas y el número de operaciones se ven en cada oferta para que elijas con confianza.']];
 function viewHelp(){
@@ -4944,15 +4944,13 @@ async function adminRefs(rr){
   if(my!==NAV)return;
   const tot={};(rr?.data||[]).forEach(x=>{if(x.currency&&x.reward>0)tot[x.currency]=(tot[x.currency]||0)+Number(x.reward)});
   main().insertAdjacentHTML('beforeend',`<h3 id="s-ref">Programa de referidos</h3>${error?'<div class="warnbox bad">Falta ejecutar <code>mejoras_tororo.sql</code> en Supabase.</div>':''}
-  <div class="card"><label>Porcentaje para quien invita</label><input id="rfP" type="number" step="any" min="0" max="100" value="${rs?.pct??1}">
-   <label>Se calcula sobre</label><select id="rfM"><option value="operation">El monto de la primera operación (máximo, la comisión cobrada)</option><option value="commission">La comisión cobrada en esa primera operación</option></select>
+  <div class="card"><label>% de cada venta de un referido (de por vida)</label><input id="rfP" type="number" step="any" min="0" max="100" value="${rs?.pct??0.25}">
    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rfE" style="width:auto;margin:0" ${rs?.enabled===false?'':'checked'}> Programa activo</label>
-   <p class="mut">Solo se paga una vez por referido (su primera operación) y sale de la comisión: el panel de comisiones ya muestra el neto.</p>
-   <div class="mut">Pagado hasta ahora: ${Object.keys(tot).length?Object.entries(tot).map(([c,v])=>`${n(v,dcur(c))} ${c}`).join(' · '):'nada todavía'} · ${(rr?.data||[]).length} referidos pagados</div>
+   <p class="mut">Se paga en cada venta de un referido, de por vida, y sale de la comisión de venta: el panel de comisiones ya muestra tu neto. Si el vendedor no tiene referidor, ese porcentaje es tuyo.</p>
+   <div class="mut">Pagado con el sistema anterior (primera operación): ${Object.keys(tot).length?Object.entries(tot).map(([c,v])=>`${n(v,dcur(c))} ${c}`).join(' · '):'nada todavía'} · ${(rr?.data||[]).length} referidos pagados</div>
    <button class="b w" id="rfG" style="margin-top:10px">Guardar</button></div>`);
-  $('rfM').value=rs?.mode||'operation';
   $('rfG').onclick=ev=>act(ev.target,async()=>{const pct=+$('rfP').value;if(!(pct>=0&&pct<=100))throw new Error('Porcentaje inválido');
-    const{error:e}=await sb.from('referral_settings').upsert({id:1,pct,mode:$('rfM').value,enabled:$('rfE').checked});if(e)throw e;
+    const{error:e}=await sb.from('referral_settings').upsert({id:1,pct,mode:'operation',enabled:$('rfE').checked});if(e)throw e;
     await viewAdmin();toEl('s-ref')},'Guardado')}
 
 /* ---------- Admin ---------- */
@@ -4974,8 +4972,8 @@ async function adminBlocks(){
 /* ---------- Admin: porcentajes de la plataforma (solo dueño) ----------
    Lee y guarda la tabla fee_rates (kind, pct). Guardar usa la función admin_set_fee_rate (porcentajes_admin.sql), que comprueba que seas el dueño. */
 const RATE_LB={
-  trade:['Comisión por operación en el Mercado','La paga el vendedor en cada venta de USDT.'],
-  withdraw:['Comisión de retiros','La pagan los usuarios al retirar USDT. Tú y los administradores secundarios no pagan.']};
+  trade:['Comisión por operación en el Mercado','La paga el vendedor en cada venta. Reparto: 0,25 % al referidor del vendedor (si no tiene, es tuyo), 1 % para ti y el resto a partes iguales entre los administradores secundarios.'],
+  withdraw:['Comisión de retiros','La pagan los usuarios al retirar. Reparto: 2 % para ti y el resto a partes iguales entre los administradores secundarios. Tú y ellos no pagan.']};
 async function adminRates(){
   if(!S.profile.is_admin)return;
   const t=main().querySelector('.tiles');if(!t)return;
@@ -5259,7 +5257,7 @@ async function viewAdmin(){
   const fd=c=>c==='CUP'?0:c==='USD'?2:4;
   const hasFees=feeOk&&Object.values(ftot).some(v=>v>0);
   const lastPay=(fp.data||[]).length?`<p class="mut" style="font-size:12px;margin:8px 0 0">Último retiro: ${(()=>{const t=fp.data[0].created_at;return fp.data.filter(x=>x.created_at===t).map(x=>n(x.amount,fd(x.currency))+' '+esc(x.currency)).join(' · ')})()} · ${when(fp.data[0].created_at)}</p>`:'';
-  const feeHtml=`<h3 id="s-fee">Comisiones cobradas (neto de referidos)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${hasFees?'<button class="b ok sm" id="feeClr" style="margin-top:10px">✅ Ya retiré esto · poner comisiones en 0</button>':''}${lastPay}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(un[fuid(x)]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${!fl.error&&!feeOk?`<p class="mut">Para usar el botón de poner en 0, ejecuta retiro_comisiones.sql en Supabase.</p>`:''}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
+  const feeHtml=`<h3 id="s-fee">Comisiones cobradas (neto de referidos y administradores)</h3><div class="card hl">${Object.keys(ftot).length?`<div class="wts">${Object.entries(ftot).map(([c,v])=>wtile('Neto',v,c,fd(c))).join('')}</div>`:'<span class="mut">Todavía no hay comisiones registradas.</span>'}${hasFees?'<button class="b ok sm" id="feeClr" style="margin-top:10px">✅ Ya retiré esto · poner comisiones en 0</button>':''}${lastPay}${FL.slice(0,30).map(x=>`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px"><b>${n(x.amount,fd(x.currency))} ${esc(x.currency)}</b> · ${esc(KL[x.kind]||x.kind)}<br><span class="mut">Cobrada a @${esc(un[fuid(x)]||'?')} · ${when(x.created_at)}</span></div>`).join('')}${!fl.error&&!feeOk?`<p class="mut">Para usar el botón de poner en 0, ejecuta retiro_comisiones.sql en Supabase.</p>`:''}${fl.error?`<p class="mut">Falta ejecutar registro_comisiones.sql en Supabase.</p><p class="mut" style="font-size:12px;word-break:break-word">Detalle: ${esc(fl.error.message||fl.error.code||'error desconocido')}</p>`:''}</div>`;
   const prio={disputed:0,seller_confirmed:1,payment_sent:2,awaiting_payment:3};
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
