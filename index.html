@@ -803,6 +803,63 @@ body[data-view=market] .wal-c{padding:9px}
  #offers .qo:nth-child(2n){border-right:0}
 }
 </style>
+<style id="botv2">
+/* ===== Asistente · acabado dorado y metal (mismo estilo que el resto de la web) ===== */
+html[data-theme] #fabm.fab-m{height:52px;padding:0 20px 0 15px;gap:9px;border-radius:99px;font-size:15px;font-weight:700;background:linear-gradient(180deg,#FFE27A 0%,#FCD535 55%,#F0B90B 100%);color:#181A20;border:1px solid rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 0 rgba(0,0,0,.18),0 14px 30px -12px rgba(252,213,53,.7)}
+html[data-theme] #fabm svg{filter:none;width:21px;height:21px}
+html[data-theme] #fabbd{background:var(--bad);color:#fff;box-shadow:0 0 0 2px var(--bg)}
+html[data-theme] #botp{border-radius:24px;border:1px solid var(--line);background:var(--mt-brush),var(--mt-face);box-shadow:var(--mt-hi),0 30px 80px -24px rgba(0,0,0,.9)}
+html[data-theme] #botp .bh{gap:12px;padding:14px 14px 13px 14px;background:var(--mt-brush),var(--mt-bar);color:var(--tx);border-bottom:1px solid var(--line);box-shadow:var(--mt-hi)}
+html[data-theme] #botp .bav{width:44px;height:44px;border-radius:15px;background:linear-gradient(145deg,#FFE27A,#F0B90B);color:#181A20;box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 8px 18px -8px rgba(252,213,53,.65)}
+html[data-theme] #botp .bh b{font-size:15.5px;font-weight:600;color:var(--tx)}
+html[data-theme] #botp .bh small{color:var(--mut);opacity:1;font-size:12px}
+html[data-theme] #botp .bon{background:var(--ok);box-shadow:0 0 0 3px rgba(14,203,129,.22)}
+html[data-theme] #botp .bh button{width:36px;height:36px;display:grid;place-items:center;background:var(--mt-well);border:1px solid var(--line);color:var(--tx);box-shadow:var(--mt-inset);transition:border-color .15s,transform .12s}
+html[data-theme] #botp .bh button:hover{border-color:var(--acc)}
+html[data-theme] #botp .bh button:active{transform:scale(.94)}
+html[data-theme] #botp .bh button svg{width:16px;height:16px}
+html[data-theme] #botp .bh button#bott{opacity:1;font-size:15px}
+html[data-theme] #botp .bh button#bott.on{background:rgba(252,213,53,.16);border-color:var(--acc);color:var(--acct)}
+html[data-theme] #botm{padding:16px 14px;gap:11px;background:transparent}
+html[data-theme] .bm{max-width:90%;padding:11px 14px;font-size:14.5px;line-height:1.5;border-radius:18px 18px 18px 6px;background:var(--mt-face);border:1px solid var(--line);box-shadow:var(--mt-hi),0 6px 14px -10px rgba(0,0,0,.6)}
+html[data-theme] .bm.me{background:linear-gradient(180deg,#FFE27A 0%,#FCD535 60%,#F0B90B 100%);color:#181A20;border:0;border-radius:18px 18px 6px 18px;font-weight:500;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 16px -10px rgba(252,213,53,.6)}
+html[data-theme] .bm.nt{background:linear-gradient(135deg,rgba(252,213,53,.16),rgba(252,213,53,.04)),var(--mt-face);border-color:rgba(252,213,53,.5)}
+html[data-theme] .bm .bl{color:var(--acct)}
+html[data-theme] .bm.bt i{background:var(--acct)}
+html[data-theme] .bm .bc{background:var(--mt-well);border:1px solid var(--line);box-shadow:var(--mt-inset);border-radius:14px;padding:9px 12px}
+html[data-theme] .bm .bo>button,html[data-theme] .bm .ba{background:var(--mt-bar);border:1px solid var(--line);box-shadow:var(--mt-hi);border-radius:14px;padding:10px 12px;font-weight:600;transition:border-color .15s,transform .12s}
+html[data-theme] .bm .bo>button:hover{border-color:var(--acc)}
+html[data-theme] .bm .ba{font-weight:500}
+html[data-theme] .bm .ba button{background:var(--mt-well);box-shadow:var(--mt-inset)}
+html[data-theme] .bm .bgh{display:flex;align-items:center;gap:9px;margin:14px 0 8px;font-size:11px;color:var(--acct)}
+html[data-theme] .bm .bgh:first-child{margin-top:12px}
+html[data-theme] .bm .bgh:after{content:"";flex:1;height:1px;background:var(--line)}
+html[data-theme] .bm .bg{gap:8px}
+html[data-theme] .bm .bg button{padding:11px 2px 9px;border-radius:16px;background:var(--mt-bar);border:1px solid var(--line);box-shadow:var(--mt-hi);font-size:11.5px;font-weight:600;gap:6px;transition:transform .12s,border-color .15s}
+html[data-theme] .bm .bg button:hover{border-color:var(--acc);transform:translateY(-1px)}
+html[data-theme] .bm .bg em{width:40px;height:40px;border-radius:13px;font-size:20px;background:rgba(252,213,53,.14);border:1px solid rgba(252,213,53,.3)}
+html[data-theme] #botq{padding:10px 14px;gap:8px;background:transparent;border-top:1px solid var(--line);-webkit-mask-image:linear-gradient(90deg,#000 94%,transparent);mask-image:linear-gradient(90deg,#000 94%,transparent)}
+html[data-theme] #botq .chip{padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--mt-face);color:var(--tx);font-size:12.5px;font-weight:600;box-shadow:var(--mt-hi);transition:border-color .15s,transform .12s}
+html[data-theme] #botq .chip:hover{border-color:var(--acc)}
+html[data-theme] #botq .chip:active{transform:scale(.96)}
+html[data-theme] #botq .chip.bact{background:linear-gradient(180deg,#FFE27A 0%,#FCD535 60%,#F0B90B 100%);color:#181A20;border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+html[data-theme] #botq .chip.cn{background:transparent;border-color:var(--bad);color:var(--bad);box-shadow:none}
+html[data-theme] #botl{background:rgba(246,70,93,.12);border:1px solid rgba(246,70,93,.4);border-radius:14px}
+html[data-theme] #botp .bi{padding:10px 12px 6px;gap:9px;background:var(--mt-brush),var(--mt-bar);border-top:1px solid var(--line);box-shadow:var(--mt-hi)}
+html[data-theme] #botmn{width:44px;height:44px;display:grid;place-items:center;background:var(--mt-face);border:1px solid var(--line);color:var(--tx);box-shadow:var(--mt-hi);transition:border-color .15s,transform .12s}
+html[data-theme] #botmn:hover{border-color:var(--acc)}
+html[data-theme] #botmn svg{width:20px;height:20px}
+html[data-theme] #botp .bw2{background:var(--mt-well);border:1px solid var(--line);box-shadow:var(--mt-inset);padding:0 5px 0 16px;transition:border-color .15s,box-shadow .15s}
+html[data-theme] #botp .bw2:focus-within{border-color:var(--acc);box-shadow:var(--mt-inset),0 0 0 3px var(--ring)}
+html[data-theme] #botp .bw2 input{background:none;box-shadow:none;border:0}
+html[data-theme] #botmic{background:transparent;color:var(--mut);transition:color .15s}
+html[data-theme] #botmic:hover{color:var(--tx)}
+html[data-theme] #botmic.on{background:var(--bad);color:#fff}
+html[data-theme] #bots{width:44px;height:44px;background:linear-gradient(180deg,#FFE27A 0%,#FCD535 60%,#F0B90B 100%);color:#181A20;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 16px -10px rgba(252,213,53,.7);transition:transform .12s,opacity .2s}
+html[data-theme] #bots:active{transform:scale(.92)}
+html[data-theme] #botp .bw2:has(input:placeholder-shown)+#bots{opacity:.55}
+html[data-theme] #botp .bn{background:var(--mt-bar);padding:2px 14px 11px;font-size:11.5px}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCD535"/><stop offset="1" stop-color="#F0B90B"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
@@ -1120,6 +1177,39 @@ html[data-theme] .tcard .logo i{-webkit-text-fill-color:var(--a)!important;color
 .tc-act{display:flex;gap:8px;margin-top:12px}.tc-act .b{flex:1}
 html[data-theme] .tcard button.b{background:#fff;color:#111;box-shadow:none}
 html[data-theme] .tcard button.b.gh{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+/* ===== Tutorial de bienvenida (pantalla completa) ===== */
+.tw{position:fixed;inset:0;z-index:45;display:flex;justify-content:center;background:radial-gradient(130% 55% at 50% -8%,rgba(124,108,255,.38),transparent 62%),radial-gradient(90% 50% at 100% 100%,rgba(46,230,166,.12),transparent 60%),var(--bg);animation:fade .25s}
+.tw-in{width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px max(12px,env(safe-area-inset-bottom))}
+.tw-top{display:flex;align-items:center;gap:12px}
+.tw-bar{flex:1;display:flex;gap:5px}.tw-bar i{flex:1;height:6px;border-radius:6px;background:var(--line);cursor:pointer;transition:background .3s}.tw-bar i.dn{background:rgba(124,108,255,.55)}.tw-bar i.on{background:linear-gradient(90deg,var(--acc,#7c6cff),var(--acc2,#4cc9f0))}
+.tw-x{background:none;border:0;color:var(--mut);font:inherit;font-size:14px;padding:6px 4px;cursor:pointer}
+.tw-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:18px 2px 10px;text-align:center}
+.tw-body.fw>*{animation:twIn .45s both}.tw-body.bw>*{animation:twInB .45s both}
+.tw-body>*:nth-child(2){animation-delay:.06s}.tw-body>*:nth-child(3){animation-delay:.12s}.tw-body>*:nth-child(4){animation-delay:.18s}.tw-body>*:nth-child(5){animation-delay:.24s}.tw-body>*:nth-child(6){animation-delay:.3s}.tw-body>*:nth-child(7){animation-delay:.36s}
+@keyframes twIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}@keyframes twInB{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.tw h2{font-size:29px;line-height:1.12;margin:6px 0 8px;font-weight:800;letter-spacing:-.025em}
+.tw .sub{color:var(--mut);font-size:15.5px;line-height:1.45;margin:0 0 14px}
+.tw-hero{position:relative;width:132px;height:132px;margin:16px auto 16px;display:grid;place-items:center}
+.tw-hero i{position:absolute;inset:0;border-radius:50%;border:2px solid var(--tc,#2ee6a6);animation:gdRing 2.4s infinite}.tw-hero i:nth-child(2){animation-delay:.8s}.tw-hero i:nth-child(3){animation-delay:1.6s}
+.tw-ic{width:92px;height:92px;border-radius:28px;display:grid;place-items:center;color:#fff;background:var(--tg,linear-gradient(135deg,#6f6bff,#2bb6ff));box-shadow:0 18px 36px -16px var(--tc,#4f8dff);animation:gdPop .7s both,gdFloat 3s 1s infinite}.tw-ic svg{width:44px;height:44px}
+.tw-hero.sm{width:86px;height:86px;margin:12px auto 12px}.tw-hero.sm .tw-ic{width:62px;height:62px;border-radius:20px}.tw-hero.sm .tw-ic svg{width:30px;height:30px}
+.tw-st .p b,.tw-st .d b{display:inline;padding:0;font-size:inherit}
+.tw-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.tw-stat{background:rgba(46,230,166,.10);border:1px solid rgba(46,230,166,.3);border-radius:18px;padding:16px 8px}.tw-stat b{display:block;font-size:34px;color:var(--ok);font-weight:800}.tw-stat b em{font-style:normal}.tw-stat span{font-size:12.5px;color:var(--mut);line-height:1.3;display:block}
+.tw-pill{display:inline-flex;gap:6px;align-items:center;padding:7px 12px;border-radius:99px;font-size:13px;font-weight:700;background:rgba(46,230,166,.12);border:1px solid rgba(46,230,166,.35);color:var(--ok);margin:3px}
+.tw-pill.w{background:rgba(245,185,74,.12);border-color:rgba(245,185,74,.4);color:var(--warn)}
+.tw-ch{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px;border-radius:20px;border:1px solid var(--line);background:var(--card2);color:var(--tx);font:inherit;cursor:pointer;margin-bottom:10px;transition:.2s}.tw-ch:active{transform:scale(.98)}.tw-ch.on,.tw-ch:hover{border-color:var(--acc);background:rgba(124,108,255,.12)}
+.tw-ch .e{font-size:30px}.tw-ch b{display:block;font-size:17px}.tw-ch span{font-size:13px;color:var(--mut)}
+.tw-seg{display:grid;grid-template-columns:1fr 1fr;background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:4px;margin:6px 0 14px}.tw-seg button{border:0;background:none;color:var(--mut);font:inherit;font-weight:700;padding:11px 6px;border-radius:12px;cursor:pointer;transition:.25s}.tw-seg button.on{background:var(--g,var(--acc));color:#fff;box-shadow:var(--glow,none)}
+.tw-st{display:flex;gap:12px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--card2);margin-bottom:9px;cursor:pointer;transition:.3s}.tw-st .n{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--card);border:1px solid var(--line)}.tw-st b{display:block;font-size:15.5px;padding-top:6px}.tw-st .d{display:none;margin-top:6px;font-size:13.5px;color:var(--mut);line-height:1.4}.tw-st .p{display:none;margin-top:8px;padding:8px 10px;border-radius:12px;background:rgba(46,230,166,.1);border:1px solid rgba(46,230,166,.3);font-size:13px;line-height:1.35}.tw-st.on{border-color:var(--ok)}.tw-st.on .n{background:var(--ok);color:#06251b;border-color:var(--ok)}.tw-st.on .d,.tw-st.on .p{display:block}.tw-st.on b{padding-top:6px}
+.tw-ck{display:flex;gap:12px;align-items:center;text-align:left;padding:13px;border-radius:16px;border:1px solid var(--line);background:var(--card2);margin-bottom:8px;cursor:pointer;transition:.3s}.tw-ck .bx{flex:none;width:28px;height:28px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;color:transparent;font-weight:900;transition:.3s}.tw-ck.on{border-color:var(--ok);background:rgba(46,230,166,.1)}.tw-ck.on .bx{background:var(--ok);border-color:var(--ok);color:#06251b}.tw-ck .t{flex:1;min-width:0}.tw-ck .t span{display:block;font-size:12.5px;color:var(--mut)}.tw-ck .b{flex:none}
+.tw-ring{width:92px;height:92px;border-radius:50%;margin:4px auto 12px;display:grid;place-items:center;background:conic-gradient(var(--ok) var(--p),var(--line) 0)}.tw-ring b{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-size:22px}
+.tw-cta{width:100%;margin-top:6px;padding:16px!important;font-size:16px!important;animation:twPulse 2.2s infinite}
+@keyframes twPulse{0%{box-shadow:0 0 0 0 rgba(124,108,255,.55)}70%{box-shadow:0 0 0 16px rgba(124,108,255,0)}100%{box-shadow:0 0 0 0 rgba(124,108,255,0)}}
+.tw-ft{display:flex;gap:10px;padding-top:10px}.tw-ft .b{padding:15px 18px}.tw-ft #twb1{flex:1}
+.tw-ct{text-align:center;font-size:11.5px;color:var(--mut);padding-top:8px}
+html.lite .tw *{animation:none!important}@media (prefers-reduced-motion:reduce){.tw *{animation:none!important}}
+@media (min-width:600px){.tw-in{padding-top:28px;padding-bottom:28px}}
 </style>
 
 
@@ -1495,7 +1585,31 @@ function friendly(e){
   if(/Failed to fetch|NetworkError|Load failed/i.test(m))return'Sin conexión. Revisa tu internet';
   if(/abort|timed? ?out/i.test(m))return'La conexión está lenta y se agotó el tiempo. Inténtalo otra vez; si era un pago o retiro, revisa Historial antes de repetir.';
   return m}
-try{if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||4)<=2)document.documentElement.classList.add('lite')}catch(e){}
+/* Modo ligero: fijo en equipos flojos y automático con internet lento (se activa y se apaga solo, con margen para no parpadear) */
+const LITE=(()=>{
+  const H=document.documentElement,L={dev:false,net:false,slow:0,good:0,samples:[]};
+  try{L.dev=(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||4)<=3}catch(e){}
+  try{const v=+(localStorage.getItem('lite_net')||0);if(v&&Date.now()-v<30*60000)L.net=true;if((navigator.connection||{}).saveData)L.net=true}catch(e){}
+  L.apply=()=>{const on=L.dev||L.net;if(H.classList.contains('lite')!==on)H.classList.toggle('lite',on)};
+  L.set=v=>{if(L.net===v)return;L.net=v;L.slow=L.good=0;try{localStorage.setItem('lite_net',v?String(Date.now()):'0')}catch(e){}L.apply();
+    try{if(typeof S!=='undefined'&&S.user&&!L.dev)toast(v?'Conexión lenta: modo ligero activado':'Conexión mejor: modo normal')}catch(e){}};
+  L.tick=()=>{
+    if(!navigator.onLine||document.hidden)return;
+    const now=Date.now();L.samples=L.samples.filter(s=>now-s.t<90000);
+    const c=navigator.connection||{},sv=!!c.saveData,cs=sv||/(^|-)(2|3)g$/.test(c.effectiveType||'')||c.rtt>=700||(c.downlink>0&&c.downlink<1);
+    const d=L.samples.map(s=>s.d).sort((a,b)=>a-b),n=d.length,med=n?d[n>>1]:0;
+    let slow,good;
+    if(sv){slow=true;good=false}
+    else if(n>=3){slow=med>2200;good=med<1200}
+    else{slow=cs;good=!cs}
+    if(slow){L.slow++;L.good=0}else if(good){L.good++;L.slow=0}else{L.slow=L.good=0}
+    if(!L.net&&L.slow>=2)L.set(true);else if(L.net&&L.good>=4&&!sv)L.set(false)};
+  try{new PerformanceObserver(l=>{for(const e of l.getEntries())
+    if((e.initiatorType==='fetch'||e.initiatorType==='xmlhttprequest')&&/\/rest\/v1\//.test(e.name)&&e.duration>0&&e.duration<20000)L.samples.push({t:Date.now(),d:e.duration});
+    if(L.samples.length>40)L.samples.splice(0,L.samples.length-40)}).observe({type:'resource'})}catch(e){}
+  addEventListener('online',()=>{L.slow=L.good=0});
+  L.apply();setInterval(L.tick,4000);
+  return L})();
 function countTo(el,v){const from=parseFloat(String(el.textContent).replace(/\./g,'').replace(',','.'))||0,to=+v||0;
   if(from===to||document.documentElement.classList.contains('lite')||matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=n(to,2);return}
   const t0=performance.now();el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
@@ -2235,7 +2349,7 @@ function botDraw(){
 function botBuild(){
   if(BOT.built&&$('botp'))return;BOT.built=true;
   const d=document.createElement('div');d.id='botp';d.setAttribute('role','dialog');d.setAttribute('aria-label','Asistente');
-  d.innerHTML=`<div class="bh"><span class="bav">${BOT_ICO.spark}</span><div class="bhx"><b>Asistente de ${esc(APP_NAME)}</b><small><i class="bon"></i>En línea · escribe o habla</small></div><button type="button" id="bott" aria-label="Respuestas en voz alta"></button><button type="button" id="botx" aria-label="Cerrar">✕</button></div><div id="botm"></div><div id="botq"></div><div id="botl"><span class="bw"><i></i><i></i><i></i><i></i></span><b>Escuchando</b><em id="botlt">Habla ahora…</em></div><div class="bi"><button type="button" id="botmn" aria-label="Menú">☰</button><div class="bw2"><input id="boti" maxlength="300" placeholder="Escribe o toca 🎙️ para hablar…" enterkeyhint="send" autocomplete="off"><button type="button" id="botmic" aria-label="Hablar">${BOT_ICO.mic}</button></div><button type="button" id="bots" aria-label="Enviar">${BOT_ICO.send}</button></div><div class="bn">🔒 Nunca te pediremos tu contraseña ni tu PIN.</div>`;
+  d.innerHTML=`<div class="bh"><span class="bav">${BOT_ICO.spark}</span><div class="bhx"><b>Asistente de ${esc(APP_NAME)}</b><small><i class="bon"></i>En línea · escribe o habla</small></div><button type="button" id="bott" aria-label="Respuestas en voz alta"></button><button type="button" id="botx" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="botm"></div><div id="botq"></div><div id="botl"><span class="bw"><i></i><i></i><i></i><i></i></span><b>Escuchando</b><em id="botlt">Habla ahora…</em></div><div class="bi"><button type="button" id="botmn" aria-label="Menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"/></svg></button><div class="bw2"><input id="boti" maxlength="300" placeholder="Escribe o toca 🎙️ para hablar…" enterkeyhint="send" autocomplete="off"><button type="button" id="botmic" aria-label="Hablar">${BOT_ICO.mic}</button></div><button type="button" id="bots" aria-label="Enviar">${BOT_ICO.send}</button></div><div class="bn">🔒 Nunca te pediremos tu contraseña ni tu PIN.</div>`;
   document.body.appendChild(d);
   botTtsUI();
   $('botx').onclick=botClose;$('bott').onclick=botTts;$('botmic').onclick=botMic;
@@ -2259,7 +2373,7 @@ function botBuild(){
     if(window.visualViewport){visualViewport.addEventListener('resize',botFit);visualViewport.addEventListener('scroll',botFit)}
     addEventListener('orientationchange',()=>{BK.base=0;setTimeout(botFit,350)})}
   if(!BOT.msgs.length){const nm=(S.profile&&S.profile.username)||'';
-    botSay(`¡Hola${nm?' '+nm:''}! 👋 Soy tu asistente de ${APP_NAME}. Resuelvo tus dudas y hago gestiones por ti. Escríbeme o toca 🎙️ para hablarme.`,{menu:1})}}
+    botSay(`¡Hola${nm?' '+nm:''}! 👋\nSoy tu asistente de ${APP_NAME}: resuelvo tus dudas y hago gestiones por ti.\nElige una opción, escríbeme o toca 🎙️ para hablarme.`,{menu:1})}}
 function botSummary(){
   if(!S.user||BOT.fl)return;
   const now=Date.now();if(BOT._sm&&now-BOT._sm<90000)return;
@@ -2833,7 +2947,7 @@ function watchLoad(){clearTimeout(S.wd);S.wd=setTimeout(showRetry,12000)}
   const up=()=>{bar.style.display=navigator.onLine?'none':'block'};
   addEventListener('offline',up);addEventListener('online',()=>{up();toast('Conexión recuperada','good');if(S.user){pollNotifs();if(document.querySelector('main .sk, #rty'))go(S.view)}});up();
   addEventListener('unhandledrejection',e=>{const m=String((e.reason&&e.reason.message)||e.reason||'');console.warn(m);if(/fetch|network|abort|timed? ?out|load failed/i.test(m)){showRetry();toast(friendly(e.reason),'err')}});
-  try{const c=navigator.connection||{};if(c.saveData||/(^|-)2g$/.test(c.effectiveType||'')||(navigator.deviceMemory&&navigator.deviceMemory<=3)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4))document.documentElement.classList.add('lite')}catch(e){}})();
+})();
 
 /* ---------- Sonido de alertas ---------- */
 let AC=null;
@@ -3908,39 +4022,69 @@ function viewHelp(){
   bk();$('tuv').onclick=()=>showTuto(0)}
 const GI={shield:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),id:_i('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h3M6 16c.6-1.5 2-2 3-2s2.4.5 3 2"/>'),lock:_i('<rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>'),check:_i('<path d="M5 12l4 4 10-10"/>'),eye:_i('<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/>')};
 const gl=(ic,t,d,ok)=>`<div class="gd-li ${ok?'ok':''}"><span class="gd-s">${ic}</span><div><b>${t}</b><span class="mut">${d}</span></div></div>`;
-const TUTO=[
- ()=>`<div style="display:flex;justify-content:center;margin-bottom:12px;filter:drop-shadow(0 14px 22px rgba(79,141,255,.55))">${logoSvg(84)}</div><h3>¡Bienvenido a ${esc(APP_NAME)}!</h3><p class="mut">Compra y vende USDT entre personas, pagando en CUP, MLC, Clásica o saldo móvil, con un administrador que respalda cada operación.</p><div class="gd-coins">${cIco('USDT',44)}${cIco('CUP',44)}${cIco('USD',44)}${cIco('MOVIL',44)}</div><p class="mut" style="font-size:13px">USDT · pagos en CUP · MLC · Clásica · Saldo móvil</p>`,
- ()=>`<div class="gd-ic">${IC.market}</div><h3>Así funciona</h3><p class="mut">Tres pasos y ya estás operando.</p>${gl(GI.id,'1. Verifica tu identidad','Una sola vez, desde Perfil. Así todos los usuarios son personas reales.')}${gl(IC.wallet,'2. Deposita tus USDT','Si vas a vender, deposita USDT en Billetera. Si vas a comprar, no necesitas saldo.')}${gl(IC.market,'3. Compra o vende','En Mercado toma una oferta o publica la tuya con tu precio y tus datos de cobro.')}`,
- ()=>`<div class="gd-ic">${IC.orders}</div><h3>Comprar y vender</h3><p class="mut">Pagas directo al vendedor y los USDT te llegan solos.</p>${gl(IC.market,'Elige una oferta','Verás los datos de cobro del vendedor.')}${gl(IC.orders,'Paga y sube la captura','Tienes 30 minutos para pagar por Transfermóvil, EnZona, Zelle, PayPal o tu banco.')}${gl(IC.wallet,'Recibe tus USDT','Cuando el vendedor confirma, los USDT llegan a tu billetera.')}`,
- ()=>`<div class="gd-hero"><i></i><i></i><i></i><div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.shield}</div></div><h3>Aquí tu dinero está protegido</h3><p class="mut">Antes de nada, te contamos <b>por qué puedes operar tranquilo</b>. Dura menos de un minuto.</p><div class="gd-stats"><div><b data-n="100">0</b><span>% de los USDT en custodia mientras operas</span></div><div><b data-n="1">0</b><span>administrador revisa cualquier problema</span></div><div><b data-n="2">0</b><span>capas extra para tu cuenta: PIN y verificación en dos pasos</span></div><div><b data-n="72">0</b><span>horas de protección en pagos entre bancos</span></div></div>`,
- ()=>`<div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.lock}</div><h3>Así protegemos cada operación</h3><div class="gd-flow"><div class="gd-n" data-k="0"><em>👤</em><small>Vendedor</small></div><span class="gd-ar" data-k="0">➜</span><div class="gd-n" data-k="1"><em>🔒</em><small>Custodia</small></div><span class="gd-ar" data-k="1">➜</span><div class="gd-n" data-k="2"><em>🙂</em><small>Comprador</small></div></div><div class="gd-cap" id="gcap"></div><p class="mut" style="font-size:12px">Se reproduce solo · toca un paso para verlo</p>`,
- ()=>`<div class="gd-ic">${GI.shield}</div><h3>¿Y si algo sale mal?</h3><p class="mut">Toca cada situación y mira cómo te protegemos.</p><div class="gd-q"><button><b>🕒 El vendedor no responde</b><div class="a">Puedes pedir la <b>mediación del administrador</b> con tu captura y tu número de referencia. Los USDT siguen bloqueados mientras tanto: nadie puede llevárselos.</div></button><button><b>🏦 Pago desde otro banco</b><div class="a">Te pedimos marcarlo antes de pagar. La operación se <b>congela</b> hasta que el vendedor confirme que le llegó. Si pasan 72 h sin respuesta, te avisamos y puedes pedir mediación.</div></button><button><b>⚠️ Alguien me pide pagar fuera</b><div class="a">Es una estafa. Paga <b>solo a los datos que muestra la operación</b>. Ni soporte ni administradores te pedirán claves, PIN ni pagos por otra vía.</div></button><button><b>🙅 Dicen que no recibieron mi pago</b><div class="a">El administrador revisa las capturas de ambos y el chat de la operación, y decide si libera los USDT o los devuelve. Nada se decide sin pruebas.</div></button></div>`,
- ()=>`<div class="gd-ic" style="background:linear-gradient(135deg,#19b98a,#2ee6a6)">${GI.id}</div><h3>Personas reales, datos privados</h3><div class="gd-chk">${gl(GI.id,'Vendedores verificados','Para publicar ofertas se exige verificar la identidad (KYC).',1)}${gl(GI.eye,'Tus documentos, bajo llave','Se guardan en un espacio privado y solo se abren con enlaces temporales.',1)}${gl(IC.profile,'Reputación visible','Ves las valoraciones y operaciones completadas antes de comprar.',1)}${gl(GI.lock,'Tu cuenta, doblemente cerrada','Activa PIN y verificación en dos pasos en Más → Seguridad.',1)}</div>`,
- ()=>`<div class="gd-ic">${GI.chat}</div><h3>Buenas prácticas</h3><p class="mut">Pequeños hábitos que te mantienen a salvo.</p>${gl(GI.lock,'Nunca compartas tu contraseña ni tu PIN','Ni el soporte ni los administradores te los van a pedir.')}${gl(GI.check,'Paga solo a los datos que muestra la operación','No cambies el método ni pagues fuera de la plataforma.')}${gl(GI.chat,'¿Dudas o problemas?','Escribe a Soporte desde el botón verde o en Más → Ayuda.')}`];
+const TWG='linear-gradient(135deg,#19b98a,#2ee6a6)';
+const twReduce=()=>matchMedia('(prefers-reduced-motion:reduce)').matches||document.documentElement.classList.contains('lite');
+const twHero=(ic,ok,sm)=>`<div class="tw-hero${sm?' sm':''}" style="--tc:${ok?'#2ee6a6':'#6d8bff'};--tg:${ok?TWG:'linear-gradient(135deg,#6f6bff,#2bb6ff)'}"><i></i><i></i><i></i><div class="tw-ic">${ic}</div></div>`;
+const twSeg=(id,a,sel)=>`<div class="tw-seg" id="${id}">${a.map(([k,l])=>`<button data-k="${k}" class="${k===sel?'on':''}">${l}</button>`).join('')}</div>`;
+const twKyc=()=>{const st=S.profile?.kyc_status||'none';return{ok:!needKyc(),pend:st==='pending'}};
+const TWF={
+ buy:[['Eliges una oferta','Ves el precio, los métodos de pago y la reputación del vendedor antes de decidir.','Los USDT de la oferta ya están bloqueados: el vendedor no puede retirarlos ni gastarlos.'],
+  ['Pagas directo al vendedor','Tienes 30 minutos para pagar por Transfermóvil, EnZona, Zelle, PayPal o tu banco y subir la captura.','Pagas solo a los datos que muestra la operación. Nadie te va a pedir pagar por otra vía.'],
+  ['El vendedor confirma','Cuando le llega tu dinero, toca “Pago recibido”.','Los USDT llegan solos a tu billetera, sin que tengas que hacer nada más.'],
+  ['¿Algún problema?','Si ya pagaste y el vendedor no responde en 15 minutos, pide la mediación.','El administrador revisa las capturas de ambos y el chat, y decide con pruebas.']],
+ sell:[['Publicas tu oferta','Pones tu precio, la moneda en que cobras y tus datos de cobro.','Tus USDT quedan bloqueados en custodia mientras la oferta esté publicada: nadie puede tocarlos.'],
+  ['El comprador paga y sube la captura','Recibes el pago directo en tu tarjeta o teléfono. El comprador tiene 30 minutos.','Si no paga a tiempo, la operación se cancela sola. Si paga desde otro banco, la operación se congela hasta que confirmes que te llegó.'],
+  ['Tú confirmas que llegó el dinero','Revisa tu cuenta y toca “Pago recibido”. Si no llegó, toca “No he recibido”.','Solo liberas cuando ves el dinero en tu cuenta.'],
+  ['¿Dicen que no recibiste?','Si hay desacuerdo, cualquiera de los dos puede pedir la mediación.','El administrador revisa las pruebas de ambos antes de liberar o devolver los USDT.']]};
+const TWQ=[['🕒','El vendedor no responde','Puedes pedir la <b>mediación del administrador</b> con tu captura y tu número de referencia. Los USDT siguen bloqueados mientras tanto: nadie puede llevárselos.'],
+ ['🏦','Pago desde otro banco','Te pedimos marcarlo antes de pagar. La operación se <b>congela</b> hasta que el vendedor confirme que le llegó. Si pasan 72 h sin respuesta, te avisamos y puedes pedir mediación.'],
+ ['⚠️','Alguien me pide pagar fuera','Es una estafa. Paga <b>solo a los datos que muestra la operación</b>. Ni soporte ni administradores te pedirán claves, PIN ni pagos por otra vía.'],
+ ['🙅','Dicen que no recibieron mi pago','El administrador revisa las capturas de ambos y el chat de la operación, y decide si libera los USDT o los devuelve. Nada se decide sin pruebas.']];
+function twCount(m){m.querySelectorAll('[data-n]').forEach(b=>{const tg=+b.dataset.n,t0=performance.now(),f=now=>{if(!b.isConnected)return;const k=twReduce()?1:Math.min(1,(now-t0)/1400);b.textContent=Math.round(tg*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
+const TW=[
+ {n:'Bienvenida',h:t=>`<div style="display:flex;justify-content:center;margin:4px 0 12px;filter:drop-shadow(0 16px 26px rgba(79,141,255,.55))">${logoSvg(96)}</div><h2>Bienvenido a ${esc(APP_NAME)}</h2><p class="sub">La P2P más segura de Cuba. Compra y vende USDT entre personas, con un administrador que respalda cada operación.</p><div class="gd-coins">${cIco('USDT',44)}${cIco('CUP',44)}${cIco('USD',44)}${cIco('MOVIL',44)}</div><p class="sub" style="font-size:13px;margin-top:6px">Pagos en CUP · MLC · Clásica · Saldo móvil</p><p style="font-weight:700;margin:14px 0 10px">¿Qué quieres hacer primero?</p><button class="tw-ch ${t.mode==='buy'?'on':''}" data-m="buy"><span class="e">🛒</span><div><b>Quiero comprar USDT</b><span>No necesitas saldo previo</span></div></button><button class="tw-ch ${t.mode==='sell'?'on':''}" data-m="sell"><span class="e">💸</span><div><b>Quiero vender USDT</b><span>Tus USDT quedan protegidos en custodia</span></div></button>`,
+  fx:(m,t,A)=>m.querySelectorAll('.tw-ch').forEach(b=>b.onclick=()=>{t.mode=b.dataset.m;A.next()})},
+ {n:'Tu protección',h:t=>`${twHero(GI.shield,1)}<h2>Aquí tu dinero está protegido</h2><p class="sub">Compradores y vendedores estamos igual de cubiertos. Mira por qué puedes operar con tranquilidad.</p><div class="tw-grid"><div class="tw-stat"><b><em data-n="100">0</em>%</b><span>de los USDT en custodia mientras operas</span></div><div class="tw-stat"><b><em data-n="1">0</em></b><span>administrador revisa cualquier problema</span></div><div class="tw-stat"><b><em data-n="2">0</em></b><span>capas extra para tu cuenta: PIN y verificación en dos pasos</span></div><div class="tw-stat"><b><em data-n="72">0</em> h</b><span>de protección en pagos entre bancos</span></div></div><div><span class="tw-pill">🔒 USDT en custodia</span><span class="tw-pill">🛡️ Mediación del administrador</span><span class="tw-pill">🪪 Identidad verificada</span><span class="tw-pill">🔐 PIN y 2 pasos</span></div>`,
+  fx:m=>twCount(m)},
+ {n:'Cada operación',h:t=>{t.f=t.f||(t.mode==='sell'?'sell':'buy');return `${twHero(GI.lock,1,1)}<h2>Así protegemos cada operación</h2><p class="sub">Elige tu caso y toca un paso para ver qué te protege.</p>${twSeg('twsg',[['buy','🛒 Si compro'],['sell','💸 Si vendo']],t.f)}<div id="twf"></div>`},
+  fx:(m,t)=>{const L=m.querySelector('#twf');let open=0,tm;
+   const draw=()=>{L.innerHTML=TWF[t.f].map((x,k)=>`<div class="tw-st ${k===open?'on':''}" data-k="${k}"><span class="n">${k+1}</span><div><b>${x[0]}</b><div class="d">${x[1]}</div><div class="p">🛡️ <b>Te protege:</b> ${x[2]}</div></div></div>`).join('');
+    L.querySelectorAll('.tw-st').forEach(e=>e.onclick=()=>{clearInterval(tm);open=+e.dataset.k;draw()})};
+   draw();
+   m.querySelectorAll('#twsg button').forEach(b=>b.onclick=()=>{clearInterval(tm);t.f=b.dataset.k;open=0;m.querySelectorAll('#twsg button').forEach(x=>x.classList.toggle('on',x===b));draw()});
+   if(!twReduce())tm=setInterval(()=>{if(!L.isConnected)return clearInterval(tm);open=(open+1)%4;draw()},5500)}},
+ {n:'Verificación',h:t=>{const k=twKyc();return `${twHero(GI.id,1,1)}<h2>Personas reales, de los dos lados</h2><p class="sub">Verificarte una sola vez es lo que mantiene limpia la plataforma: quien compra y quien vende es una persona real.</p><div class="tw-c" style="margin-bottom:12px"><b>Tu verificación son 3 fotos</b><div style="margin-top:10px"><div class="tw-ck" data-k="0"><span class="bx">✓</span><div class="t"><b>Carnet · frente</b></div></div><div class="tw-ck" data-k="1"><span class="bx">✓</span><div class="t"><b>Carnet · reverso</b></div></div><div class="tw-ck" data-k="2"><span class="bx">✓</span><div class="t"><b>Selfie sosteniendo tu carnet</b></div></div></div><div id="twkm" class="mut" style="font-size:13px;margin-top:2px">Toca cada paso para ir marcándolo.</div></div>${gl(GI.eye,'Tus documentos, bajo llave','Se guardan en un espacio privado y solo se abren con enlaces temporales.',1)}${gl(GI.id,'Obligatoria una sola vez','Para comprar, vender y retirar. El administrador la revisa y te avisa.',1)}${k.ok?'<div style="margin-top:8px"><span class="tw-pill">✅ Ya estás verificado</span></div>':k.pend?'<div style="margin-top:8px"><span class="tw-pill w">⏳ Tu verificación está en revisión</span></div>':'<button class="b tw-cta" data-go="profile">🪪 Verificar mi identidad ahora</button>'}`},
+  fx:m=>{const all=()=>m.querySelectorAll('.tw-ck.on').length===3;
+   m.querySelectorAll('.tw-ck').forEach(e=>e.onclick=()=>{e.classList.toggle('on');const n=m.querySelectorAll('.tw-ck.on').length;m.querySelector('#twkm').innerHTML=all()?'<b style="color:var(--ok)">¡Eso es todo! Se hace una sola vez.</b>':n+' de 3 listos'})}},
+ {n:'Depósito',h:t=>`${twHero(IC.wallet,0,1)}<h2>Deposita y empieza a vender</h2><p class="sub">Si vas a vender, necesitas USDT en tu billetera. Si solo vas a comprar, no necesitas saldo.</p>${twSeg('twds',[['free','🆓 Gratis'],['auto','⚡ Automático']],t.d||'free')}<div class="tw-c" id="twdd" style="margin-bottom:10px"></div>${gl(GI.lock,'Tus USDT, siempre tuyos','Solo se bloquean mientras tu oferta esté publicada.',1)}<button class="b tw-cta" data-go="wallet">💰 Ir a depositar USDT</button>`,
+  fx:(m,t)=>{const D={free:'<b>Sin comisión.</b> Envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual.',auto:'<b>Comisión de 0,4 % + 0,10 USDT.</b> Sin TxID: tu depósito se acredita automáticamente. Si algo falla, usa el depósito manual y avisa con el TxID.'};
+   const set=k=>{t.d=k;m.querySelectorAll('#twds button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));m.querySelector('#twdd').innerHTML=D[k]};
+   m.querySelectorAll('#twds button').forEach(b=>b.onclick=()=>set(b.dataset.k));set(t.d||'free')}},
+ {n:'Si algo sale mal',h:t=>`${twHero(GI.shield,1,1)}<h2>¿Y si algo sale mal?</h2><p class="sub">Toca cada situación y mira cómo te protegemos.</p><div id="twq"></div><div style="margin-top:6px"><span class="tw-pill">💬 Soporte en el botón verde o en Más → Ayuda</span></div>`,
+  fx:m=>{const L=m.querySelector('#twq');let open=-1;const draw=()=>{L.innerHTML=TWQ.map((x,k)=>`<div class="tw-st ${k===open?'on':''}" data-k="${k}"><span class="n" style="font-size:18px">${x[0]}</span><div><b>${x[1]}</b><div class="d">${x[2]}</div></div></div>`).join('');L.querySelectorAll('.tw-st').forEach(e=>e.onclick=()=>{open=open===+e.dataset.k?-1:+e.dataset.k;draw()})};draw()}},
+ {n:'Tu plan',h:t=>{const k=twKyc(),it=[['✅','Cuenta creada','Ya eres parte de '+APP_NAME,1,null],['🪪','Verifica tu identidad',k.ok?'Verificado':k.pend?'En revisión':'Obligatoria para operar',k.ok,k.ok||k.pend?null:['profile','Verificar']],['💰','Deposita USDT','Necesario si vas a vender',0,['wallet','Depositar']],['🔐','Protege tu cuenta','PIN y verificación en dos pasos',0,['sec','Activar']]],dn=it.filter(x=>x[3]).length;
+   return `<div class="tw-ring" style="--p:${dn*25}%"><b>${dn}/4</b></div><h2>Tu plan de arranque</h2><p class="sub">Completa estos pasos y estarás operando con todo protegido.</p>${it.map(x=>`<div class="tw-ck ${x[3]?'on':''}" style="cursor:default"><span class="bx">${x[3]?'✓':x[0]}</span><div class="t"><b>${x[1]}</b><span>${x[2]}</span></div>${x[4]?`<button class="b sm" data-go="${x[4][0]}">${x[4][1]}</button>`:''}</div>`).join('')}`}}];
+function showTuto(i=0){
+  document.querySelectorAll('.tw').forEach(x=>x.remove());
+  const t={i,mode:null,dir:1},key='tuto_'+S.user.id,m=document.createElement('div');m.className='tw';document.body.appendChild(m);
+  const fin=()=>{lsSet(key,'1');document.removeEventListener('keydown',kd);m.remove()};
+  const to=k=>{if(k<0||k>=TW.length)return;t.dir=k>=t.i?1:-1;t.i=k;render()};
+  const A={next:()=>to(t.i+1)};
+  function kd(e){if(!m.isConnected)return document.removeEventListener('keydown',kd);if(e.key==='ArrowRight')to(t.i+1);else if(e.key==='ArrowLeft')to(t.i-1);else if(e.key==='Escape')fin()}
+  function render(){
+    const s=TW[t.i],last=t.i===TW.length-1;
+    m.innerHTML=`<div class="tw-in"><div class="tw-top"><div class="tw-bar">${TW.map((_,k)=>`<i data-k="${k}" class="${k<t.i?'dn':k===t.i?'on':''}"></i>`).join('')}</div><button class="tw-x" id="twx">${last?'Cerrar':'Saltar'}</button></div><div class="tw-body ${t.dir>0?'fw':'bw'}" id="twbd">${s.h(t)}</div><div class="tw-ft"><button class="b gh" id="twb0" style="${t.i?'':'visibility:hidden'}">Atrás</button><button class="b" id="twb1">${last?'¡Empezar a operar!':'Siguiente'}</button></div><div class="tw-ct">${t.i+1} de ${TW.length} · ${s.n}</div></div>`;
+    m.querySelector('#twx').onclick=fin;
+    m.querySelector('#twb0').onclick=()=>to(t.i-1);
+    m.querySelector('#twb1').onclick=()=>last?fin():to(t.i+1);
+    m.querySelectorAll('.tw-bar i').forEach(e=>e.onclick=()=>to(+e.dataset.k));
+    m.querySelectorAll('[data-go]').forEach(b=>b.onclick=e=>{e.stopPropagation();const v=b.dataset.go;fin();go(v)});
+    const bd=m.querySelector('#twbd');let x0=null;
+    bd.ontouchstart=e=>{x0=e.touches[0].clientX};
+    bd.ontouchend=e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>70)to(t.i+(dx<0?1:-1))};
+    s.fx&&s.fx(m,t,A)}
+  document.addEventListener('keydown',kd);render()}
 
-TUTO.splice(1,0,...TUTO.splice(3,4));
-function tutoFx(m){
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches||document.documentElement.classList.contains('lite');
-  m.querySelectorAll('.gd-stats b').forEach(b=>{const t=+b.dataset.n,from=0,d=1400,t0=performance.now();
-    const f=now=>{if(!b.isConnected)return;const k=reduce?1:Math.min(1,(now-t0)/d);b.textContent=Math.round(from+(t-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
-  const fl=m.querySelector('.gd-flow');
-  if(fl){const caps=['<b>1 · El vendedor publica</b><br>Sus USDT quedan <b>bloqueados</b>: no puede gastarlos ni retirarlos.','<b>2 · Tú pagas al vendedor</b><br>El pago en CUP, MLC, Clásica o saldo móvil va <b>directo a él</b>, no a la plataforma.','<b>3 · El vendedor confirma</b><br>Cuando le llega tu pago, los USDT se liberan <b>solos</b> a tu billetera.'];
-    const cap=m.querySelector('#gcap');let i=0,timer;
-    const show=k=>{i=k;fl.querySelectorAll('.gd-n').forEach(e=>e.classList.toggle('on',+e.dataset.k===k));fl.querySelectorAll('.gd-ar').forEach(e=>e.classList.toggle('on',+e.dataset.k<k));cap.style.opacity=0;setTimeout(()=>{cap.innerHTML=caps[k];cap.style.opacity=1},150)};
-    show(0);
-    if(!reduce)timer=setInterval(()=>{if(!m.isConnected)return clearInterval(timer);show((i+1)%3)},3200);
-    fl.querySelectorAll('.gd-n').forEach(e=>e.onclick=()=>{clearInterval(timer);show(+e.dataset.k)})}
-  m.querySelectorAll('.gd-q button').forEach(b=>b.onclick=()=>{const on=b.classList.contains('on');m.querySelectorAll('.gd-q button').forEach(x=>x.classList.remove('on'));if(!on)b.classList.add('on')});
-  m.querySelectorAll('.gd-chk .gd-li').forEach((e,k)=>setTimeout(()=>e.classList.add('sh'),reduce?0:350+k*450));
-}
-function showTuto(i){
-  const last=i===TUTO.length-1,key='tuto_'+S.user.id;
-  const m=modal(`<div class="gd"><div class="gd-bar">${TUTO.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>${TUTO[i]()}</div><div class="grid2" style="margin-top:14px"><button class="b gh" id="t0">${i===0?'Saltar':'Atrás'}</button><button class="b" id="t1">${last?'¡Empezar!':'Siguiente'}</button></div>`);
-  tutoFx(m);
-  const fin=()=>{lsSet(key,'1');m.remove()};
-  m.onclick=e=>{if(e.target===m)fin()};
-  m.querySelector('#t0').onclick=()=>{if(i===0)fin();else{m.remove();showTuto(i-1)}};
-  m.querySelector('#t1').onclick=()=>{if(last)fin();else{m.remove();showTuto(i+1)}}}
 function maybeTuto(){if(S.user&&!S.profile?.is_admin&&!S.profile?.is_staff&&!lsGet('tuto_'+S.user.id))setTimeout(()=>showTuto(0),900)}
 
 
