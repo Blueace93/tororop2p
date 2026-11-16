@@ -3872,8 +3872,10 @@ function receipt(x){
 /* ----- Referidos ----- */
 async function viewRefs(){
   const my=NAV;main().innerHTML=hd('Referidos')+skel(3);bk();
+  const pk=rpc('my_referral_nokyc').then(v=>v==null?null:Number(v),()=>null);
   let d;try{d=(await rpc('my_referral_stats'))||{}}catch(e){if(my===NAV){main().innerHTML=hd('Referidos')+warnSql()+`<p class="mut">${esc(e.message)}</p>`;bk()}return}
   if(my!==NAV)return;
+  let nk=await pk;if(nk==null&&d.no_kyc!=null)nk=Number(d.no_kyc);if(!Number.isFinite(nk))nk=null;
   const link=location.origin+location.pathname+'?ref='+d.code,items=d.items||[],done=items.filter(x=>x.rewarded),tot={};
   items.forEach(x=>Object.entries(x.earned||{}).forEach(([c,v])=>{if(v>0)tot[c]=(tot[c]||0)+Number(v)}));
   const rule=`el ${n(d.pct,2)}% de cada venta de tus referidos`;
@@ -3882,7 +3884,7 @@ async function viewRefs(){
    <code style="display:block;margin:8px 0">${esc(link)}</code>
    <div class="grid2"><button class="b" id="rl1">Compartir enlace</button><button class="b gh" id="rl2">Copiar enlace</button></div>
    <p class="mut" style="margin:10px 0 0">Tu código: <b>${esc(d.code)}</b></p></div>
-  <div class="wts"><div class="wt"><div class="mut">Referidos</div><div class="big">${items.length}</div><div class="mut">registrados</div></div><div class="wt"><div class="mut">Ya operaron</div><div class="big">${done.length}</div><div class="mut">ya te generan</div></div><div class="wt"><div class="mut">Pendientes</div><div class="big">${items.length-done.length}</div><div class="mut">sin operar</div></div></div>
+  <div class="wts"><div class="wt"><div class="mut">Referidos</div><div class="big">${items.length}</div><div class="mut">registrados</div></div><div class="wt"><div class="mut">Ya operaron</div><div class="big">${done.length}</div><div class="mut">ya te generan</div></div><div class="wt"><div class="mut">Pendientes</div><div class="big">${items.length-done.length}</div><div class="mut">sin operar</div></div></div>${nk!=null?`<div class="wts" style="grid-template-columns:1fr"><div class="wt"><div class="mut">Sin verificar (KYC)</div><div class="big">${nk}</div><div class="mut">referidos que aún no hacen su KYC</div></div></div>`:''}
   <div class="card" style="margin-top:12px"><h3>Total recibido por referidos</h3>${Object.keys(tot).length?`<div class="wts">${Object.entries(tot).map(([c,v])=>wtile('Recibido',v,c,dcur(c))).join('')}</div>`:'<span class="mut">Todavía no has recibido nada.</span>'}</div>
   <h3>Mis referidos</h3>`+(items.length?items.map(x=>`<div class="card"><div class="row"><b>@${esc(x.username)}</b><span class="tag ${x.rewarded?'ok':'warn'}">${x.rewarded?'Ya ha vendido':'Aún no vende'}</span></div><div class="mut">Se unió: ${when(x.joined)}</div>${x.rewarded?`<div style="margin-top:6px">Te ha generado: <b>${Object.entries(x.earned||{}).map(([c,v])=>'+'+n(v,dcur(c))+' '+esc(c)).join(' · ')}</b> <span class="mut">· ${x.ops} venta${x.ops===1?'':'s'}</span></div>`:''}</div>`).join(''):'<div class="card mut">Aún no tienes referidos. Comparte tu enlace para empezar.</div>');
   bk();
