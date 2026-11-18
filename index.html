@@ -449,7 +449,7 @@ body.akb{padding-bottom:var(--akh,0px)!important}
 #ldbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:99;background:linear-gradient(90deg,var(--acc),#4fc3f7);transform:scaleX(0);transform-origin:left;pointer-events:none;opacity:0}
 #ldbar.on{opacity:1;animation:ldb 1.4s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes ldb{0%{transform:scaleX(0)}70%{transform:scaleX(.85)}100%{transform:scaleX(1);opacity:0}}
-nav button{min-width:0;white-space:nowrap;font-size:11px;padding:9px 1px}
+nav button{min-width:0;white-space:nowrap;font-size:11px;padding:9px 1px}nav:has(button:nth-child(7)) button{font-size:10.5px}
 nav:has(button:nth-child(6)) button{font-size:10px}
 body[data-view="chat"] .wa,body[data-view="chat"] .up{display:none!important}
 
@@ -2486,7 +2486,7 @@ function render(){
     <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><button class="fab-m" id="fabm" aria-label="Abrir el asistente"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.9 5.6L17.5 9.5l-5.6 1.9L10 17l-1.9-5.6L2.5 9.5l5.6-1.9z"/><path d="M18.5 13l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg><span id="fabt">Asistente</span><i id="fabbd"></i></button></div><button class="up" id="up" aria-label="Subir">↑</button>
     <nav><button data-v="market">${IC.market}Mercado</button>
     <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
-    <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
+    <button data-v="orders">${IC.orders}${admin?'Órdenes':'Operaciones'}<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
     <button data-v="refs">${IC.gift}Referidos</button>
     <button data-v="profile">${IC.profile}Perfil</button>
