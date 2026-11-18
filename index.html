@@ -860,18 +860,6 @@ html[data-theme] #bots:active{transform:scale(.92)}
 html[data-theme] #botp .bw2:has(input:placeholder-shown)+#bots{opacity:.55}
 html[data-theme] #botp .bn{background:var(--mt-bar);padding:2px 14px 11px;font-size:11.5px}
 </style>
-<style id="navrefs">
-@media(max-width:899px){
- nav:has(button:nth-child(6)){padding:3px}
- nav:has(button:nth-child(6)) button{font-size:10px;letter-spacing:-.15px;padding:8px 0}
- nav:has(button:nth-child(6)) svg{width:22px;height:22px}
- nav:has(button:nth-child(7)) button{font-size:9px;letter-spacing:-.3px}
- nav:has(button:nth-child(7)) svg{width:20px;height:20px}
- nav:has(button:nth-child(6)){left:6px;right:6px}
- nav:has(button:nth-child(6)) button[data-v="orders"]{flex:1.4}
- nav:has(button:nth-child(6)) button[data-v="chat"],nav:has(button:nth-child(6)) button[data-v="profile"],nav:has(button:nth-child(6)) button[data-v="admin"]{flex:.85}
-}
-</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCD535"/><stop offset="1" stop-color="#F0B90B"/></linearGradient><linearGradient id="gu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
@@ -1291,7 +1279,7 @@ const withTO=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Err
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const IC={refs:_i('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'),market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
+const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${n(FE('withdraw'),2)}%: ${n(a*FE('withdraw')/100,d)} ${u} · Recibirás: ${n(a-a*FE('withdraw')/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-FE('withdraw')/100);
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
@@ -2498,7 +2486,6 @@ function render(){
     <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><button class="fab-m" id="fabm" aria-label="Abrir el asistente"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.9 5.6L17.5 9.5l-5.6 1.9L10 17l-1.9-5.6L2.5 9.5l5.6-1.9z"/><path d="M18.5 13l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg><span id="fabt">Asistente</span><i id="fabbd"></i></button></div><button class="up" id="up" aria-label="Subir">↑</button>
     <nav><button data-v="market">${IC.market}Mercado</button>
     <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
-    <button data-v="refs">${IC.refs}Referidos</button>
     <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
     <button data-v="profile">${IC.profile}Perfil</button>
@@ -2508,7 +2495,7 @@ function render(){
   {const R=document.documentElement,ap=t=>{R.classList.add('tt');setTimeout(()=>R.classList.remove('tt'),400);R.setAttribute('data-theme',t);try{localStorage.setItem('tema',t)}catch(e){}window.iconoApply&&iconoApply();const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t==='dark'?'#0b0e11':'#ffffff';$('thm').textContent=t==='dark'?'☀️':'🌙'};
   $('thm').textContent=R.getAttribute('data-theme')==='dark'?'☀️':'🌙';$('thm').onclick=()=>ap(R.getAttribute('data-theme')==='dark'?'light':'dark')}
   $('av').onclick=e=>{e.preventDefault();go('profile')};
-  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const t=Date.now();if(b.dataset.v===S.view&&t-(S._nt||0)<500)return;S._nt=t;S.bkTo=b.dataset.v==='refs'?'market':null;go(b.dataset.v)});
+  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const t=Date.now();if(b.dataset.v===S.view&&t-(S._nt||0)<500)return;S._nt=t;go(b.dataset.v)});
   go(S.view==='order'?'orders':S.view);refreshBadge();startNotifs();startLive()}
 async function refreshBadge(){
   const{count}=await sb.from('orders').select('id',{count:'exact',head:true})
@@ -4903,6 +4890,17 @@ async function adminExtras(an,ai,rr){
   await annUrls(A);
   if(my!==NAV)return;
   const miss=(an?.error||ai?.error)?`<div class="warnbox bad">Falta ejecutar <code>${SI?'administradores.sql':'info_anuncios.sql'}</code> en Supabase para activar estas dos secciones.</div>`:'';
+  main().insertAdjacentHTML('beforeend',`<h3 id="s-msg">Mensajes privados masivos</h3><div class="card"><label>Para quién</label><select id="msgA"><option value="unverified">Sin verificar (cuenta sin KYC aprobado)</option><option value="verified">Verificados (KYC aprobado)</option><option value="all">Todos los usuarios</option></select>
+   <label>Título</label><input id="msgT" maxlength="80" placeholder="Ej: Verifica tu cuenta"><label>Mensaje</label><textarea id="msgB" rows="3" maxlength="500" placeholder="Ej: Verifica tu identidad para poder operar."></textarea>
+   <p class="mut" style="margin-top:0">Le llega a cada usuario como notificación privada. No se envía a administradores.</p><button class="b w" id="msgGo">Enviar mensaje</button></div>`);
+  $('msgGo').onclick=async ev=>{const b=ev.target,a=$('msgA').value,t=$('msgT').value.trim(),x=$('msgB').value.trim();
+    if(!t||!x)return toast('Escribe el título y el mensaje','err');
+    const{data:n,error:e0}=await sb.rpc('admin_broadcast',{p_audience:a,p_title:t,p_body:x,p_dry:true});
+    if(e0)return toast(/admin_broadcast|function/i.test(e0.message||'')?'Falta ejecutar mensajes_masivos.sql en Supabase':e0.message,'err');
+    if(!n)return toast('No hay usuarios en ese grupo','err');
+    const m=await ask('Enviar mensaje privado',`<p>Se enviará a <b>${n}</b> usuario${n===1?'':'s'} (${esc($('msgA').selectedOptions[0].text)}). No se puede deshacer.</p>`,'Enviar');
+    if(!m)return;m.remove();
+    act(b,async()=>{const{error}=await sb.rpc('admin_broadcast',{p_audience:a,p_title:t,p_body:x,p_dry:false});if(error)throw error;$('msgT').value='';$('msgB').value=''},'Mensaje enviado a '+n+' usuario'+(n===1?'':'s'))};
   main().insertAdjacentHTML('beforeend',`<h3 id="s-ann">Anuncios para los usuarios</h3>${miss}
   <div class="card"><label>Título</label><input id="annT" maxlength="120" placeholder="Ej: Actualización el sábado">
    <label>Mensaje</label><textarea id="annB" rows="3" placeholder="Ej: El sábado habrá actualizaciones y la app puede ir más lenta."></textarea>
