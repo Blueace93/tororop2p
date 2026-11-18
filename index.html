@@ -1279,7 +1279,7 @@ const withTO=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Err
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const IC={market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
+const IC={gift:_i('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'),market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${n(FE('withdraw'),2)}%: ${n(a*FE('withdraw')/100,d)} ${u} · Recibirás: ${n(a-a*FE('withdraw')/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-FE('withdraw')/100);
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
@@ -2488,6 +2488,7 @@ function render(){
     <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
     <button data-v="orders">${IC.orders}Operaciones<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
+    <button data-v="refs">${IC.gift}Referidos</button>
     <button data-v="profile">${IC.profile}Perfil</button>
     ${admin?`<button data-v="admin">${IC.admin}Admin<i class="bd" id="adbd" style="display:none"></i></button>`:''}</nav>`;
   bindFab();
