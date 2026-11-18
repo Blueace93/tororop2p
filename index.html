@@ -5317,7 +5317,7 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-usum':'usr','s-kyc':'usr','s-unv':'usr','s-risk':'usr','s-staff':'stf','s-bal':'stf','s-duty':'stf','s-audit':'stf','s-stfops':'stf','s-stfrules':'stf','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-usum':'usr','s-kyc':'usr','s-unv':'usr','s-risk':'usr','s-staff':'stf','s-bal':'stf','s-duty':'stf','s-audit':'stf','s-stfops':'stf','s-stfrules':'stf','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-msg':'cfg','s-info':'cfg','s-ref':'cfg'};
   const SUBOF={'s-kyc':'kyc','s-unv':'unv','s-risk':'risk','s-staff':'team','s-bal':'team','s-duty':'duty','s-stfops':'ops','s-audit':'act','s-stfrules':'rules'},SUBDEF={usr:'kyc',stf:'team'};
   S.sub=S.sub||{};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
@@ -5523,7 +5523,7 @@ async function viewStaff(){
   ${DUTY.can?'<h3 id="s-med">Mediaciones pendientes</h3><div id="medbox"></div>':''}
   <h3 id="s-find">Buscar usuarios</h3>
   <div class="card"><p class="mut" style="margin-top:0">Consulta de solo lectura: usuario, nombre y estado de verificación. No muestra saldos ni movimientos.</p><input id="sfQ" type="search" placeholder="Escribe el usuario o el nombre" autocomplete="off"><div id="sfR"></div></div>`;
-  const TABOF={'s-kyc':'pend','s-rec':'pend','s-med':'med','s-sta':'sta','s-find':'usr','s-ann':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
+  const TABOF={'s-kyc':'pend','s-rec':'pend','s-med':'med','s-sta':'sta','s-find':'usr','s-ann':'cfg','s-msg':'cfg','s-info':'cfg','s-cards':'mny','cardsbox':'mny'};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
   const tag=()=>{let cur='all';for(const el of mm.children){const t=TABOF[el.id];if(t){cur=t;el.dataset.tab=t}else if(!el.dataset.tab)el.dataset.tab=cur}};
   if(window._amo)window._amo.disconnect();window._amo=new MutationObserver(tag);window._amo.observe(mm,{childList:true});tag();
