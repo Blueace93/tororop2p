@@ -2434,6 +2434,18 @@ async function cfReady(){
   if(!window.turnstile||!$('cf'))return true;
   for(let i=0;i<48&&!CFTOK;i++)await sleep(250);
   return !!CFTOK||CFID===null}
+/* Subir fotos en Android: con accept="image/*" Chrome abre el «Selector de fotos» de Google Play Services, que en muchos móviles da «Se produjo un error».
+   Ampliando accept, Chrome abre en su lugar el selector de archivos del sistema (Galería/Imágenes/Cámara dentro de «Archivos»), que sí funciona.
+   Después se valida que lo elegido sea una imagen. */
+(()=>{
+  if(!/Android/i.test(navigator.userAgent||''))return;
+  const fix=i=>{if(i.dataset.fx||!/^image\/\*$/.test((i.accept||'').trim()))return;i.dataset.fx='1';i.accept='image/*,application/pdf'};
+  const scan=r=>{if(r.nodeType!==1)return;if(r.matches('input[type=file]'))fix(r);r.querySelectorAll('input[type=file]').forEach(fix)};
+  try{new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(scan))).observe(document.documentElement,{childList:true,subtree:true});scan(document.documentElement)}catch(e){}
+  document.addEventListener('change',e=>{const i=e.target;if(!i||i.type!=='file'||!i.dataset.fx||!i.files)return;
+    const bad=[...i.files].find(f=>!(/^image\//.test(f.type)||/\.(jpe?g|png|webp|heic|heif|gif|bmp)$/i.test(f.name||'')));
+    if(bad){i.value='';e.stopImmediatePropagation();try{toast('Elige una foto (JPG o PNG), no otro tipo de archivo','err')}catch(x){}}},true);
+})();
 const APP_V='2026-11-11b';
 function renderAuth(mode='login'){
   const reg=mode==='register';
