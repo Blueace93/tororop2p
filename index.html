@@ -3653,6 +3653,13 @@ function renderAutoDeposit(box){
     S._payT=setInterval(async()=>{if(!$('dab')||++tries>120)return clearInterval(S._payT);if(document.hidden)return;await loadBal();if((S.wallet?.available||0)>before+1e-9){clearInterval(S._payT);toast('¡Depósito acreditado!','good');viewWallet()}},10000)})}
 const depTabs=m=>`<div class="seg" style="margin-top:0"><button type="button" id="dtf" class="${m==='free'?'on':''}">🆓 Gratis<br><small>(esperar acreditación manual)</small></button><button type="button" id="dta" class="${m==='auto'?'on':''}">⚡ Depósito automático</button></div>`;
 const bindDepTabs=()=>{const f=$('dtf'),a=$('dta');if(f)f.onclick=()=>{if(S.depMode==='free')return;S.depMode='free';renderDepositCard()};if(a)a.onclick=()=>{if(S.depMode==='auto')return;S.depMode='auto';renderDepositCard()}};
+async function depReviews(box){
+  let L=[];try{L=await rpc('my_deposit_reviews')}catch(e){}
+  if(!box||!box.isConnected||!Array.isArray(L))return;
+  const cut=Date.now()-3*864e5,R=L.filter(r=>r.status==='pending'||new Date(r.created_at).getTime()>cut);
+  if(!R.length||box.querySelector('#drv'))return;
+  box.insertAdjacentHTML('beforeend',`<div id="drv" style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px"><b>Depósitos en revisión</b>`+R.map(r=>{const st=r.status==='pending'?['En revisión','warn']:r.status==='credited'?['Acreditado','ok']:['Rechazado','bad'];
+    return`<div class="row" style="padding:6px 0"><span>Pediste ${n(r.expected,4)} · llegaron ${n(r.received,4)} ${esc(r.symbol)}${r.status==='credited'?`<br><span class="mut">Se acreditaron ${n(r.credited_amount,4)} ${esc(r.symbol)}</span>`:''}</span><span class="tag ${st[1]}">${st[0]}</span></div>`}).join('')+`<p class="mut" style="font-size:12px;margin:6px 0 0">Cuando el monto que llega no coincide con lo pedido, el administrador revisa el caso y te acredita lo que llegó.</p></div>`)}
 async function renderDepositCard(){
   const box=$('depcard');if(!box)return;
   if(!S.depMode)S.depMode='free';
@@ -3666,7 +3673,7 @@ async function renderDepositCard(){
       <select id="dnet"><option value="BEP20|USDT">BNB Smart Chain (BEP20) · USDT</option><option value="ARBITRUM|USDT">Arbitrum One · USDT</option><option value="ARBITRUM|USDC">Arbitrum One · USDC</option></select>
       <label>¿Cuánto quieres depositar? (entero, mínimo 5)</label><input id="dbase" type="number" min="5" step="1" inputmode="numeric">
       <button class="b w" id="dnew">Generar instrucciones de depósito</button>`;
-    bindDepTabs();
+    bindDepTabs();depReviews(box);
     $('dnew').onclick=ev=>act(ev.target,async()=>{
       const b=+$('dbase').value;if(!Number.isInteger(b)||b<5)throw new Error('Indica un número entero de 5 o más');
       const[net,sym]=$('dnet').value.split('|');await rpc('create_deposit_intent',{p_network:net,p_symbol:sym,p_base:b});await renderDepositCard()});
@@ -3680,10 +3687,20 @@ async function renderDepositCard(){
     <label>Cuando lo envíes, pega el ID de la transacción (TxID)</label><input id="dtx" placeholder="0x...">
     <button class="b ok w" id="dver">Verificar y acreditar</button>
     <button class="b gh sm" id="dcan" style="margin-top:8px">Cancelar solicitud</button>`;
-  bindDepTabs();bindCopy(box);
+  bindDepTabs();bindCopy(box);depReviews(box);
   $('dver').onclick=ev=>act(ev.target,async()=>{
     if(!/^0x[a-fA-F0-9]{64}$/.test($('dtx').value.trim()))throw new Error('El TxID debe empezar por 0x y tener 66 caracteres');
-    await rpc('verify_deposit',{p_network:it.network,p_txid:$('dtx').value.trim()});await loadBal();viewWallet()},'¡Depósito acreditado!');
+    const tx=$('dtx').value.trim();
+    try{await rpc('verify_deposit',{p_network:it.network,p_txid:tx})}
+    catch(e){
+      /* Llegó un envío pero de otro monto: se registra el caso y se avisa al administrador */
+      if(/No encontr[eé] un env[ií]o de/i.test(e.message||'')){
+        let r=null,e2=null;try{r=await rpc('report_deposit_mismatch',{p_network:it.network,p_txid:tx})}catch(x){e2=x}
+        if(r&&r.review){toast(`Llegaron ${n(r.received,4)} ${r.symbol} y pediste ${n(r.expected,4)}. Enviamos tu caso al administrador para que lo revise.`,'good');await renderDepositCard();return}
+        if(e2&&/revisi[oó]n/i.test(e2.message||'')){await renderDepositCard();throw e2}
+      }
+      throw e}
+    toast('¡Depósito acreditado!','good');await loadBal();viewWallet()});
   $('dcan').onclick=async ev=>{const m=await ask('Cancelar solicitud','<p>Si <b>ya enviaste</b> los USDT, no canceles: pega el TxID y pulsa «Verificar y acreditar». Cancela solo si todavía no enviaste nada.</p>','Cancelar solicitud','bad');if(!m)return;m.remove();
     act(ev.target,async()=>{await rpc('cancel_deposit_intent');await renderDepositCard()},'Solicitud cancelada')}}
 
@@ -5263,6 +5280,9 @@ async function viewAdmin(){
     sb.rpc('admin_fee_totals'),
     sb.from('fee_payouts').select('currency,amount,created_at').order('created_at',{ascending:false}).limit(5)]);
   if(my!==NAV)return;
+  let DR=[];try{const r=await sb.rpc('admin_deposit_reviews');if(!r.error&&Array.isArray(r.data))DR=r.data}catch(e){}
+  if(my!==NAV)return;
+  const drHtml=`<h3 id="s-drev">⚠️ Depósitos con monto distinto (${DR.length})</h3>`+DR.map(x=>`<div class="card hl"><div class="row"><b>@${esc(x.username||'?')}</b><span class="tag warn">Revisar</span></div><div class="mut">Pidió <b>${n(x.expected,4)}</b> ${esc(x.symbol)} · Llegaron <b>${n(x.received,4)}</b> ${esc(x.symbol)} · ${esc(x.network)}</div><div class="mut">Enviado desde <code style="word-break:break-all">${esc(x.from_address||'?')}</code> · ${when(x.created_at)}</div><div class="row"><span class="mut">TxID: <code style="word-break:break-all">${esc(x.txid)}</code></span>${cpBtn(x.txid)}</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-rv="${x.id}">Acreditar</button><button class="b bad sm" data-rx="${x.id}">Rechazar</button></div></div>`).join('');
   const TM=tm.data||[],tn={},un={},stf={},fuid=x=>x.user_id||x.payer_id||x.from_user||x.seller_id||x.profile_id;
   {const ids=[...new Set([...TM.flatMap(t=>[t.buyer_id,t.seller_id]),...(fl.data||[]).slice(0,30).map(fuid)].filter(Boolean))];
    if(ids.length){const{data:pp}=await sb.from('profiles').select('id,username,is_staff').in('id',ids);(pp||[]).forEach(p=>{tn[p.id]=p.username;un[p.id]=p.username;if(p.is_staff)stf[p.id]=1})}}
@@ -5280,8 +5300,8 @@ async function viewAdmin(){
   const orders=(o.data||[]).sort((a,b)=>prio[a.status]-prio[b.status]);
   const nd=orders.filter(x=>x.status==='disputed').length;
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
-  const tiles=`<div class="tiles" data-tab="pend">${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
-  const npend=TM.length+orders.length+(d.data||[]).length+(w.data||[]).length+(ct.data||[]).length+(cw.data||[]).length,AT=S.atab||'pend';
+  const tiles=`<div class="tiles" data-tab="pend">${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${DR.length?tl('⚠️','Monto distinto',DR.length,'s-drev'):''}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
+  const npend=DR.length+TM.length+orders.length+(d.data||[]).length+(w.data||[]).length+(ct.data||[]).length+(cw.data||[]).length,AT=S.atab||'pend';
   const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','👥 Usuarios',ks.count||0],['stf','🛡️ Admins secundarios',0],['sta','📊 Estadísticas',0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
@@ -5292,7 +5312,7 @@ async function viewAdmin(){
     return`<div class="card ${x.status==='disputed'?'dg':''}" style="cursor:pointer" data-o="${x.id}"><div class="row"><b>${n(x.amount,2)} USDT · ${mny(due(x,parseM(x.methods).c),parseM(x.methods).c)} ${esc(parseM(x.methods).c)}</b><span class="tag ${c}">${t}</span></div><div class="mut">${when(x.created_at)}</div></div>`}).join(''):'<div class="card mut">Nada pendiente.</div>')+
   `<h3 id="s-dep">Depósitos pendientes</h3>`+((d.data||[]).length?d.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
     <div class="mut">TxID: ${esc(x.txid||'—')}</div><div class="grid2" style="margin-top:8px"><button class="b ok sm" data-da="${x.id}">Acreditar</button><button class="b bad sm" data-dr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>')+
-  `<h3 id="s-wd">Retiros pendientes</h3>`+((w.data||[]).length?w.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
+  (DR.length?drHtml:'')+`<h3 id="s-wd">Retiros pendientes</h3>`+((w.data||[]).length?w.data.map(x=>`<div class="card"><div class="row"><b>${n(x.amount,2)} USDT</b><span class="mut">@${esc(x.profiles?.username)}</span></div>
     <div class="row"><span class="mut">${esc(x.network)} · <code>${esc(x.address)}</code></span>${cpBtn(x.address)}</div>
     <div class="warnbox" style="margin:6px 0">Enviar <b>${n(netOf(x),4)} USDT</b> (comisión ${n(x.amount-netOf(x),4)}). Luego pulsa “Marcar enviado”.</div>
     <div class="grid2" style="margin-top:8px"><button class="b ok sm" data-wd="${x.id}">Marcar enviado</button><button class="b bad sm" data-wr="${x.id}">Rechazar</button></div></div>`).join(''):'<div class="card mut">Ninguno.</div>');
@@ -5315,6 +5335,14 @@ async function viewAdmin(){
     act(b,async()=>{await rpc(fn,{p_id:b.getAttribute(attr)});viewAdmin()},okMsg)});
   bind('data-da','admin_approve_deposit','Saldo acreditado');
   bind('data-dr','admin_reject_deposit','Depósito rechazado');
+  main().querySelectorAll('[data-rv]').forEach(b=>b.onclick=async()=>{const x=DR.find(r=>r.id===b.dataset.rv);if(!x)return;
+    const m=await ask('Acreditar depósito',`<p>@${esc(x.username||'?')} pidió <b>${n(x.expected,4)}</b> ${esc(x.symbol)} y llegaron <b>${n(x.received,4)}</b>.</p><label>Monto a acreditar (máximo ${n(x.received,4)})</label><input id="drAmt" type="number" step="any" min="0" value="${x.received}" inputmode="decimal"><label>Nota (opcional)</label><input id="drNote" maxlength="120">`,'Acreditar','ok');
+    if(!m)return;const a=parseFloat(m.querySelector('#drAmt').value),nt=m.querySelector('#drNote').value.trim();m.remove();
+    act(b,async()=>{if(!(a>0)||a>Number(x.received))throw new Error('Monto no válido (máximo '+n(x.received,4)+')');await rpc('admin_resolve_deposit_review',{p_id:x.id,p_action:'credit',p_amount:a,p_note:nt||null});viewAdmin()},'Depósito acreditado')});
+  main().querySelectorAll('[data-rx]').forEach(b=>b.onclick=async()=>{const x=DR.find(r=>r.id===b.dataset.rx);if(!x)return;
+    const m=await ask('Rechazar caso',`<p>No se acreditará nada a @${esc(x.username||'?')} por este envío (${n(x.received,4)} ${esc(x.symbol)}).</p><label>Motivo (opcional)</label><input id="drNote" maxlength="120">`,'Rechazar','bad');
+    if(!m)return;const nt=m.querySelector('#drNote').value.trim();m.remove();
+    act(b,async()=>{await rpc('admin_resolve_deposit_review',{p_id:x.id,p_action:'reject',p_amount:null,p_note:nt||null});viewAdmin()},'Caso rechazado')});
   bind('data-wd','admin_complete_withdrawal','Retiro marcado como enviado');
   bind('data-wr','admin_reject_withdrawal','Retiro rechazado y saldo devuelto');
   bind('data-ca','admin_approve_fiat_topup','Saldo acreditado');
@@ -5322,7 +5350,7 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-wd':'pend','s-top':'pend','s-usum':'usr','s-kyc':'usr','s-unv':'usr','s-risk':'usr','s-staff':'stf','s-bal':'stf','s-duty':'stf','s-audit':'stf','s-stfops':'stf','s-stfrules':'stf','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-msg':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-drev':'pend','s-wd':'pend','s-top':'pend','s-usum':'usr','s-kyc':'usr','s-unv':'usr','s-risk':'usr','s-staff':'stf','s-bal':'stf','s-duty':'stf','s-audit':'stf','s-stfops':'stf','s-stfrules':'stf','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-msg':'cfg','s-info':'cfg','s-ref':'cfg'};
   const SUBOF={'s-kyc':'kyc','s-unv':'unv','s-risk':'risk','s-staff':'team','s-bal':'team','s-duty':'duty','s-stfops':'ops','s-audit':'act','s-stfrules':'rules'},SUBDEF={usr:'kyc',stf:'team'};
   S.sub=S.sub||{};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
