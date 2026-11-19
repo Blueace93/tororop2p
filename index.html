@@ -3368,7 +3368,7 @@ async function viewOrder(){
     <p class="mut" style="margin:6px 0">Comprador: ${name(o.buyer_id)} · Vendedor: ${name(o.seller_id)}</p>
     <div class="big">${n(o.amount,2)} USDT</div>
     <div>${mny(due(o,cur),cur)} ${esc(cur)} <span class="mut">(${mny(o.price_cup,cur)} por USDT)</span></div>
-    ${o.fee_usdt>0?`<div class="mut">Comisión: ${n(o.fee_usdt,4)} USDT</div>`:''}
+    ${o.fee_usdt>0&&(isSeller||admin)?`<div class="mut">Comisión (la paga el vendedor): ${n(o.fee_usdt,4)} USDT</div>`:''}${isBuyer&&!isSeller?`<div class="mut">Recibes los ${n(o.amount,2)} USDT completos, sin comisión.</div>`:''}
     <p class="mut">Métodos: ${esc(meths)} · Moneda: ${esc(cur)}</p>
     ${payer?`<p class="mut">Pagará con: <b>${esc(payer)}</b></p>`:''}${revM&&(isBuyer||isSeller||admin)?`<div class="warnbox bad">${isSeller?REVW_S:REVW_B}</div>`:''}
     ${showDetails?`<div class="row"><span><b>Datos para pagar:</b><br><code>${esc(o.payment_details)}</code></span>${cpBtn(o.payment_details||'')}</div>`:''}
@@ -3872,7 +3872,7 @@ async function viewHist(){
   if(my!==NAV)return;
   const L=[],st=(m,s)=>m[s]||[s,''];
   (o.data||[]).forEach(x=>{const cu=parseM(x.methods).c,[s,k]=st(STATUS,x.status),buy=x.buyer_id===u;
-    L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} USDT`,sub:`${mny(due(x,cu),cu)} ${cu}`,s,k,rows:[['Tipo',buy?'Compra de USDT':'Venta de USDT'],['Cantidad',`${n(x.amount,4)} USDT`],['Precio por USDT',`${mny(x.price_cup,cu)} ${cu}`],['Total',`${mny(due(x,cu),cu)} ${cu}`],...(x.fee_usdt>0?[['Comisión',`${n(x.fee_usdt,4)} USDT`]]:[])]})});
+    L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} USDT`,sub:`${mny(due(x,cu),cu)} ${cu}`,s,k,rows:[['Tipo',buy?'Compra de USDT':'Venta de USDT'],['Cantidad',`${n(x.amount,4)} USDT`],['Precio por USDT',`${mny(x.price_cup,cu)} ${cu}`],['Total',`${mny(due(x,cu),cu)} ${cu}`],...(x.fee_usdt>0&&!buy?[['Comisión (la pagas tú)',`${n(x.fee_usdt,4)} USDT`]]:[])]})});
   (tr.data||[]).forEach(x=>{const[s,k]=st(TST,x.status),buy=x.buyer_id===u,A=ASSETS[x.asset]?.label||x.asset;
     L.push({g:'op',id:x.id,at:x.created_at,t:`${buy?'Compra':'Venta'} de ${n(x.amount,2)} ${A}`,sub:`${n(x.total,qd(x.quote))} ${x.quote}`,s,k,rows:[['Tipo',`${buy?'Compra':'Venta'} · ${A}`],['Cantidad',`${n(x.amount,4)} ${A}`],['Precio por unidad',`${n(x.price,x.price<1?4:2)} ${x.quote}`],['Total',`${n(x.total,qd(x.quote))} ${x.quote}`],...(x.fee>0?[['Comisión',`${n(x.fee,qd(x.fee_cur))} ${x.fee_cur||''}`]]:[])]})});
   (dp.data||[]).forEach(x=>{const[s,k]=st(PST,x.status);L.push({g:'dep',id:x.id,at:x.created_at,t:`Depósito de ${n(x.amount,2)} USDT`,sub:'USDT',s,k,rows:[['Tipo','Depósito USDT'],['Monto',`${n(x.amount,4)} USDT`],...(x.txid?[['TxID',x.txid]]:[])]})});
@@ -4811,7 +4811,7 @@ const aiAdvCard=d=>{
 function advAI(o){
   const b=$('sAI2'),k=o.buyer_proof;if(!b||!$('aiBox2'))return;
   if(AIC.has(k)){$('aiBox2').innerHTML=aiAdvCard(AIC.get(k));b.textContent='🧠 Volver a analizar (máx. 3 por operación)'}
-  b.onclick=async()=>{
+  const go=async()=>{
     if(b.disabled)return;
     if(!S._aiAdvOk){const m=await ask('Revisión avanzada con IA','<p>La captura del comprador se enviará a <b>Cloudflare (Workers AI)</b> para analizarla.</p><p>Es una ayuda y <b>no es definitiva</b>. Cada operación permite hasta <b>3</b> análisis.</p>','Analizar','ok');if(!m)return;m.remove();S._aiAdvOk=1}
     b.disabled=true;b.textContent='Analizando… (puede tardar hasta 40 s)';
@@ -4829,7 +4829,8 @@ function advAI(o){
     if(box){
       if(err)box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ '+esc(err)+'</span> <span class="mut" style="font-size:12px">Puedes seguir con la revisión de arriba y comprobar tu cuenta a mano.</span></div>';
       else{AIC.set(k,d);box.innerHTML=aiAdvCard(d);if(d.riesgo==='alto'||(Array.isArray(d.checks)?d.checks:[]).some(c=>c.level==='warn'))toast('⚠️ La revisión avanzada encontró avisos en la captura','err')}}
-    if(b2){b2.disabled=false;b2.textContent='🧠 Volver a analizar (máx. 3 por operación)'}}}
+    if(b2){b2.disabled=false;b2.textContent='🧠 Volver a analizar (máx. 3 por operación)'}};
+  b.onclick=()=>{go().catch(e=>{const bx=$('aiBox2'),bb=$('sAI2');if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ No se pudo iniciar el análisis: '+esc(String((e&&e.message)||e))+'</span></div>';if(bb){bb.disabled=false;bb.textContent='🧠 Volver a analizar (máx. 3 por operación)'}})}}
 const AIR=new Map(),AIW=new Set();   /* resultados de la revisión automática ya hechos */
 const PRC=new Map();
 async function getProof(path){if(PRC.has(path))return PRC.get(path);const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');const b=await r.blob();PRC.set(path,b);if(PRC.size>8)PRC.delete(PRC.keys().next().value);return b}
