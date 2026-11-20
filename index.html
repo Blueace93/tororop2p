@@ -1239,6 +1239,7 @@ html.lite .tw *{animation:none!important}@media (prefers-reduced-motion:reduce){
 .ctyp[hidden]{display:none}
 .ctyp span{position:absolute;left:12px;bottom:6px;max-width:80%;padding:3px 10px;border-radius:99px;background:var(--card2);border:1px solid var(--line);color:var(--mut);font-size:12px;box-shadow:0 2px 8px -3px rgba(0,0,0,.35)}
 @media(prefers-reduced-motion:reduce){.cwrap .msg.hl{animation:none}}
+#cbd.rp{background:var(--acc)!important;color:#fff!important}
 </style>
 
 
@@ -4309,7 +4310,7 @@ function chatDing(){
   if(!chatSnd())return Promise.resolve(false);
   try{if(navigator.vibrate)navigator.vibrate(90)}catch(e){}
   return playTone('chat',CHAT_SEQ,'triangle',.45)}
-const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=(S.chatUnread||0)+(S.pcUnread||0);b.textContent=c>9?'9+':c;b.style.display=c?'block':'none';updTitle()};
+const updChatBd=()=>{const b=$('cbd');if(!b)return;const c=(S.chatUnread||0)+(S.pcUnread||0);b.textContent=c>9?'9+':c;b.style.display=c?'block':'none';b.classList.toggle('rp',!!S.chatRep);updTitle()};
 /* Último mensaje visto, guardado por usuario: así el contador sobrevive a cerrar la app */
 const seenKey=()=>'chat_seen_'+(S.user?S.user.id:'');
 const getSeen=()=>+(lsGet(seenKey())||0);
@@ -4317,7 +4318,10 @@ const setSeen=v=>{v=Number(v)||0;if(v>getSeen())lsSet(seenKey(),String(v))};
 async function countChatUnread(last,lu){
   const seen=getSeen(),me=S.user.id;
   try{const d=await withTO(rpc('chat_recent',{p_limit:80,p_mark:false}),10000);
-    S.chatUnread=Math.min(99,(d||[]).filter(x=>Number(x.id)>seen&&x.user_id!==me).length)}
+    S.chatUnread=Math.min(99,(d||[]).filter(x=>Number(x.id)>seen&&x.user_id!==me).length);
+    const rp=(d||[]).filter(x=>Number(x.id)>seen&&x.user_id!==me&&repToMe(x.body));S.chatRep=rp.length;
+    const top=rp.reduce((a,x)=>Math.max(a,Number(x.id)),0);
+    if(top>(S.repAl||0)){S.repAl=top;const w=rp.find(x=>Number(x.id)===top);try{toast('↩ @'+(w&&w.username||'alguien')+' te respondió en el chat','good')}catch(e){}}}
   catch(e){S.chatUnread=(lu&&lu!==me&&last>seen)?Math.max(S.chatUnread||0,1):(S.chatUnread||0)}
   updChatBd()}
 /* Mensajes nuevos cuando el usuario NO está en el chat: suena la alarma y marca la pestaña */
@@ -4443,10 +4447,14 @@ function mxAction(e,scope,room,redraw,max,cur){
 const RE_TAG=/^\[re:(\d+)\|([^\]|\n]{0,30})\]\n?/;
 const rePart=b=>{const m=RE_TAG.exec(String(b==null?'':b));return m?{id:+m[1],un:m[2],rest:String(b).slice(m[0].length),tag:m[0]}:null};
 const stripRe=b=>{const r=rePart(b);return r?r.rest:String(b==null?'':b)};
+const isMeName=u=>{const m=S.profile&&S.profile.username;return !!(u&&m&&String(u).trim().toLowerCase()===String(m).trim().toLowerCase())};
+const repToMe=b=>{const r=rePart(b);return !!(r&&isMeName(r.un))};
+const RPH=new Set();
+function rpHl(cl){if(!RPH.size)return;RPH.forEach(id=>{const el=cl.querySelector('.msg[data-id="'+id+'"]');if(el){el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl');setTimeout(()=>el.classList.remove('hl'),1400)}});RPH.clear()}
 function rqBox(r){
   const q=S.rqLook&&S.rqLook(r.id),un=(q&&q.un)||r.un||'';
   const tx=q?(q.del?'🚫 Mensaje eliminado':(String(q.txt||'').replace(/\s+/g,' ').slice(0,90)||'…')):'Mensaje anterior';
-  return`<a href="#" class="rqb" data-rq="${r.id}" style="--h:${hue(un||'x')}"><b>@${esc(un)}</b><span>${esc(tx)}</span></a>`}
+  return`<a href="#" class="rqb" data-rq="${r.id}" style="--h:${hue(un||'x')}"><b>${isMeName(un)?'Tú':'@'+esc(un)}</b><span>${esc(tx)}</span></a>`}
 function rqGo(id){
   const cl=document.getElementById('cl'),el=cl&&cl.querySelector('.msg[data-id="'+(+id)+'"]');
   if(!el){toast('Ese mensaje es más antiguo y ya no está en pantalla');return}
@@ -4459,7 +4467,7 @@ function repShow(){
   if(!cm.dataset.max)cm.dataset.max=cm.maxLength;
   if(!REPL){b.hidden=true;b.innerHTML='';cm.maxLength=+cm.dataset.max;fitChat();return}
   b.hidden=false;
-  b.innerHTML=`<div class="rqb" style="--h:${hue(REPL.un||'x')}"><b>@${esc(REPL.un||'')}</b><span>${esc(String(REPL.txt||'').replace(/\s+/g,' ').slice(0,90))}</span></div><button type="button" id="crx" aria-label="Cancelar respuesta">✕</button>`;
+  b.innerHTML=`<div class="rqb" style="--h:${hue(REPL.un||'x')}"><b>${isMeName(REPL.un)?'Tú':'@'+esc(REPL.un||'')}</b><span>${esc(String(REPL.txt||'').replace(/\s+/g,' ').slice(0,90))}</span></div><button type="button" id="crx" aria-label="Cancelar respuesta">✕</button>`;
   $('crx').onclick=()=>{REPL=null;repShow()};
   cm.maxLength=Math.max(20,+cm.dataset.max-repTag().length);fitChat();cm.focus()}
 function repSet(id,ctx){const m=ctx.cur(id);if(!m||m.del)return;REPL={id,un:m.un||'',txt:m.raw||''};repShow()}
@@ -4510,7 +4518,7 @@ function typBind(cm){let last=0;cm.addEventListener('input',()=>{if(!cm.value.tr
 
 async function viewChat(){
   const my=NAV,mod=!!(S.profile&&(S.profile.is_admin||S.profile.is_staff));let lastKey='',MXc=null,LST=[];
-  S.chatUnread=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
+  S.chatUnread=0;S.chatRep=0;updChatBd();if(S.chatMax!=null)setSeen(S.chatMax);
   main().innerHTML=`${pcTabs('g','<button class="cib" id="csn" type="button"></button><button class="cib" id="cin" type="button" aria-label="Información">ⓘ</button>')}
   <div class="warnbox pc-hide ch-note" id="cnote" hidden>💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
   <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
@@ -4530,7 +4538,8 @@ async function viewChat(){
     /* alarma: mensajes nuevos de otras personas mientras tienes el chat abierto */
     setSeen(mx);S.chatCnt=Math.max(S.chatCnt||0,mx);
     if(S.chatMax==null)S.chatMax=mx;
-    else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing()}
+    else{const fresh=L.filter(x=>Number(x.id)>S.chatMax&&x.user_id!==S.user.id);if(mx>S.chatMax)S.chatMax=mx;if(fresh.length)chatDing();
+      const rp=fresh.filter(x=>repToMe(x.body));if(rp.length){rp.forEach(x=>RPH.add(String(x.id)));const w=rp[rp.length-1];try{toast('↩ @'+(w.username||'alguien')+' te respondió','good')}catch(e){}}}
     const MXd=await msgExtras('g',0,L.map(x=>Number(x.id)));if(my!==NAV||!$('cl'))return;MXc=MXd;LST=L;
     paint(force)};
   const NWg={};
@@ -4543,7 +4552,7 @@ async function viewChat(){
     cl.innerHTML=L.length?L.map(x=>{const mine=x.user_id===S.user.id,v=mxView(x.id,x.user_id,x.body,MXd),dk=dayKey(x.created_at);
       const sp=dk!==pk?(pk=dk,`<div class="dsep"><span>${dayLbl(x.created_at)}</span></div>`):'';
       return sp+mxBubble({id:x.id,mine,v,MX:MXd,un:x.username,pu:mine?'':x.user_id,tag:(mine&&x.role!=='owner'&&x.role!=='admin')?'':userTag(x.role,x.kyc_status),at:x.created_at,views:x.views})}).join(''):'<span class="mut">Aún no hay mensajes. ¡Escribe el primero!</span>';
-    mxNew(cl,NWg);
+    mxNew(cl,NWg);rpHl(cl);
     if(keep)cl.scrollTop=st0;else if(atEnd||force)cl.scrollTop=cl.scrollHeight;else cl.scrollTop=st0};
   const curG=id=>{const x=LST.find(m=>Number(m.id)===id);if(!x)return null;const v=mxView(x.id,x.user_id,x.body,MXc);return{author:x.user_id,raw:v.raw,del:v.del,un:x.username,tag:v.tag}};
   const delG=id=>act(null,async()=>{await rpc('chat_delete',{p_id:id});rtPing();await draw(false)},'Mensaje eliminado',true);
