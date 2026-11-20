@@ -4932,6 +4932,12 @@ async function analyzeProofs0(o,cur){
 async function sellerCheck(o,cur){
   const[r,f]=await Promise.all([sellerCheck0(o,cur),forenseLines(o).catch(()=>[])]);
   r.checks=(r.checks||[]).concat(f.map(([level,text])=>({level,text})));return r}
+/* Aviso de la operadora (Saldo Móvil): "Usted ha transferido 1280 CUP al numero 52510320. Saldo principal ..." */
+function smsTransfers(t){
+  const out=[],T=String(t||'').replace(/\s+/g,' ');
+  const re=/transferid[oa]\s+(\d[\d.,\s]*?)\s*(?:CUP|CUC|MLC|USD|saldo)?\s+al\s+n[uú]mero\s+(\d(?:\s?\d){7,10})/gi;
+  let m;while((m=re.exec(T))){const a=numsFrom(m[1])[0];if(isFinite(a))out.push({a,num:m[2].replace(/\s+/g,'')})}
+  return out}
 async function sellerCheck0(o,cur){
   const na=t=>({checks:[{level:'na',text:t}]});
   if(!o.buyer_proof)return na('El comprador aún no subió la captura.');
@@ -4941,6 +4947,18 @@ async function sellerCheck0(o,cur){
   if(!String(t).replace(/\s+/g,'').length)return na('No se pudo leer texto en la captura (borrosa o sin texto). Revísala tú mismo.');
   const C=[],add=(level,text)=>C.push({level,text});
   const exp=due(o,cur),tail=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-4);
+  const sms=smsTransfers(t);
+  if(sms.length){
+    /* captura de un aviso de la operadora: se compara el monto y el número de destino que dice el mensaje; sus otras fechas (línea activa, vencimiento) no son la de la transferencia */
+    const eq=x=>Math.abs(x-exp)<0.011,tot=sms.reduce((x,y)=>x+y.a,0),lst=sms.map(x=>mny(x.a,cur)).join(' + ');
+    if(sms.some(x=>eq(x.a)))add('ok',`Monto: el mensaje de la operadora dice que se transfirieron ${mny(exp,cur)} ${cur}, igual al monto de la operación.`);
+    else if(sms.length>1&&eq(tot))add('ok',`Monto: las ${sms.length} transferencias del mensaje suman ${mny(exp,cur)} ${cur}, igual al monto de la operación.`);
+    else add('warn',`Monto: el mensaje de la operadora dice que se transfirieron ${lst} ${cur}, pero la operación es de ${mny(exp,cur)} ${cur}. NO coincide.`);
+    const pn=((String(o.payment_details||'').match(/\d[\d\s]{6,}\d/g)||[]).map(x=>x.replace(/\s+/g,''))[0]||'').slice(-8);
+    if(pn){const hit=sms.find(x=>x.num.slice(-8)===pn);hit?add('ok',`Destino: el mensaje dice que se transfirió al número ${hit.num}, el de tus datos de cobro.`):add('warn',`Destino: el mensaje dice que se transfirió a ${sms.map(x=>x.num).join(', ')}, que no es el número de tus datos de cobro (termina en ${pn.slice(-4)}).`)}
+    add('na','Este mensaje de la operadora no trae fecha ni hora de la transferencia y es más fácil de falsificar que un comprobante de la app. Lo seguro es ver el dinero en tu saldo.');
+    try{const fb=await getProof(o.buyer_proof);(await fxCheck(fb,o)).forEach(([l,x])=>add(l,x))}catch(e){}
+    return{checks:C}}
   hasAmount(t,exp)?add('ok',`Monto: aparece ${mny(exp,cur)} ${cur} en la captura.`):add('warn',`Monto: no se encontró ${mny(exp,cur)} ${cur} en la captura.`);
   if(tail)hasTail(t,tail)?add('ok',`Destino: aparecen los últimos dígitos (${tail}) de tus datos de cobro.`):add('warn',`Destino: no se vieron los últimos dígitos (${tail}) de tus datos de cobro (pueden estar ocultos).`);
   extraChecks(t,o).forEach(([l,x])=>add(l,x));
