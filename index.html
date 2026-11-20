@@ -3383,7 +3383,7 @@ async function viewOrder(){
   if(med&&!fin_&&(isBuyer||isSeller)){
     const need=isBuyer?(!o.mediation_proof):true;
     act_+=`<div class="warnbox ${need?'bad':''}">${isBuyer?'📎 <b>El administrador necesita ver tus últimas 10 operaciones</b> de Transfermóvil, EnZona, Zelle, PayPal, tu banco o tu app de pago (la captura donde aparezca el pago). Súbela aquí. Puedes añadir más pruebas cuando quieras.':'📎 <b>Sube la captura de los movimientos de tu cuenta</b> (donde se vea que el pago no llegó, o que sí). Puedes añadir más pruebas cuando quieras.'} Se verán en el chat de mediación.</div><button class="b w" id="evB">📎 ${isBuyer?'Subir captura de mis últimas operaciones':'Subir captura de mis movimientos'}</button>`;
-    if(isSeller&&o.buyer_proof)act_+=`<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>`}
+    if(isSeller&&o.buyer_proof&&o.status!=='payment_sent')act_+=`<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>`}
 
   if(o.cup_paid>0)act_=`<div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)">💰 Pagado con saldo de la plataforma (${n(o.cup_paid,2)} ${o.bal_cur==='USD'?'USD':'CUP'}). ${isSeller?'Lo recibirás en tu saldo cuando se liberen los USDT.':''}</div>`+act_;
   main().innerHTML=`<p><a href="#" id="back">← Volver</a></p>
@@ -3403,6 +3403,7 @@ async function viewOrder(){
   <div id="chatbox"></div><div id="ratebox"></div>`;
   bindCopy(main());
   main().querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+  S._ordCur=o;S._ordCurr=cur;
   $('back').onclick=e=>{e.preventDefault();go(admin&&!isBuyer&&!isSeller?'admin':'orders')};
   const reload=async()=>{await loadBal();viewOrder()};
   if($('f'))$('f').onchange=()=>{const f=$('f').files[0],b=$('sendB')||$('sendS');
@@ -3417,18 +3418,8 @@ async function viewOrder(){
   if($('sOk'))$('sOk').onclick=async ev=>{const m=await ask('Confirmar pago recibido',`<p>Confirmas que recibiste <b>${mny(due(o,cur),cur)} ${esc(cur)}</b>. Los <b>${n(o.amount,2)} USDT</b> se liberarán al comprador ahora mismo y no se puede deshacer.</p>${revM?`<div class="warnbox bad">${REVW_S}</div>`:''}`,'Sí, lo recibí','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('seller_confirm',{p_order:o.id});await reload()},'USDT liberados al comprador')};
   if($('sAI'))warmOcr();
   /* La revisión con IA arranca sola al abrir la operación con captura; el botón queda para repetirla */
-  if($('sAI')){
-    const runAI=async auto=>{const b=$('sAI'),box=$('aiBox'),k=o.buyer_proof;if(!b||!box)return;
-      if(auto&&AIR.has(k)){box.innerHTML=aiCard(AIR.get(k));b.textContent='🔍 Volver a revisar con IA';return}
-      b.disabled=true;b.textContent='Analizando…';
-      box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🤖 Analizando la captura automáticamente… unos segundos.</span></div>';
-      let d;try{d=await sellerCheck(o,cur)}catch(e){d={checks:[{level:'na',text:'No se pudo leer la captura ahora. Revísala tú mismo.'}]}}
-      AIR.set(k,d);
-      if(auto&&(d.checks||[]).some(c=>c.level==='warn')&&!AIW.has(k)){AIW.add(k);toast('⚠️ La revisión automática encontró avisos en la captura del comprador','err')}
-      const b2=$('sAI'),box2=$('aiBox');if(box2)box2.innerHTML=aiCard(d);if(b2){b2.disabled=false;b2.textContent='🔍 Volver a revisar con IA'}};
-    $('sAI').onclick=()=>runAI(false);
-    runAI(true)}
-  if($('sAI2'))advAI(o);
+  document.querySelectorAll('#sAI').forEach((x,i)=>wireSellerAI(o,cur,x,i===0));
+  document.querySelectorAll('#sAI2').forEach(x=>advAI(o,x));
   if($('esc'))$('esc').onclick=async ev=>{const m=await ask('Pedir revisión','<p>El administrador revisará tu captura y decidirá. Podrás chatear con él en esta operación.</p>','Pedir revisión','ok');if(!m)return;m.remove();act(ev.target,async()=>{await rpc('buyer_escalate',{p_order:o.id});await reload()},'El administrador revisará tu pago')};
   if($('sNo'))$('sNo').onclick=async ev=>{const m=await ask('No he recibido el pago','<p>Para negar un pago debes dar <b>evidencia</b>. La operación queda en pausa y el administrador la revisará junto con tu captura.</p><p class="mut" style="font-size:12px">⚠️ Negar un pago que sí recibiste es una falta grave: tras varias disputas perdidas la cuenta de vendedor se suspende.</p><label>Motivo (qué pasó)</label><textarea id="dnR" rows="3" maxlength="500" placeholder="Ej: revisé mi cuenta de Transfermóvil y no hay ningún ingreso de ese monto"></textarea><label>Captura de los movimientos de tu cuenta</label><input type="file" id="dnF" accept="image/*">','Negar pago','bad');
     if(!m)return;const why=m.querySelector('#dnR').value.trim(),f=m.querySelector('#dnF').files[0];m.remove();
@@ -4848,17 +4839,35 @@ const aiAdvCard=d=>{
     <div class="warnbox bad" style="margin-top:10px"><b>Esto NO es definitivo.</b> Una captura editada con cuidado puede pasar la revisión, y la IA puede leer mal. Antes de confirmar, entra a tu cuenta (Transfermóvil, EnZona, Zelle, PayPal, tu banco o tu app de pago) y comprueba que el dinero ya está ahí.</div>
     <p class="mut" style="font-size:11px;margin-bottom:0">Este análisis envía la imagen a Cloudflare (Workers AI).${d&&d.modelo?' Modelo: '+esc(String(d.modelo).replace('@cf/','')):''}</p></div>`};
 /* Revisión avanzada: solo cuando el vendedor toca el botón (cada operación permite 3 análisis) */
-function advAI(o){
-  const b=$('sAI2'),bx0=$('aiBox2'),k=o.buyer_proof;
+/* Revisión con IA (OCR en el teléfono): funciona con el botón pulsado y la caja que está justo debajo */
+async function runSellerAI(o,cur,auto,b,box){
+  const k=o.buyer_proof;if(!b||!box)return;
+  if(auto&&AIR.has(k)){box.innerHTML=aiCard(AIR.get(k));b.textContent='🔍 Volver a revisar con IA';return}
+  b.disabled=true;b.textContent='Analizando…';
+  box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🤖 Analizando la captura automáticamente… unos segundos.</span></div>';
+  let d;try{d=await sellerCheck(o,cur)}catch(e){d={checks:[{level:'na',text:'No se pudo leer la captura ahora. Revísala tú mismo.'}]}}
+  AIR.set(k,d);
+  if(auto&&(d.checks||[]).some(c=>c.level==='warn')&&!AIW.has(k)){AIW.add(k);toast('⚠️ La revisión automática encontró avisos en la captura del comprador','err')}
+  box.innerHTML=aiCard(d);b.disabled=false;b.textContent='🔍 Volver a revisar con IA'}
+function wireSellerAI(o,cur,b,auto){
+  if(!b)return;const box=b.nextElementSibling&&b.nextElementSibling.id==='aiBox'?b.nextElementSibling:$('aiBox');
+  const fail=e=>{if(box)box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ No se pudo iniciar la revisión: '+esc(String((e&&e.message)||e))+'</span></div>';b.disabled=false;b.textContent='🔍 Volver a revisar con IA'};
+  b.onclick=()=>{runSellerAI(o,cur,false,b,box).catch(fail)};
+  if(auto){try{warmOcr()}catch(e){}runSellerAI(o,cur,true,b,box).catch(fail)}}
+/* Revisión avanzada: solo cuando el vendedor toca el botón (cada operación permite 3 análisis) */
+function advAI(o,btn){
+  const b=btn||$('sAI2'),k=o.buyer_proof;
   window.__lastOrder=o;
+  const boxOf=()=>{const x=b&&b.nextElementSibling;return x&&x.id==='aiBox2'?x:$('aiBox2')};
+  const bx0=boxOf();
   if(!b||!bx0){console.warn('advAI: faltan elementos',{boton:!!b,caja:!!bx0});return}
-  if(AIC.has(k)){$('aiBox2').innerHTML=aiAdvCard(AIC.get(k));b.textContent='🧠 Volver a analizar (máx. 3 por operación)'}
+  if(AIC.has(k)){try{bx0.innerHTML=aiAdvCard(AIC.get(k));b.textContent='🧠 Volver a analizar (máx. 3 por operación)'}catch(e){console.warn('advAI caché',e)}}
   const go=async()=>{
     if(b.disabled){if(S._aiBusy===k)return;b.disabled=false;b.textContent='🧠 Revisión avanzada con IA en la nube'}
     S._aiBusy=k;
-    if(!S._aiAdvOk){const m=await ask('Revisión avanzada con IA','<p>La captura del comprador se enviará a <b>Cloudflare (Workers AI)</b> para analizarla.</p><p>Es una ayuda y <b>no es definitiva</b>. Cada operación permite hasta <b>3</b> análisis.</p>','Analizar','ok');if(!m)return;m.remove();S._aiAdvOk=1}
+    if(!S._aiAdvOk){const m=await ask('Revisión avanzada con IA','<p>La captura del comprador se enviará a <b>Cloudflare (Workers AI)</b> para analizarla.</p><p>Es una ayuda y <b>no es definitiva</b>. Cada operación permite hasta <b>3</b> análisis.</p>','Analizar','ok');if(!m){S._aiBusy=null;return}m.remove();S._aiAdvOk=1}
     b.disabled=true;b.textContent='Analizando… (puede tardar hasta 40 s)';
-    const bx=$('aiBox2');if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🧠 Analizando la captura con IA… no cierres la pantalla.</span></div>';
+    const bx=boxOf();if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🧠 Analizando la captura con IA… no cierres la pantalla.</span></div>';
     let d=null,err='';
     try{
       const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Vuelve a iniciar sesión');
@@ -4867,14 +4876,14 @@ function advAI(o){
       const j=await r.json().catch(()=>null);
       if(!r.ok||!j)throw new Error((j&&j.error)||('El análisis respondió con un error (HTTP '+r.status+')'));
       d=j}
-    catch(e){const m=String((e&&e.message)||e);err=(e&&e.name==='AbortError')?'El análisis tardó demasiado. Inténtalo de nuevo en un momento.':/Failed to fetch|NetworkError|Load failed/i.test(m)?'No se pudo conectar con el análisis avanzado. Revisa tu internet.':m;b.disabled=false;b.textContent='🧠 Revisión avanzada con IA en la nube'}
+    catch(e){const m=String((e&&e.message)||e);err=(e&&e.name==='AbortError')?'El análisis tardó demasiado. Inténtalo de nuevo en un momento.':/Failed to fetch|NetworkError|Load failed/i.test(m)?'No se pudo conectar con el análisis avanzado. Revisa tu internet.':m}
     S._aiBusy=null;
-    const b2=$('sAI2'),box=$('aiBox2');
+    const box=boxOf();
     if(box){
       if(err)box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ '+esc(err)+'</span> <span class="mut" style="font-size:12px">Puedes seguir con la revisión de arriba y comprobar tu cuenta a mano.</span></div>';
       else{AIC.set(k,d);box.innerHTML=aiAdvCard(d);if(d.riesgo==='alto'||(Array.isArray(d.checks)?d.checks:[]).some(c=>c.level==='warn'))toast('⚠️ La revisión avanzada encontró avisos en la captura','err')}}
-    if(b2){b2.disabled=false;b2.textContent='🧠 Volver a analizar (máx. 3 por operación)'}};
-  b.onclick=()=>{go().catch(e=>{const bx=$('aiBox2'),bb=$('sAI2');if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ No se pudo iniciar el análisis: '+esc(String((e&&e.message)||e))+'</span></div>';if(bb){bb.disabled=false;bb.textContent='🧠 Volver a analizar (máx. 3 por operación)'}})}}
+    b.disabled=false;b.textContent=err?'🧠 Revisión avanzada con IA en la nube':'🧠 Volver a analizar (máx. 3 por operación)'};
+  b.onclick=()=>{go().catch(e=>{const bx=boxOf();if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ No se pudo iniciar el análisis: '+esc(String((e&&e.message)||e))+'</span></div>';S._aiBusy=null;b.disabled=false;b.textContent='🧠 Volver a analizar (máx. 3 por operación)'})}}
 const AIR=new Map(),AIW=new Set();   /* resultados de la revisión automática ya hechos */
 const PRC=new Map();
 async function getProof(path){if(PRC.has(path))return PRC.get(path);const{data}=await sb.storage.from('proofs').createSignedUrl(path,300);if(!data)throw new Error('url');const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('dl');const b=await r.blob();PRC.set(path,b);if(PRC.size>8)PRC.delete(PRC.keys().next().value);return b}
@@ -5991,12 +6000,18 @@ try{if('serviceWorker' in navigator)addEventListener('load',()=>navigator.servic
 
 boot();
 document.addEventListener('click',function(e){
-  var b=e.target&&e.target.closest&&e.target.closest('#sAI2');
+  var b=e.target&&e.target.closest&&e.target.closest('#sAI,#sAI2');
   if(!b||b.onclick)return;
-  console.warn('sAI2 sin handler, reenganchando');
-  if(window.__lastOrder){advAI(window.__lastOrder);if(b.onclick){b.click();return}}
-  var bx=document.getElementById('aiBox2');
-  if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">El botón no está conectado. Recarga la pantalla.</span></div>';
+  var o=S._ordCur||window.__lastOrder,bx=b.nextElementSibling;
+  try{
+    if(!o)throw new Error('no se cargó la operación');
+    console.warn(b.id+' sin función, conectando ahora');
+    if(b.id==='sAI2')advAI(o,b);else wireSellerAI(o,S._ordCurr||'CUP',b,false);
+    if(!b.onclick)throw new Error('no se pudo conectar el botón');
+    b.click();
+  }catch(err){
+    if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ No se pudo iniciar: '+String((err&&err.message)||err).replace(/[<>&]/g,'')+'. Recarga la pantalla.</span></div>';
+  }
 },true);
 </script>
 </body>
