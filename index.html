@@ -2814,7 +2814,7 @@ function drawOffers(){
     ${st?`<div class="qo-ic"><span>${st.ratings>0?'⭐ '+Number(st.avg_stars).toFixed(1):'Sin calificar'}</span><span>🔁 ${n(st.ops,0)}</span></div>`:''}</div>
     <small class="qo-t">${tm(r.created_at)}</small></div>
     <div class="qo-s"><div class="qo-v"><span>Quiere comprar</span><div><b>${n(r.amount,2)}</b> <u>USDT</u></div></div>
-    ${mine?`<button class="b ob1 qo-btn own" data-rcx="${r.id}">Cancelar solicitud</button>`:`<button class="b ob1 qo-btn rs${needKyc()?' lk':''}" data-rsell="${r.id}">${needKyc()?'🔒 ':''}Vender</button>`}</div>
+    ${mine?`<button class="b ob1 qo-btn own" data-rcx="${r.id}">Cancelar solicitud</button>`:`<button class="b ob1 qo-btn${needKyc()?' lk':''}" data-rsell="${r.id}">${needKyc()?'🔒 ':''}Vender</button>`}</div>
     <div class="qo-g"><div class="qo-k"><span>Pagaría por USDT</span><b><i class="qo-ci" style="background:hsl(${hue(c)} 55% 42%)">${esc(String(c).charAt(0).toUpperCase())}</i>${esc(reqPriceTxt(r))}</b></div>
     <div class="qo-k"><span>Total estimado</span><b>${esc(reqTotTxt(r))}</b></div></div>
     <div class="qo-m"><span class="tag ok">🙋 Quiere comprar</span><span class="tag ok">Paga en: ${esc(c)}</span>${r.pay_method?`<span class="tag ${isRev(r.pay_method)?'bad':''}">${esc(r.pay_method)}${isRev(r.pay_method)?' ⚠️':''}</span>`:''}</div>
