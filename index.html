@@ -1210,6 +1210,16 @@ html[data-theme] .tcard button.b.gh{background:transparent;color:#fff;border-col
 .tw-ct{text-align:center;font-size:11.5px;color:var(--mut);padding-top:8px}
 html.lite .tw *{animation:none!important}@media (prefers-reduced-motion:reduce){.tw *{animation:none!important}}
 @media (min-width:600px){.tw-in{padding-top:28px;padding-bottom:28px}}
+
+/* Calificación por estrellas: apagada = gris claro, elegida = dorada, con texto "N de 5" */
+.rs{font-size:40px;line-height:1;padding:2px 3px;color:var(--mut);opacity:.35;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,opacity .12s,color .12s}
+.rs.on{color:var(--warn);opacity:1;transform:scale(1.1);text-shadow:0 0 10px rgba(245,185,74,.45)}
+.rsl{min-height:22px;margin:2px 0 10px;font-size:14px;color:var(--mut)}.rsl b{color:var(--warn)}
+/* Vista previa de lo que escribes, arriba del chat (el teclado no la tapa) */
+.draft{flex:none;max-height:5.6em;overflow-y:auto;padding:7px 12px;border-bottom:1px solid var(--line);background:var(--card2);color:var(--tx);font-size:14px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.draft[hidden]{display:none}
+.draft .cur{color:var(--acc);font-weight:700}
+.draft:before{content:"Tu mensaje";display:block;font-size:11px;color:var(--mut);margin-bottom:2px}
 </style>
 
 
@@ -2962,7 +2972,7 @@ function showRetry(){const m=document.querySelector('main');if(!m||!m.querySelec
 function watchLoad(){clearTimeout(S.wd);S.wd=setTimeout(showRetry,12000)}
 (function(){const bar=document.createElement('div');bar.id='netbar';bar.textContent='Sin conexión · reintentando…';document.body.appendChild(bar);
   const up=()=>{bar.style.display=navigator.onLine?'none':'block'};
-  addEventListener('offline',up);addEventListener('online',()=>{up();toast('Conexión recuperada','good');if(S.user){pollNotifs();if(document.querySelector('main .sk, #rty'))go(S.view)}});up();
+  addEventListener('offline',up);addEventListener('online',()=>{up();toast('Conexión recuperada','good');if(S.user){pollNotifs();ntfRT();if(document.querySelector('main .sk, #rty'))go(S.view)}});up();
   addEventListener('unhandledrejection',e=>{const m=String((e.reason&&e.reason.message)||e.reason||'');console.warn(m);if(/fetch|network|abort|timed? ?out|load failed/i.test(m)){showRetry();toast(friendly(e.reason),'err')}});
 })();
 
@@ -3030,26 +3040,26 @@ async function pushSubscribe(){
   await rpc('save_push_sub',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_ua:navigator.userAgent.slice(0,150)});
   S.pushOn=true;return true}
 async function pushUnbind(){try{const reg=await navigator.serviceWorker.getRegistration(),sub=reg&&await reg.pushManager.getSubscription();if(sub){await sb.rpc('remove_push_sub',{p_endpoint:sub.endpoint});await sub.unsubscribe()}}catch(e){}}
-if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='push'&&S.user)pollNotifs()});
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(!e.data||!S.user)return;if(e.data.type==='push')pollNotifs();else if(e.data.type==='upd')toast('🆕 Hay una versión nueva de Tororo. Ciérrala y ábrela otra vez para actualizar')});
 
 /* ---------- Notificaciones ---------- */
 async function sysNotify(title,body){
   toast('🔔 '+title);ding();try{botNotify(title,body)}catch(e){}
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
-    if(reg)await reg.showNotification(title,{body,icon:(window.iconoUrl?iconoUrl():'icon-192.png'),vibrate:[200,100,200],tag:'tororo',renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
+    if(reg)await reg.showNotification(title,{body,icon:(window.iconoUrl?iconoUrl():'icon-192.png'),vibrate:[200,100,200],tag:'tororo-'+Date.now(),renotify:true,silent:false});else new Notification(title,{body})}catch(e){}}
 let NPB=false;
 async function pollNotifs(){
   if(!S.user||document.hidden||!navigator.onLine)return;
   if(NPB){S.pollAgain=true;return}
   NPB=true;S.pollN=(S.pollN||0)+1;
-  if(S.pollN%3===1)getMaint().then(m=>{if(m){S.maint=m;drawMaint()}});
+  if(ntDue('m',60000))getMaint().then(m=>{if(m){S.maint=m;drawMaint()}});
   try{
     const{data}=await withTO(sb.from('notifications').select('id,title,body').eq('read',false).order('created_at',{ascending:false}).limit(30),10000);
     const rows=data||[];S.unread=rows.length;
     const fresh=rows.filter(r=>!S.seen.has(r.id));rows.forEach(r=>S.seen.add(r.id));
-    if(!S.np0)fresh.slice(0,3).forEach(r=>sysNotify(r.title,r.body));
-    if((S.profile?.is_admin||S.profile?.is_staff)&&S.pollN%4===1){
+    if(!S.np0){fresh.slice(0,3).forEach(r=>sysNotify(r.title,r.body));if(fresh.length>3)sysNotify('Tienes '+(fresh.length-3)+' avisos más','Ábrelos en Notificaciones')}
+    if((S.profile?.is_admin||S.profile?.is_staff)&&ntDue('a',80000)){
       const c=async(t,f)=>{const{count}=await f(sb.from(t).select('id',{count:'exact',head:true}));return count||0};
       const v=!S.profile.is_admin?[await c('kyc_submissions',q=>q.eq('status','pending'))]:await Promise.all([c('orders',q=>q.in('status',['seller_confirmed','disputed'])),c('fiat_topups',q=>q.eq('status','pending')),c('fiat_withdrawals',q=>q.eq('status','pending')),c('withdrawals',q=>q.eq('status','pending')),c('deposits',q=>q.eq('status','pending')),c('kyc_submissions',q=>q.eq('status','pending')),c('trades',q=>q.in('status',['pending','review']).eq('asset','MOVIL'))]);
       let dupN=0;if(S.profile.is_admin)try{const dr=await sb.rpc('admin_dup_list');dupN=((dr&&dr.data)||[]).filter(x=>x.status==='explained').length}catch(e){}
@@ -3057,16 +3067,30 @@ async function pollNotifs(){
       if(!S.np0&&!S.pushOn&&tot>(S.lastPend||0))sysNotify('Tienes '+tot+' solicitudes pendientes','Revisa el panel de administrador');
       S.lastPend=tot;S.adminPend=tot;
       const bd=$('adbd');if(bd){bd.textContent=tot;bd.style.display=tot?'block':'none'}}
-    if(S.pollN%4===1)try{const{data:la}=await sb.from('announcements').select('id,title,created_at').order('created_at',{ascending:false}).limit(1);const l=la&&la[0];
+    if(ntDue('n',80000))try{const{data:la}=await sb.from('announcements').select('id,title,created_at').order('created_at',{ascending:false}).limit(1);const l=la&&la[0];
       if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
     S.np0=false;updBell()}catch(e){}finally{NPB=false;if(S.pollAgain){S.pollAgain=false;setTimeout(pollNotifs,300)}}}
+const ntDue=(k,ms)=>{const t=Date.now(),f='_d'+k;if(t-(S[f]||0)<ms)return false;S[f]=t;return true};
+/* Canal en tiempo real: el aviso sale al instante con los datos que llegan del servidor (sin esperar otra consulta) y se vuelve a conectar solo si se cae */
+function ntfRT(){
+  clearTimeout(S.rtT);
+  try{if(S.rt){const o=S.rt;S.rt=null;sb.removeChannel(o)}}catch(e){}
+  S.rtOk=false;if(!S.user)return;
+  try{const ch=sb.channel('ntf-'+S.user.id+'-'+Date.now()).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},pl=>{
+      try{const r=pl&&pl.new;if(r&&r.id!=null&&r.user_id===S.user.id&&!r.read&&!S.seen.has(r.id)){S.seen.add(r.id);S.unread=(S.unread||0)+1;if(!S.np0)sysNotify(r.title,r.body);updBell()}}catch(e){}
+      pollNotifs()}).subscribe(st=>{
+      if(S.rt!==ch)return;S.rtOk=(st==='SUBSCRIBED');
+      if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){clearTimeout(S.rtT);S.rtT=setTimeout(()=>{if(S.user&&S.rt===ch)ntfRT()},st==='CLOSED'?4000:6000)}});
+    S.rt=ch}catch(e){}}
 function startNotifs(){
-  clearInterval(NP);S.np0=true;S.seen=new Set();pollNotifs();OBX.flush();NP=setInterval(pollNotifs,20000);
-  try{if(S.rt){sb.removeChannel(S.rt);S.rt=null}S.rt=sb.channel('ntf-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},()=>pollNotifs()).subscribe()}catch(e){}
+  clearInterval(NP);S.np0=true;S.seen=new Set();S._dm=S._da=S._dn=0;S.npk=0;pollNotifs();OBX.flush();
+  /* con el canal en vivo conectado se consulta cada ~32 s (solo como respaldo); si se cae, cada 8 s */
+  NP=setInterval(()=>{S.npk=(S.npk||0)+1;if(S.rtOk&&S.npk%4)return;pollNotifs()},8000);
+  ntfRT();
   try{botAlertsInit()}catch(e){}
   setTimeout(askNotifBanner,2500);
   if('serviceWorker' in navigator&&'Notification' in window&&Notification.permission==='granted')navigator.serviceWorker.register('sw.js').then(()=>pushSubscribe()).catch(()=>{})}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user)pollNotifs()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user){pollNotifs();if(!S.rtOk)ntfRT()}});
 function askNotifBanner(){
   if(!S.user||!('Notification' in window)||Notification.permission!=='default'||$('nbn'))return;
   const t=+(lsGet('nbn_t')||0);if(Date.now()-t<3*864e5)return;
@@ -3578,10 +3602,10 @@ async function viewWallet(){
     <label>ID de la transacción (TxID)</label><input id="dt" placeholder="0x...">
     <button class="b gh w" id="dep">Avisar depósito</button></details>
   <div class="card" id="wcard"><h3 style="display:flex;align-items:center;gap:8px">${cIco('USDT',24)} Retirar USDT</h3>
-    <label>Monto (USDT) <button class="b gh sm" id="wmax" type="button">Máx</button></label><input id="wa" type="number" step="any" inputmode="decimal"><div class="mut" id="wfee" style="margin:-4px 0 8px"></div>
+    <label>Monto (USDT) <button class="b gh sm" id="wmax" type="button">Máx</button></label><input id="wa" type="number" step="any" min="5" inputmode="decimal" placeholder="Mínimo 5 USDT"><div class="mut" id="wfee" style="margin:-4px 0 8px"></div>
     <label>Red</label><select id="wn"><option value="BEP20">BNB Smart Chain (BEP20)</option><option value="ARBITRUM">Arbitrum One</option></select>
     <label>Dirección de destino (0x…, de la red elegida)</label><input id="wd" placeholder="0x...">
-    <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${n(FE('withdraw'),2)}%.</div><button class="b w${needKyc()?' lk':''}" id="wit">${needKyc()?'🔒 ':''}Solicitar retiro</button></div>
+    <div class="warnbox">⏱️ Las extracciones pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. Comisión de retiro: ${n(FE('withdraw'),2)}%. <b>Retiro mínimo: 5 USDT.</b></div><button class="b w${needKyc()?' lk':''}" id="wit">${needKyc()?'🔒 ':''}Solicitar retiro</button></div>
   <div id="hist">${skel(2)}</div>`;
   bindCopy(main());
   const upd=()=>{$('wfee').textContent=wfeeTxt(+$('wa').value,'USDT',2)};$('wa').oninput=upd;$('wmax').onclick=()=>{const L=S.wlim;$('wa').value=L&&L.limited?Math.min(S.wallet.available,L.available):S.wallet.available;upd()};
@@ -3596,6 +3620,7 @@ async function viewWallet(){
     try{kycChk();
       a=+$('wa').value;ad=$('wd').value.trim();net=$('wn').value;
       if(!(a>0))throw new Error('Indica un monto válido');
+      if(a<5)throw new Error('El retiro mínimo es 5 USDT');
       if(a>S.wallet.available)throw new Error('Saldo insuficiente');
       if(!/^0x[a-fA-F0-9]{40}$/.test(ad))throw new Error('Dirección inválida: debe empezar por 0x y tener 42 caracteres');
       const m=await ask('Confirmar retiro',`<p>Se descontarán <b>${n(a,2)} USDT</b> de tu saldo (comisión ${n(FE('withdraw'),2)}%) y recibirás <b>${n(a*(1-FE('withdraw')/100),2)} USDT</b> por <b>${esc(net)}</b> a:</p><p><code>${esc(ad)}</code></p><p class="mut">Verifica la dirección: los envíos a una red equivocada no se recuperan.</p>`,'Solicitar retiro');
@@ -3855,10 +3880,12 @@ async function drawRate(kind,id,other){
   const{data:pr}=await sb.from('profiles').select('username').eq('id',other).maybeSingle();
   if(my!==NAV||!$('ratebox'))return;
   const nm='@'+esc(pr?.username||'usuario');
-  if(ex){box.innerHTML=`<div class="card"><h3>Tu calificación a ${nm}</h3><div style="font-size:22px">${'⭐'.repeat(ex.stars)}</div>${ex.comment?`<div class="mut">${esc(ex.comment)}</div>`:''}</div>`;return}
+  if(ex){box.innerHTML=`<div class="card"><h3>Tu calificación a ${nm}</h3><div style="font-size:26px;line-height:1.2"><span style="color:var(--warn)">${'★'.repeat(ex.stars)}</span><span style="color:var(--mut);opacity:.4">${'★'.repeat(Math.max(0,5-ex.stars))}</span></div><div class="mut">${ex.stars} de 5</div>${ex.comment?`<div class="mut">${esc(ex.comment)}</div>`:''}</div>`;return}
   let sel=0;
-  box.innerHTML=`<div class="card"><h3>Califica a ${nm}</h3><div id="stars" style="font-size:34px;letter-spacing:8px;cursor:pointer;margin-bottom:8px">${[1,2,3,4,5].map(i=>`<span data-s="${i}" style="color:var(--warn);opacity:.3">★</span>`).join('')}</div><input id="rtC" maxlength="200" placeholder="Comentario (opcional)"><button class="b w" id="rtB" disabled>Enviar calificación</button></div>`;
-  $('stars').onclick=e=>{const s=e.target.closest('[data-s]');if(!s)return;sel=+s.dataset.s;box.querySelectorAll('[data-s]').forEach(x=>x.style.opacity=+x.dataset.s<=sel?'1':'.3');$('rtB').disabled=false};
+  box.innerHTML=`<div class="card"><h3>Califica a ${nm}</h3><div id="stars" role="radiogroup" aria-label="Calificación de 1 a 5 estrellas" style="display:flex;gap:4px;margin-bottom:4px">${[1,2,3,4,5].map(i=>`<span class="rs" data-s="${i}" role="radio" aria-checked="false" aria-label="${i} de 5">★</span>`).join('')}</div><div id="stl" class="rsl">Toca una estrella para calificar</div><input id="rtC" maxlength="200" placeholder="Comentario (opcional)"><button class="b w" id="rtB" disabled>Enviar calificación</button></div>`;
+  const LBL=['','Muy malo','Malo','Regular','Bueno','Excelente'];
+  const paint=k=>{box.querySelectorAll('[data-s]').forEach(x=>{const v=+x.dataset.s;x.classList.toggle('on',v<=k);x.setAttribute('aria-checked',v===k?'true':'false')});$('stl').innerHTML=k?`<b>${k} de 5</b> · ${LBL[k]}`:'Toca una estrella para calificar';$('rtB').textContent=k?`Enviar calificación (${k} ${k===1?'estrella':'estrellas'})`:'Enviar calificación'};
+  $('stars').onclick=e=>{const s=e.target.closest('[data-s]');if(!s)return;sel=+s.dataset.s;paint(sel);$('rtB').disabled=false};
   $('rtB').onclick=ev=>act(ev.target,async()=>{await rpc('rate_user',{p_kind:kind,p_ref:String(id),p_stars:sel,p_comment:$('rtC').value.trim()});S.st={};await drawRate(kind,id,other)},'¡Gracias por calificar!')}
 
 /* ----- Historial con comprobantes ----- */
@@ -4045,7 +4072,7 @@ const FAQ=()=>[
  ['¿Qué pasa si no pago a tiempo?','Tienes 30 minutos para pagar y subir la captura. Si no, la operación se cancela sola y la oferta vuelve al mercado.'],
  ['¿Qué es la verificación de identidad (KYC)?','Es obligatoria una sola vez para comprar, vender y retirar. Desde Perfil subes tu carnet (frente y reverso) y una selfie sosteniéndolo. El administrador la revisa y te avisa.'],
  ['¿Cómo deposito USDT?','En Billetera, sección «Depositar USDT», elige una opción: «Gratis» (sin comisión: envías el monto exacto que te indicamos, pegas el TxID y esperas la acreditación manual) o «Depósito automático» (sin TxID, con una comisión de 0,4 % + 0,10 USDT). Si algo falla, usa el depósito manual y avisa con el TxID.'],
- ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. La comisión de retiro es del '+n(S.fees.withdraw,2)+'%. Puedes ver el estado en Billetera y en Historial.'],
+ ['¿Cuánto demora un retiro?','Pueden demorar desde minutos hasta 24 horas, según el tráfico en la red. El retiro mínimo es de 5 USDT y la comisión de retiro es del '+n(S.fees.withdraw,2)+'%. Puedes ver el estado en Billetera y en Historial.'],
  ['¿Qué comisiones hay?','Cada operación en el Mercado paga '+S.fees.trade+'% y cada retiro '+n(S.fees.withdraw,2)+'%.'],
  ['¿Cómo funcionan los referidos?','En Más → Referidos tienes tu enlace. Cuando un amigo se registra con él, recibes el 0,25 % de cada venta que haga, de por vida.'],
  ['¿Cómo protejo mi cuenta?','En Más → Seguridad puedes crear un PIN para los retiros y activar la verificación en dos pasos. También verás tus accesos recientes.'],
@@ -4254,6 +4281,17 @@ const KB=(()=>{
   document.addEventListener('click',e=>{const a=document.activeElement;
     if(a&&a.matches&&a.matches('.cmp textarea')&&e.target.closest&&e.target.closest('#cl')&&!e.target.closest('a,button'))a.blur()});
   return{coarse,fit}})();
+
+/* Vista previa del texto mientras escribes (teclado abierto): muestra el mensaje completo y dónde está el cursor, para poder corregir palabras sin cerrar el teclado */
+(()=>{const dr=()=>{const d=document.getElementById('cdraft'),t=document.getElementById('cm');if(!d||!t)return;
+    const on=document.body.classList.contains('kb')&&document.activeElement===t&&t.value.trim().length>0;
+    if(!on){if(!d.hidden){d.hidden=true;d.textContent=''}fitChat();return}
+    const a=t.selectionStart==null?t.value.length:t.selectionStart,key=t.value+'|'+a;if(d._k===key&&!d.hidden)return;d._k=key;
+    d.textContent='';d.appendChild(document.createTextNode(t.value.slice(0,a)));const c=document.createElement('span');c.className='cur';c.textContent='▏';d.appendChild(c);d.appendChild(document.createTextNode(t.value.slice(a)));
+    const was=d.hidden;d.hidden=false;c.scrollIntoView({block:'nearest'});if(was)fitChat()};
+  ['input','focusin','keyup','click','selectionchange'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(dr,0)));
+  document.addEventListener('focusout',()=>setTimeout(dr,220));
+  setInterval(()=>{const d=document.getElementById('cdraft');if(d&&(document.body.classList.contains('kb')||!d.hidden))dr()},400)})();
 /* ---------- Presencia en línea y alarma del chat ---------- */
 let LT=null,LTB=false;
 const chatSnd=()=>lsGet('chat_snd')!=='0';
@@ -4390,6 +4428,7 @@ async function viewChat(){
   main().innerHTML=`${pcTabs('g','<button class="cib" id="csn" type="button"></button><button class="cib" id="cin" type="button" aria-label="Información">ⓘ</button>')}
   <div class="warnbox pc-hide ch-note" id="cnote" hidden>💬 Chat de la comunidad. Por seguridad no se permiten números de teléfono, enlaces ni datos de contacto de otras apps. El equipo nunca te pedirá claves ni pagos por aquí.</div>
   <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
+  <div class="draft" id="cdraft" hidden></div>
   <div class="cmp"><textarea id="cm" rows="1" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b snd" id="cs" aria-label="Enviar">${SEND_IC}</button></div></div>`;
   bindPcTabs();fitChat();setTimeout(fitChat,450);
   const setSnd=()=>{$('csn').textContent=chatSnd()?'🔔':'🔕';$('csn').title=chatSnd()?'Alarma encendida':'Alarma apagada';$('csn').setAttribute('aria-label',$('csn').title)};setSnd();
@@ -4539,6 +4578,7 @@ async function viewPcon(){
   const who=S.pcName||'Usuario';
   main().innerHTML=`<div class="pcrow-top"><a href="#" id="pcb">← Chats</a><b>🔒 @${esc(who)}</b><button class="b gh sm" id="pcm" aria-label="Opciones">⋯</button></div>
   <div class="card cwrap" id="cwrap"><div class="chat" id="cl">${skel(1)}</div>
+  <div class="draft" id="cdraft" hidden></div>
   <div class="cmp"><textarea id="cm" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" autocomplete="off"></textarea><button class="b snd" id="cs" aria-label="Enviar">${SEND_IC}</button></div></div>`;
   $('pcb').onclick=e=>{e.preventDefault();go('pchat')};fitChat();setTimeout(fitChat,450);
   const row=x=>{const mine=x.msender===me,v=mxView(x.mid,x.msender,x.mbody,MXc);return mxBubble({id:x.mid,mine,v,MX:MXc,un:'',at:x.mat})};

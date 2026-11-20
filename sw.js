@@ -1,5 +1,5 @@
 // Service worker de Tororo: notificaciones push con la app cerrada + caché para abrir más rápido
-const CACHE = 'tororo-v5';
+const CACHE = 'tororo-v6';
 const SB_LIB = 'cdn.jsdelivr.net/npm/@supabase/supabase-js';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -33,13 +33,25 @@ self.addEventListener('fetch', e => {
     e.respondWith(caches.open(CACHE).then(c => c.match(r).then(h => h || fetch(r).then(n => { if (n.ok && !/text\/html/i.test(n.headers.get('content-type') || '')) c.put(r, n.clone()); return n; }))));
     return;
   }
-  // La página y sus iconos: primero la versión nueva (hasta 3 s); si la red va lenta o falla, la guardada
+  // La página y sus iconos: se muestra al instante la copia guardada y se actualiza en segundo plano.
+  // Si hay versión nueva, se avisa a la app. Sin copia guardada (primera vez) se espera a la red.
   if (u.origin === location.origin && (r.mode === 'navigate' || /\/(index\.html|manifest\.json|icon-[^/]+\.png)?$/.test(u.pathname))) {
-    e.respondWith(caches.open(CACHE).then(c => {
-      const net = fetch(r, { cache: 'no-cache' }).then(n => { if (n.ok) c.put(r, n.clone()); return n; });
-      const slow = new Promise(res => setTimeout(res, 3000, null));
-      return Promise.race([net, slow]).then(n => n || c.match(r, { ignoreSearch: true }).then(h => h || net))
-        .catch(() => c.match(r, { ignoreSearch: true }));
+    e.respondWith(caches.open(CACHE).then(async c => {
+      const hit = await c.match(r, { ignoreSearch: true });
+      const refresh = fetch(r, { cache: 'no-cache' }).then(async n => {
+        if (n.ok) {
+          const antes = hit && (hit.headers.get('etag') || hit.headers.get('last-modified'));
+          const ahora = n.headers.get('etag') || n.headers.get('last-modified');
+          await c.put(r, n.clone());
+          if (antes && ahora && antes !== ahora && r.mode === 'navigate') {
+            const l = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+            l.forEach(x => x.postMessage({ type: 'upd' }));
+          }
+        }
+        return n;
+      });
+      if (hit) { e.waitUntil(refresh.catch(() => {})); return hit; }
+      return refresh;
     }));
     return;
   }
@@ -65,6 +77,7 @@ self.addEventListener('push', e => {
     // Avisa a la app para que revise sus notificaciones al instante
     list.forEach(c => c.postMessage({ type: 'push' }));
     const visible = list.some(c => c.visibilityState === 'visible');
+    const tag = d.tag || ('tororo-' + Date.now());
     // Si la app está abierta y visible, ella misma muestra el aviso y suena (evita duplicados).
     // En Chrome/Android no hace falta mostrar nada; iOS exige mostrar una por cada push o cancela la suscripción.
     if (visible && !IOS) return;
@@ -73,7 +86,7 @@ self.addEventListener('push', e => {
       icon: iconoAviso(),
       badge: 'icon-192.png',
       vibrate: [200, 100, 200],
-      tag: d.tag || 'tororo',
+      tag,
       renotify: true,
       silent: visible,
       data: { url: d.url || './' }
@@ -81,7 +94,7 @@ self.addEventListener('push', e => {
     if (visible) {
       // iOS con la app abierta: se muestra y se cierra enseguida para cumplir la regla sin molestar
       await new Promise(r => setTimeout(r, 1500));
-      const n = await self.registration.getNotifications({ tag: d.tag || 'tororo' });
+      const n = await self.registration.getNotifications({ tag });
       n.forEach(x => x.close());
     }
   })());
