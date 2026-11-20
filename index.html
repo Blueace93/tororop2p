@@ -3551,7 +3551,7 @@ async function viewOrder(){
     $('chatbox').insertAdjacentHTML('afterend','<button class="b gh w" id="anaB" style="margin-top:8px">🤖 Analizar capturas de nuevo</button>');
     $('anaB').onclick=ev=>runAna(true,ev.currentTarget);setTimeout(()=>runAna(false),1200);
     $('chatbox').insertAdjacentHTML('afterend','<div id="fraudBox"></div>');fraudRender(o.id);fcImgScan(o);fcFlagsLoad(o);
-    if(o.buyer_proof&&!$('sAI2')){$('anaB').insertAdjacentHTML('afterend','<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>');advAI(o)}}
+    if(o.buyer_proof){if(!$('sAI2')){$('anaB').insertAdjacentHTML('afterend','<button class="b gh w" id="sAI2" style="margin-top:8px">🧠 Revisión avanzada con IA en la nube</button><div id="aiBox2"></div>')}advAI(o)}}
   if(o.status==='released'&&(isBuyer||isSeller)){drawRate('order',o.id,isBuyer?o.seller_id:o.buyer_id);shPop('o',o)}
   /* actualización automática */
   let last=o.status+o.updated_at;
@@ -4809,10 +4809,13 @@ const aiAdvCard=d=>{
     <p class="mut" style="font-size:11px;margin-bottom:0">Este análisis envía la imagen a Cloudflare (Workers AI).${d&&d.modelo?' Modelo: '+esc(String(d.modelo).replace('@cf/','')):''}</p></div>`};
 /* Revisión avanzada: solo cuando el vendedor toca el botón (cada operación permite 3 análisis) */
 function advAI(o){
-  const b=$('sAI2'),k=o.buyer_proof;if(!b||!$('aiBox2'))return;
+  const b=$('sAI2'),bx0=$('aiBox2'),k=o.buyer_proof;
+  window.__lastOrder=o;
+  if(!b||!bx0){console.warn('advAI: faltan elementos',{boton:!!b,caja:!!bx0});return}
   if(AIC.has(k)){$('aiBox2').innerHTML=aiAdvCard(AIC.get(k));b.textContent='🧠 Volver a analizar (máx. 3 por operación)'}
   const go=async()=>{
-    if(b.disabled)return;
+    if(b.disabled){if(S._aiBusy===k)return;b.disabled=false;b.textContent='🧠 Revisión avanzada con IA en la nube'}
+    S._aiBusy=k;
     if(!S._aiAdvOk){const m=await ask('Revisión avanzada con IA','<p>La captura del comprador se enviará a <b>Cloudflare (Workers AI)</b> para analizarla.</p><p>Es una ayuda y <b>no es definitiva</b>. Cada operación permite hasta <b>3</b> análisis.</p>','Analizar','ok');if(!m)return;m.remove();S._aiAdvOk=1}
     b.disabled=true;b.textContent='Analizando… (puede tardar hasta 40 s)';
     const bx=$('aiBox2');if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">🧠 Analizando la captura con IA… no cierres la pantalla.</span></div>';
@@ -4824,7 +4827,8 @@ function advAI(o){
       const j=await r.json().catch(()=>null);
       if(!r.ok||!j)throw new Error((j&&j.error)||('El análisis respondió con un error (HTTP '+r.status+')'));
       d=j}
-    catch(e){const m=String((e&&e.message)||e);err=(e&&e.name==='AbortError')?'El análisis tardó demasiado. Inténtalo de nuevo en un momento.':/Failed to fetch|NetworkError|Load failed/i.test(m)?'No se pudo conectar con el análisis avanzado. Revisa tu internet.':m}
+    catch(e){const m=String((e&&e.message)||e);err=(e&&e.name==='AbortError')?'El análisis tardó demasiado. Inténtalo de nuevo en un momento.':/Failed to fetch|NetworkError|Load failed/i.test(m)?'No se pudo conectar con el análisis avanzado. Revisa tu internet.':m;b.disabled=false;b.textContent='🧠 Revisión avanzada con IA en la nube'}
+    S._aiBusy=null;
     const b2=$('sAI2'),box=$('aiBox2');
     if(box){
       if(err)box.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">⚠️ '+esc(err)+'</span> <span class="mut" style="font-size:12px">Puedes seguir con la revisión de arriba y comprobar tu cuenta a mano.</span></div>';
@@ -5946,6 +5950,14 @@ try{if('serviceWorker' in navigator)addEventListener('load',()=>navigator.servic
   if(vv)vv.addEventListener('resize',()=>{const a=document.activeElement;if(isF(a))show(a)})})();
 
 boot();
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest&&e.target.closest('#sAI2');
+  if(!b||b.onclick)return;
+  console.warn('sAI2 sin handler, reenganchando');
+  if(window.__lastOrder){advAI(window.__lastOrder);if(b.onclick){b.click();return}}
+  var bx=document.getElementById('aiBox2');
+  if(bx)bx.innerHTML='<div class="card" style="margin-top:10px"><span class="mut">El botón no está conectado. Recarga la pantalla.</span></div>';
+},true);
 </script>
 </body>
 </html>
