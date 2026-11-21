@@ -2195,6 +2195,10 @@ async function botFree(q){
   const out=botReply(q,true);
   if(out)return botSayN(out.a,out.acts);
   /* 2) Todo lo demás va a la IA y su respuesta se muestra directa */
+  /* Preguntas simples de seguridad/comisiones/cómo comprar: el FAQ local responde al instante (la IA tardaba 10 s o más) */
+  try{const nq=botNorm(q);
+    if(nq.trim().split(/\s+/).length<=6&&/(segur|fiable|confiable|estafa|comision|como compro|como comprar)/.test(nq)&&!/(pague|pago|vendedor|comprador|no me|robo|reclam)/.test(nq)){
+      const fq=botReply(q);if(fq){await new Promise(r=>setTimeout(r,0));return botSayN(fq.a,fq.acts)}}}catch(e){}
   const ai=await botAI(q);
   if(BOT.aiCancel){BOT.aiCancel=false;return}
   if(ai)return botSay(ai,{acts:[]});
@@ -2343,7 +2347,8 @@ function botSpeakLocal(parts){
     const lang=(BOT_VOICE&&BOT_VOICE.lang)||(/^es/i.test(navigator.language||'')?navigator.language:'es-US');
     /* velocidad y tono normales (1.0): modificarlos es lo que más delata la voz sintética */
     /* se guardan las frases en BOT_V.utts hasta que acaben: si no, Chrome las recoge (garbage collector) y la voz se corta a mitad */
-    const us=parts.map(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1;u.pitch=1;u.volume=1;return u});
+    const bl=[];let cc='';for(const x of parts){if((cc+' '+x).length>260&&cc){bl.push(cc);cc=x}else cc+=(cc?' ':'')+x}if(cc)bl.push(cc);
+    const us=bl.map(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1.15;u.pitch=1;u.volume=1;return u});
     BOT_V.utts=us;if(us.length)us[us.length-1].onend=()=>{if(BOT_V.utts===us)BOT_V.utts=null};
     us.forEach(u=>speechSynthesis.speak(u))}catch(e){}}
 function botSpeak(t){
