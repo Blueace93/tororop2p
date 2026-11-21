@@ -2701,13 +2701,14 @@ async function viewMarket(){
       <label id="osvw" style="display:none;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="osv" style="width:auto;margin:0"> Guardar esta tarjeta en Mis tarjetas</label></div><div id="fxw" style="display:none"></div>
       <p class="mut">Al publicar, queda bloqueado el monto <b>más la comisión</b> de la plataforma (la paga el vendedor desde su saldo). Si no te alcanza para el %, publica un poco menos: por ejemplo, 99 en vez de 100.</p>
       <button class="b w" id="mk">Publicar oferta</button></div>
-  <div id="buy" class="card" style="display:none"><b>Quiero comprar USDT</b><div class="mut">Publica qué buscas: los vendedores podrán abrir una venta contigo dentro de tu rango de precio</div>
-      <label>Cantidad de USDT que quieres comprar</label><input id="ba" type="number" min="1" step="any" inputmode="decimal">
+  <div id="buy" class="card" style="display:none"><b>Quiero comprar USDT</b><div class="mut">Indica cuánto vas a pagar y a qué precio por USDT: los vendedores podrán abrir una venta contigo a ese precio</div>
       <label>Moneda con la que pagarás</label><select id="bc"><optgroup label="Cuba">${CURS.map(c=>`<option value="${c}">${curLb(c)}</option>`).join('')}</optgroup><optgroup label="Internacional (Zelle, PayPal, bancos…)">${Object.keys(FX).map(c=>`<option value="${c}">${FX[c].l}</option>`).join('')}</optgroup></select>
-      <div class="grid2"><div><label id="bl1">Precio mínimo por USDT (en CUP)</label><input id="bp1" type="number" min="0" step="any" inputmode="decimal"></div><div><label id="bl2">Precio máximo por USDT (en CUP)</label><input id="bp2" type="number" min="0" step="any" inputmode="decimal"></div></div>
+      <label id="bl0">Total que vas a pagar (en CUP)</label><input id="bt" type="number" min="0" step="any" inputmode="decimal" placeholder="Ej: 1000">
+      <label id="bl1">Precio por 1 USDT (en CUP)</label><div class="row" style="gap:8px;align-items:center"><input id="bp1" type="number" min="0" step="any" inputmode="decimal" style="margin:0;flex:1"><button type="button" class="b gh sm" id="bbest" style="display:none"></button></div>
+      <input id="ba" type="hidden"><input id="bp2" type="hidden">
       <div class="mut" id="bhint"></div>
       <div id="bfx" style="display:none"></div>
-      <p class="mut">Tu solicitud la verán todos los usuarios con tu etiqueta (verificado o sin verificar). Dura 48 horas y puedes cancelarla cuando quieras. Un vendedor solo podrá abrir la venta con un precio dentro de tu rango y, cuando la abra, pagas desde Órdenes.</p>
+      <p class="mut">Tu solicitud la verán todos los usuarios con tu etiqueta (verificado o sin verificar). Dura 48 horas y puedes cancelarla cuando quieras. Un vendedor podrá abrir la venta a ese precio y, cuando la abra, pagas desde Órdenes.</p>
       <button class="b w" id="bk">Publicar solicitud</button></div>
   <div class="seg" id="mkT"><button data-mt="a">Todo</button><button data-mt="s">🟢 Venden <span id="cS"></span></button><button data-mt="b">🙋 Quieren comprar <span id="cB"></span></button></div>
   <div id="pnS"><details class="card" style="padding:12px 14px"${F.q||F.m||F.mine?' open':''}><summary style="cursor:pointer;font-weight:700">🔎 Buscar y filtrar</summary><div style="height:10px"></div><input id="q" placeholder="Buscar por vendedor o método…" value="${esc(F.q)}" style="margin-top:0">
@@ -2721,9 +2722,11 @@ async function viewMarket(){
   const setMt=t=>{S.mt=t;$('mkT').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mt===t));if(S.offLoaded||(S.reqs&&S.reqs.length)||(S.offers&&S.offers.length))drawOffers()};
   $('mkT').onclick=e=>{const b=e.target.closest('button');if(b)setMt(b.dataset.mt)};setMt(S.mt||'a');
   const bhint=()=>{const c=$('bc').value,a=(S.offers||[]).filter(o=>parseM(o.methods).c===c).map(o=>+o.price_cup).filter(x=>x>0).sort((x,y)=>x-y);
-    $('bl1').textContent=`Precio mínimo por USDT (en ${c})`;$('bl2').textContent=`Precio máximo por USDT (en ${c})`;
-    const p1=+$('bp1').value,p2=+$('bp2').value,am=+$('ba').value;
-    $('bhint').textContent=(a.length?`Ofertas de venta ahora en ${c}: desde ${mny(a[0],c)} hasta ${mny(a[a.length-1],c)} por USDT. `:'')+(am>0&&p1>0&&p2>=p1?`Pagarías entre ${mny(am*p1,c)} y ${mny(am*p2,c)} ${c} en total.`:'')};
+    $('bl0').textContent=`Total que vas a pagar (en ${c})`;$('bl1').textContent=`Precio por 1 USDT (en ${c})`;
+    const bb=$('bbest');if(bb){bb.style.display=a.length?'':'none';bb.textContent=a.length?`Usar ${mny(a[0],c)}`:'';bb.dataset.p=a.length?a[0]:''}
+    const tt=+$('bt').value,pp=+$('bp1').value,am=tt>0&&pp>0?Math.floor(tt/pp*100+1e-9)/100:0;
+    $('ba').value=am>0?am:'';$('bp2').value=pp>0?pp:'';
+    $('bhint').textContent=(am>0?`Recibirás ${n(am,2)} USDT: ${mny(am*pp,c)} ${c} en total a ${mny(pp,c)} por USDT. `:'')+(a.length?`Ofertas de venta ahora en ${c}: desde ${mny(a[0],c)} hasta ${mny(a[a.length-1],c)} por USDT.`:'')};
   const bfxDraw=async()=>{const c=$('bc').value,w=$('bfx');if(!w)return;
     if(!isFx(c)){w.style.display='none';w.innerHTML='';return}
     w.style.display='block';await loadPay();if(!$('bfx')||$('bc').value!==c)return;
@@ -2734,12 +2737,12 @@ async function viewMarket(){
       <button type="button" class="b gh sm" id="bfd" style="margin-top:6px">➕ Añadir datos de ${esc(m)}</button>
       <p class="mut" style="font-size:12px">Si paga un familiar o amigo, guarda SU nombre y cuenta: el vendedor comprobará que el pago salga de ahí.</p>${isRev(m)?`<div class="warnbox bad">${REVW_B}</div>`:''}`;
     $('bfm').onchange=bfxDraw;$('bfd').onclick=()=>payForm(c,$('bfm').value,bfxDraw)};
-  $('bc').onchange=()=>{bhint();bfxDraw()};['ba','bp1','bp2'].forEach(i=>$(i).oninput=bhint);bhint();
+  $('bc').onchange=()=>{bhint();bfxDraw()};['bt','bp1'].forEach(i=>$(i).oninput=bhint);$('bbest').onclick=()=>{const q=$('bbest').dataset.p;if(q){$('bp1').value=q;bhint()}};bhint();
   $('tb').onclick=()=>{if(gate())return;const s=$('buy');$('sell').style.display='none';s.style.display=s.style.display==='none'?'block':'none';if(s.style.display==='block'){bhint();bfxDraw()}};
-  $('bk').onclick=ev=>act(ev.target,async()=>{kycChk();const a=+$('ba').value,c=$('bc').value,p1=+$('bp1').value,p2=+$('bp2').value;
-    if(!(a>0))throw new Error('Indica cuántos USDT quieres comprar');
-    if(!(p1>0)||!(p2>0))throw new Error('Indica el precio mínimo y el máximo que pagarías por 1 USDT');
-    if(p1>p2)throw new Error('El precio mínimo no puede ser mayor que el máximo');
+  $('bk').onclick=ev=>act(ev.target,async()=>{kycChk();const c=$('bc').value,tt=+$('bt').value,p1=+$('bp1').value,p2=p1,a=p1>0&&tt>0?Math.floor(tt/p1*100+1e-9)/100:0;
+    if(!(tt>0))throw new Error('Indica cuánto vas a pagar en total');
+    if(!(p1>0))throw new Error('Indica el precio que pagarías por 1 USDT');
+    if(!(a>=1))throw new Error(`El mínimo es 1 USDT: con ${mny(tt,c)} ${c} a ese precio recibirías ${n(a,2)} USDT`);
     let m=null,payer=null;
     if(isFx(c)){await loadPay();if(S.payErr)throw new Error('Falta activar los datos de pago: ejecuta metodos_pago.sql en Supabase');
       const mm=$('bfm')&&$('bfm').value,acc=(S.pay||[]).find(x=>x.id===($('bfa')&&$('bfa').value)&&x.method===mm&&x.currency===c);
@@ -2747,7 +2750,7 @@ async function viewMarket(){
       m=acc.method;payer=acc.method+' · Titular: '+acc.holder_name+' · Cuenta: '+acc.account_ref+(acc.extra?' ('+acc.extra+')':'')}
     try{await rpc('buy_req_create',{p_amount:a,p_currency:c,p_pmin:p1,p_pmax:p2,p_method:m,p_payer:payer})}
     catch(e){if(/Could not find the function|schema cache/i.test(String(e&&e.message)))throw new Error('Falta ejecutar mercado_unico.sql en Supabase para publicar solicitudes con rango de precio');throw e}
-    ['ba','bp1','bp2'].forEach(i=>$(i).value='');$('buy').style.display='none';bhint();setMt('a');S.breqsC=null;await loadBuyReqs(my)},'Solicitud publicada');
+    ['bt','ba','bp1','bp2'].forEach(i=>$(i).value='');$('buy').style.display='none';bhint();setMt('a');S.breqsC=null;await loadBuyReqs(my)},'Solicitud publicada');
   loadBuyReqs(my);
   if(S.openSell){S.openSell=0;if(!gate())$('sell').style.display='block'}
   $('omax').onclick=()=>{$('oa').value=Math.floor((S.wallet?.available||0)/(1+FPO()/100)*100)/100;calc()};
