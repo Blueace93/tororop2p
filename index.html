@@ -1941,7 +1941,7 @@ function botIntent(q){
     if(mp)pre.p=+mp[1];
     return{k:'sell',pre}}
   return null}
-function botReply(q,aiFirst){
+function botReply(q,aiFirst,minSc){
   const t=botNorm(q),m=k=>k[0]==='='?t.includes(' '+k.slice(1)+' '):t.includes(' '+k);
   const nm=(S.profile&&S.profile.username)||'';
   if(/^ (hola|buenas|buenos dias|buen dia|hey|saludos|que tal)( |$)/.test(t))return{a:`¡Hola${nm?' '+nm:''}! 👋 ¿En qué te ayudo?`,acts:['menu']};
@@ -1957,7 +1957,7 @@ function botReply(q,aiFirst){
   if(aiFirst)return null;
   let best=null,bs=0;
   for(const it of BOT_POOL){let sc=0;for(const k of it.k)if(m(k))sc+=k.includes(' ')?2:1;if(sc>bs){bs=sc;best=it}}
-  if(best){
+  if(best&&bs>=(minSc||1)){
     if(best.a&&typeof best.a==='function')return{a:best.a(),acts:best.acts||[]};
     const f=FAQ().find(([x])=>best.q.test(x));if(f)return{a:f[1],acts:best.a}}
   return null}
@@ -1967,8 +1967,8 @@ async function botAI(q){
   if(BOT.aiFail>=3){if(Date.now()-(BOT.aiFailAt||0)<60000){BOT.aiErr=BOT.aiErr||'pausado tras varios fallos';return null}BOT.aiFail=0}
   const fail=why=>{BOT.aiFail++;BOT.aiFailAt=Date.now();BOT.aiErr=why;console.warn('[asistente]',why);return null};
   let hist=[];
-  BOT.msgs.filter(x=>!x.typing&&!x.n&&x.t).slice(-11,-1).forEach(x=>{
-    const role=x.me?'user':'assistant',text=String(x.t).slice(0,600);
+  BOT.msgs.filter(x=>!x.typing&&!x.n&&x.t).slice(-5,-1).forEach(x=>{
+    const role=x.me?'user':'assistant',text=String(x.t).slice(0,400);
     /* el historial debe empezar por el usuario y alternar roles (si no, la IA lo rechaza y el Worker responde 500) */
     if(!hist.length&&role!=='user')return;
     const last=hist[hist.length-1];
@@ -2195,11 +2195,18 @@ async function botFree(q){
   const out=botReply(q,true);
   if(out)return botSayN(out.a,out.acts);
   /* 2) Todo lo demás va a la IA y su respuesta se muestra directa */
-  /* Preguntas simples de seguridad/comisiones/cómo comprar: el FAQ local responde al instante (la IA tardaba 10 s o más) */
+  /* Preguntas cortas de FAQ (qué es Tororo/USDT, seguridad, comisiones, cómo comprar...): respuesta local al instante, sin esperar a la IA (tardaba 10 s o más) */
+  const PROB=/(pague|pago|vendedor|comprador|no me|robo|reclam|estafaron|no llega|bloque)/;
   try{const nq=botNorm(q);
-    if(nq.trim().split(/\s+/).length<=6&&/(segur|fiable|confiable|estafa|comision|como compro|como comprar)/.test(nq)&&!/(pague|pago|vendedor|comprador|no me|robo|reclam)/.test(nq)){
-      const fq=botReply(q);if(fq){await new Promise(r=>setTimeout(r,0));return botSayN(fq.a,fq.acts)}}}catch(e){}
-  const ai=await botAI(q);
+    if(nq.trim().split(/\s+/).length<=9&&!PROB.test(nq)){
+      const fq=botReply(q,false,2);if(fq)return botSayN(fq.a,fq.acts)}}catch(e){}
+  /* Si la IA tarda más de 5 s y hay una respuesta local razonable, se usa esa y se cancela la espera */
+  const aiP=botAI(q);
+  let ai=await Promise.race([aiP,new Promise(r=>setTimeout(()=>r('__slow'),5000))]);
+  if(ai==='__slow'){
+    let fb0=null;try{if(!PROB.test(botNorm(q)))fb0=botReply(q)}catch(e){}
+    if(fb0){BOT.aiCancel=true;try{BOT.aiCtl&&BOT.aiCtl.abort()}catch(e){}await aiP.catch(()=>{});BOT.aiCancel=false;return botSayN(fb0.a,fb0.acts)}
+    ai=await aiP}
   if(BOT.aiCancel){BOT.aiCancel=false;return}
   if(ai)return botSay(ai,{acts:[]});
   /* 3) Respaldo solo si la IA no responde: FAQ local y, si tampoco, mensaje de ayuda */
@@ -2360,7 +2367,7 @@ function botSpeak(t){
     botSpeakStop();const id=BOT_TS.seq,parts=botSpeakParts(s);
     /* La voz del servidor (/tts) suena con acento inglés y tarda en generarse: se usa la voz en español del navegador, que suena al instante.
        Si el teléfono no tiene voz en español, o si se activa con lsSet('bot_srv','1'), se usa la del servidor. */
-    try{if(lsGet('bot_srv')!=='1'&&window.speechSynthesis){if(!BOT_VOICE)BOT_VOICE=botPickVoice();if(BOT_VOICE){botSpeakLocal(parts);return}}}catch(e){}
+    try{if(lsGet('bot_srv')!=='1'&&window.speechSynthesis){if(!BOT_VOICE)BOT_VOICE=botPickVoice();botSpeakLocal(parts);return}}catch(e){}
     BOT_V.playing=true;
     botSpeakServer(parts,id).then(rest=>{if(id!==BOT_TS.seq)return;BOT_V.playing=false;if(rest&&rest.length)botSpeakLocal(rest)})}catch(e){}}
 function botTtsUI(){const b=$('bott');if(!b)return;b.textContent=BOT_V.tts?'🔊':'🔇';b.title=BOT_V.tts?'Respuestas en voz alta: activadas':'Respuestas en voz alta: desactivadas';b.classList.toggle('on',BOT_V.tts)}
