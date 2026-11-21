@@ -1975,11 +1975,11 @@ async function botAI(q){
     if(last&&last.role===role)last.text=(last.text+'\n'+text).slice(0,900);else hist.push({role,text})});
   let ses;try{ses=(await sb.auth.getSession()).data.session}catch(e){}
   if(!ses)return fail('sin sesión');
-  const c=new AbortController(),tm=setTimeout(()=>c.abort(),12000);BOT.aiCtl=c;BOT.aiCancel=false;
+  const c=new AbortController(),tm=setTimeout(()=>c.abort(),12000);BOT.aiCtl=c;BOT.aiCancel=false;const T0=performance.now();
   try{
     console.log('[asistente] POST',FRAUD_URL+'/assistant','· origen de la página:',location.origin,'· token:',ses.access_token?'sí':'NO','· pregunta:',q);
     const r=await fetch(FRAUD_URL+'/assistant',{method:'POST',headers:{'Authorization':'Bearer '+ses.access_token,'Content-Type':'application/json'},body:JSON.stringify({question:q,history:hist,faq:[],app:APP_NAME}),signal:c.signal});
-    const raw=await r.text();let j=null;try{j=JSON.parse(raw)}catch(e){}
+    const raw=await r.text();console.log('[asistente] /assistant tardó',Math.round(performance.now()-T0),'ms');let j=null;try{j=JSON.parse(raw)}catch(e){}
     console.log('[asistente] status',r.status,r.statusText,'· respuesta:',raw.slice(0,500));
     if(!r.ok)return fail('HTTP '+r.status+((j&&(j.error||j.message))?': '+String(j.error||j.message).slice(0,80):''));
     const a=j&&[j.answer,j.response,j.reply,j.text,j.result].find(v=>typeof v==='string'&&v.trim());
@@ -2193,7 +2193,7 @@ async function botFree(q){
   if(it)return botFlowStart(it.k,it.pre);
   /* 1) Datos reales del usuario (saludo, saldo, avisos, soporte): local */
   const out=botReply(q,true);
-  if(out){await new Promise(r=>setTimeout(r,300));return botSayN(out.a,out.acts)}
+  if(out)return botSayN(out.a,out.acts);
   /* 2) Todo lo demás va a la IA y su respuesta se muestra directa */
   const ai=await botAI(q);
   if(BOT.aiCancel){BOT.aiCancel=false;return}
@@ -2224,6 +2224,7 @@ function botMic(){
   if(BOT_V.conv||BOT_V.on){botMicStop();botDraw();return}
   if(BOT.busy)return;
   if(!lsGet('bot_vnote')){lsSet('bot_vnote','1');botSay('🎙️ La voz se procesa con el reconocimiento de tu navegador (en Chrome lo hace Google). Por privacidad, escribe con el teclado tus números de tarjeta y de teléfono.');botDraw()}
+  try{if(!document.getElementById('bot_pc')){const l=document.createElement('link');l.id='bot_pc';l.rel='preconnect';l.href=new URL(FRAUD_URL).origin;l.crossOrigin='anonymous';document.head.appendChild(l)}}catch(e){}
   BOT_V.conv=true;BOT_V.since=Date.now();botListen()}
 function botListen(){
   if(!BOT_V.conv)return;
@@ -2248,8 +2249,8 @@ function botListen(){
   r.onstart=()=>{BOT_V.on=true;botSpeakStop();botListenUI(true,'Preparando micrófono…')};
   r.onaudiostart=()=>{botListenUI(true,'🎙️ Escuchando… (se apaga tras 5 s en silencio)');clearTimeout(t0);t0=setTimeout(()=>{if(!(fin+itm).trim())done()},left())};
   r.onresult=e=>{fin='';itm='';for(let i=0;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=x[0].transcript+' ';else itm+=x[0].transcript}
-    const cur=(fin+itm).trim();botListenUI(true,cur);clearTimeout(t0);
-    if(cur!==last||!tm){last=cur;clearTimeout(tm);tm=setTimeout(done,android?3500:1800)}};
+    const cur=(fin+itm).trim(),fl=!!(e.results.length&&e.results[e.results.length-1].isFinal);botListenUI(true,cur);clearTimeout(t0);
+    if(cur!==last||fl){last=cur;clearTimeout(tm);tm=setTimeout(done,fl?300:(android?1800:1200))}};
   r.onerror=e=>{err=(e&&e.error)||'error'};
   r.onend=()=>{clearTimeout(tm);clearTimeout(t0);BOT_V.on=false;if(BOT_V.rec===r)BOT_V.rec=null;if(dead||sent)return;
     const txt=(fin+itm).trim();
@@ -2266,7 +2267,7 @@ function botSpeechWait(){return new Promise(res=>{const t0=Date.now();
     if(!sp&&Date.now()-t0>700||Date.now()-t0>180000)return res();if(sp&&BOT_V.conv&&!BOT.busy)botListenUI(true,'🔊 Hablando…');setTimeout(chk,250)};
   setTimeout(chk,400)})}
 function botMicStop(){BOT_V.conv=false;if(BOT.aiCtl){BOT.aiCancel=true;try{BOT.aiCtl.abort()}catch(e){}}botSpeakStop();const r=BOT_V.rec;if(r){r.onend=null;r.onresult=null;r.onerror=null;try{r.abort()}catch(e){}}BOT_V.rec=null;BOT_V.on=false;botListenUI(false)}
-function botSpeakSoon(t){if(!BOT_V.tts)return;const p=$('botp');if(!p||!p.classList.contains('show'))return;BOT_V.pend=(BOT_V.pend||[]).concat(String(t||''));clearTimeout(BOT_V.sp);BOT_V.sp=setTimeout(()=>{const all=BOT_V.pend.join('. ');BOT_V.pend=[];botSpeak(all)},350)}
+function botSpeakSoon(t){if(!BOT_V.tts)return;const p=$('botp');if(!p||!p.classList.contains('show'))return;BOT_V.pend=(BOT_V.pend||[]).concat(String(t||''));clearTimeout(BOT_V.sp);BOT_V.sp=setTimeout(()=>{const all=BOT_V.pend.join('. ');BOT_V.pend=[];botSpeak(all)},120)}
 /* Voz más natural: elige la mejor voz en español disponible (las "Google", "Natural", "Neural" u "Online" suenan mucho mejor
    que la local por defecto), limpia el texto para que no lea símbolos y respeta las pausas de la puntuación. */
 let BOT_VOICE=null;
@@ -2318,7 +2319,9 @@ function botSpeakParts(s){
       let c2='';for(const w of z.split(/(?<=,)\s+/)){if((c2+' '+w).length>180&&c2){parts.push(c2.trim());c2=w}else c2+=(c2?' ':'')+w}
       if(c2)parts.push(c2.trim());continue}
     if((cur+' '+z).length>200&&cur){parts.push(cur);cur=z}else cur+=(cur?' ':'')+z}
-  if(cur)parts.push(cur);return parts}
+  if(cur)parts.push(cur);
+  if(parts[0]&&parts[0].length>120){const m=parts[0].match(/^([\s\S]{15,120}?[.!?:])\s+([\s\S]+)$/);if(m)parts.splice(0,1,m[1],m[2])}
+  return parts}
 /* reproduce por el servidor; devuelve los trozos que faltan si algo falla (para leerlos con la voz del navegador) o null si ya terminó/se canceló */
 async function botSpeakServer(parts,id){
   let nx=botTtsFetch(parts[0]);
