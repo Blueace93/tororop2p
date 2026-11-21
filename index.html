@@ -1975,7 +1975,7 @@ async function botAI(q){
     if(last&&last.role===role)last.text=(last.text+'\n'+text).slice(0,900);else hist.push({role,text})});
   let ses;try{ses=(await sb.auth.getSession()).data.session}catch(e){}
   if(!ses)return fail('sin sesión');
-  const c=new AbortController(),tm=setTimeout(()=>c.abort(),25000);
+  const c=new AbortController(),tm=setTimeout(()=>c.abort(),12000);BOT.aiCtl=c;BOT.aiCancel=false;
   try{
     console.log('[asistente] POST',FRAUD_URL+'/assistant','· origen de la página:',location.origin,'· token:',ses.access_token?'sí':'NO','· pregunta:',q);
     const r=await fetch(FRAUD_URL+'/assistant',{method:'POST',headers:{'Authorization':'Bearer '+ses.access_token,'Content-Type':'application/json'},body:JSON.stringify({question:q,history:hist,faq:[],app:APP_NAME}),signal:c.signal});
@@ -1985,10 +1985,11 @@ async function botAI(q){
     const a=j&&[j.answer,j.response,j.reply,j.text,j.result].find(v=>typeof v==='string'&&v.trim());
     if(!a)return fail('respuesta sin "answer"'+(j?' (campos: '+Object.keys(j).join(',')+')':' (no es JSON)'));
     BOT.aiFail=0;BOT.aiErr='';return a.trim()}
-  catch(e){console.error('[asistente] fetch falló:',e&&e.name,e&&e.message,e);
+  catch(e){if(BOT.aiCancel)return null; /* cancelada por el usuario: no cuenta como fallo */
+    console.error('[asistente] fetch falló:',e&&e.name,e&&e.message,e);
     const okOrg=/^https:\/\/(www\.)?tororo\.trade$/.test(location.origin);
-    return fail((e&&e.name==='AbortError')?'tiempo agotado (25 s)':(okOrg?'red o CORS':'CORS: la API solo acepta tororo.trade y esta página está en '+location.origin)+' · '+String((e&&e.message)||e).slice(0,60))}
-  finally{clearTimeout(tm)}}
+    return fail((e&&e.name==='AbortError')?'tiempo agotado (12 s)':(okOrg?'red o CORS':'CORS: la API solo acepta tororo.trade y esta página está en '+location.origin)+' · '+String((e&&e.message)||e).slice(0,60))}
+  finally{clearTimeout(tm);if(BOT.aiCtl===c)BOT.aiCtl=null}}
 /* ----- Gestiones guiadas ----- */
 async function botFlowStart(k,pre){
   if(['sell','card','breq','cancel'].includes(k)&&S.user&&maintOn()&&!isAdm()){BOT.fl=null;return botSay('La plataforma está en mantenimiento. Vuelve más tarde.')}
@@ -2195,6 +2196,7 @@ async function botFree(q){
   if(out){await new Promise(r=>setTimeout(r,300));return botSayN(out.a,out.acts)}
   /* 2) Todo lo demás va a la IA y su respuesta se muestra directa */
   const ai=await botAI(q);
+  if(BOT.aiCancel){BOT.aiCancel=false;return}
   if(ai)return botSay(ai,{acts:[]});
   /* 3) Respaldo solo si la IA no responde: FAQ local y, si tampoco, mensaje de ayuda */
   const fb=botReply(q);
@@ -2226,26 +2228,34 @@ function botMic(){
 function botListen(){
   if(!BOT_V.conv)return;
   let r;try{r=new BOT_SR()}catch(e){BOT_V.conv=false;return}
-  BOT_V.rec=r;let fin='',itm='',err='',tm=null,t0=null,dead=false;
+  BOT_V.rec=r;let fin='',itm='',err='',tm=null,t0=null,dead=false,sent=false,last='';
   const android=/android/i.test(navigator.userAgent);
   r.lang=/^es/i.test(navigator.language||'')?navigator.language:'es-ES';
   r.interimResults=true;r.continuous=!android;r.maxAlternatives=1;
-  const done=()=>{clearTimeout(tm);try{r.stop()}catch(e){}};
+  /* Enviar la pregunta en cuanto hay silencio: antes se esperaba a onend (que solo llega tras stop()) y con ruido de fondo la respuesta no salía hasta cerrar el micro.
+     abort() libera el micrófono al instante; solo después se pide la respuesta, así el navegador no bloquea la reproducción. */
+  const send=txt=>{botListenUI(true,'⏳ Pensando…');
+    const pr=botSend(txt,undefined,true);
+    Promise.resolve(pr).then(botSpeechWait).then(()=>{if(BOT_V.conv){BOT_V.since=Date.now();botListen()}})};
+  const done=()=>{clearTimeout(tm);clearTimeout(t0);
+    const txt=(fin+itm).trim();
+    if(!txt||sent||!BOT_V.conv){try{r.stop()}catch(e){}return}
+    sent=true;
+    try{r.abort()}catch(e){}
+    BOT_V.on=false;if(BOT_V.rec===r)BOT_V.rec=null;
+    send(txt)};
   const left=()=>Math.max(300,BOT_SIL-(Date.now()-BOT_V.since));
   r.onstart=()=>{BOT_V.on=true;botSpeakStop();botListenUI(true,'Preparando micrófono…')};
-  r.onaudiostart=()=>{botListenUI(true,'Habla ahora… (se apaga tras 5 s en silencio)');clearTimeout(t0);t0=setTimeout(()=>{if(!(fin+itm).trim())done()},left())};
+  r.onaudiostart=()=>{botListenUI(true,'🎙️ Escuchando… (se apaga tras 5 s en silencio)');clearTimeout(t0);t0=setTimeout(()=>{if(!(fin+itm).trim())done()},left())};
   r.onresult=e=>{fin='';itm='';for(let i=0;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=x[0].transcript+' ';else itm+=x[0].transcript}
-    botListenUI(true,(fin+itm).trim());clearTimeout(t0);clearTimeout(tm);tm=setTimeout(done,android?3500:1800)};
+    const cur=(fin+itm).trim();botListenUI(true,cur);clearTimeout(t0);
+    if(cur!==last||!tm){last=cur;clearTimeout(tm);tm=setTimeout(done,android?3500:1800)}};
   r.onerror=e=>{err=(e&&e.error)||'error'};
-  r.onend=()=>{clearTimeout(tm);clearTimeout(t0);BOT_V.on=false;if(BOT_V.rec===r)BOT_V.rec=null;if(dead)return;
+  r.onend=()=>{clearTimeout(tm);clearTimeout(t0);BOT_V.on=false;if(BOT_V.rec===r)BOT_V.rec=null;if(dead||sent)return;
     const txt=(fin+itm).trim();
     if(err&&err!=='aborted'&&err!=='no-speech'){botSay(err==='not-allowed'?'No tengo permiso para usar el micrófono. Revisa 3 sitios: 1) permisos del sitio en Chrome, 2) Ajustes de Android → Apps → Chrome (o Tororo) → Permisos → Micrófono, 3) si usas la app instalada, ábrelo mejor en Chrome.':err==='service-not-allowed'?'Este navegador o la app no permite el reconocimiento de voz (no es un permiso tuyo). Abre tororo.trade directamente en Chrome y prueba ahí. Mientras tanto puedes escribirme. (código: service-not-allowed)':err==='audio-capture'?'No encuentro un micrófono disponible.':err==='network'?'El reconocimiento de voz necesita conexión a internet.':'No pude escucharte. Inténtalo otra vez. (código: '+err+')');BOT_V.retried=0;BOT_V.conv=false;botListenUI(false);return botDraw()}
     if(!BOT_V.conv){botListenUI(false);return}
-    if(txt){
-      botListenUI(true,'Respondiendo… luego te sigo escuchando');
-      const pr=botSend(txt,undefined,true);
-      Promise.resolve(pr).then(botSpeechWait).then(()=>{if(BOT_V.conv){BOT_V.since=Date.now();botListen()}});
-      return}
+    if(txt){sent=true;send(txt);return}
     if(Date.now()-BOT_V.since<BOT_SIL-400&&(!err||err==='no-speech'))return setTimeout(botListen,150);
     BOT_V.conv=false;botListenUI(false);botSay('🎙️ Micrófono desactivado: pasaron 5 segundos sin que hablaras. Toca el micrófono para seguir.');botDraw()};
   try{r.start()}catch(e){BOT_V.on=false;BOT_V.rec=null;BOT_V.conv=false;botListenUI(false)}}
@@ -2253,9 +2263,9 @@ function botListen(){
 function botSpeechWait(){return new Promise(res=>{const t0=Date.now();
   const chk=()=>{const au=BOT_V.audio,sp=BOT_V.tts&&(BOT_V.playing||(au&&!au.paused&&!au.ended)||(window.speechSynthesis&&(speechSynthesis.speaking||speechSynthesis.pending))||(BOT_V.pend&&BOT_V.pend.length));
     /* el tope (3 min) es solo un seguro: antes eran 30 s y el micrófono se reabría a mitad de una respuesta larga, cortando la voz */
-    if(!sp&&Date.now()-t0>700||Date.now()-t0>180000)return res();setTimeout(chk,250)};
+    if(!sp&&Date.now()-t0>700||Date.now()-t0>180000)return res();if(sp&&BOT_V.conv&&!BOT.busy)botListenUI(true,'🔊 Hablando…');setTimeout(chk,250)};
   setTimeout(chk,400)})}
-function botMicStop(){BOT_V.conv=false;const r=BOT_V.rec;if(r){r.onend=null;r.onresult=null;r.onerror=null;try{r.abort()}catch(e){}}BOT_V.rec=null;BOT_V.on=false;botListenUI(false)}
+function botMicStop(){BOT_V.conv=false;if(BOT.aiCtl){BOT.aiCancel=true;try{BOT.aiCtl.abort()}catch(e){}}botSpeakStop();const r=BOT_V.rec;if(r){r.onend=null;r.onresult=null;r.onerror=null;try{r.abort()}catch(e){}}BOT_V.rec=null;BOT_V.on=false;botListenUI(false)}
 function botSpeakSoon(t){if(!BOT_V.tts)return;const p=$('botp');if(!p||!p.classList.contains('show'))return;BOT_V.pend=(BOT_V.pend||[]).concat(String(t||''));clearTimeout(BOT_V.sp);BOT_V.sp=setTimeout(()=>{const all=BOT_V.pend.join('. ');BOT_V.pend=[];botSpeak(all)},350)}
 /* Voz más natural: elige la mejor voz en español disponible (las "Google", "Natural", "Neural" u "Online" suenan mucho mejor
    que la local por defecto), limpia el texto para que no lea símbolos y respeta las pausas de la puntuación. */
