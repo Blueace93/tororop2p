@@ -2277,13 +2277,17 @@ function botSpeakSoon(t){if(!BOT_V.tts)return;const p=$('botp');if(!p||!p.classL
 /* Voz más natural: elige la mejor voz en español disponible (las "Google", "Natural", "Neural" u "Online" suenan mucho mejor
    que la local por defecto), limpia el texto para que no lea símbolos y respeta las pausas de la puntuación. */
 let BOT_VOICE=null;
+const botFemV=v=>/paulina|monica|mónica|sabina|helena|elvira|dalia|salome|salomé|lucia|lucía|lupe|paloma|valentina|camila|marisol|esperanza|laura|maria|maría|sofia|sofía|female|mujer|femenin/i.test((v.name||'')+' '+(v.voiceURI||''));
+const botMaleV=v=>/jorge|juan|diego|carlos|pablo|enrique|miguel|alvaro|álvaro|raul|raúl|alberto|andres|andrés|tomas|tomás|male\b|hombre|masculin/i.test((v.name||'')+' '+(v.voiceURI||''))&&!botFemV(v);
 function botPickVoice(){
   try{const vs=speechSynthesis.getVoices().filter(v=>/^es/i.test(v.lang));if(!vs.length)return null;
     const want=(navigator.language||'es-US').toLowerCase();
     const sc=v=>{const n=v.name+' '+v.lang;let s=0;
       if(/natural|neural|online/i.test(n))s+=50;
       if(/google/i.test(n))s+=40;
-      if(/paulina|monica|mónica|sabina|helena|elvira|dalia|salome|lucia|lupe|paloma|valentina|camila|female|mujer/i.test(n))s+=12;
+      if(botFemV(v))s+=45;
+      if(botMaleV(v))s-=60;
+      if(/sfb|eea/i.test(v.voiceURI||''))s+=14;
       if(/^es[-_](us|mx|419|co|ar|cl|pe|ve)/i.test(v.lang))s+=8;
       if(v.lang.toLowerCase()===want)s+=6;
       if(v.localService)s-=2;
@@ -2348,7 +2352,7 @@ function botSpeakLocal(parts){
     /* velocidad y tono normales (1.0): modificarlos es lo que más delata la voz sintética */
     /* se guardan las frases en BOT_V.utts hasta que acaben: si no, Chrome las recoge (garbage collector) y la voz se corta a mitad */
     const bl=[];let cc='';for(const x of parts){if((cc+' '+x).length>260&&cc){bl.push(cc);cc=x}else cc+=(cc?' ':'')+x}if(cc)bl.push(cc);
-    const us=bl.map(x=>{const u=new SpeechSynthesisUtterance(x);u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1.15;u.pitch=1;u.volume=1;return u});
+    const us=bl.map(x=>{const u=new SpeechSynthesisUtterance(x.replace(/[.…]+\s+/g,', ').replace(/,\s*,/g,','));u.lang=lang;if(BOT_VOICE)u.voice=BOT_VOICE;u.rate=1.2;u.pitch=(BOT_VOICE&&botFemV(BOT_VOICE))?1:1.12;u.volume=1;return u});
     BOT_V.utts=us;if(us.length)us[us.length-1].onend=()=>{if(BOT_V.utts===us)BOT_V.utts=null};
     us.forEach(u=>speechSynthesis.speak(u))}catch(e){}}
 function botSpeak(t){
