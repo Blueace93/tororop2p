@@ -267,7 +267,7 @@ button.b:hover:before{transform:translateX(130%)}button.b.gh:before{display:none
 .wa{left:14px;right:auto;bottom:96px;border-radius:99px;padding:11px 15px;background:linear-gradient(135deg,#25d366,#128c7e);color:#042815;box-shadow:0 12px 28px -8px rgba(37,211,102,.7)}
 button,a,summary,.chip,.tile,.card[data-o],select,label{touch-action:manipulation}
 html{scroll-behavior:auto}
-.wa{font-size:0!important;width:46px;height:46px;padding:0!important;display:flex;align-items:center;justify-content:center;opacity:.92}.wa:before{content:"💬";font-size:22px}
+.wa{font-size:0!important;width:46px;height:46px;padding:0!important;display:flex;align-items:center;justify-content:center;opacity:.92}.wa:before{content:"✉️";font-size:22px}
 .fab-m{width:52px;height:52px;font-size:28px}.fab{bottom:92px;right:14px}
 /* El contenedor del botón + es invisible pero tapaba los botones de las tarjetas (Detalles, Chat…): solo el + y sus opciones abiertas reciben toques */
 .fab{pointer-events:none}.fab-m{pointer-events:auto}
@@ -1733,7 +1733,8 @@ const BOT_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const BOT_V={rec:null,on:false,tts:lsGet('bot_tts')==='1',sp:0};
 const botStrip=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const botNorm=t=>' '+botStrip(t).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' ';
-const botWa=()=>String((S.settings&&S.settings.whatsapp)||CFG.whatsapp||'').replace(/\D/g,'');
+const SUP_MAIL='soporte@tororo.trade';   /* soporte por correo (ya no por WhatsApp) */
+const botWa=()=>SUP_MAIL;
 const botSay=(t,o)=>{BOT.msgs.push(Object.assign({t:t},o||{}));if(BOT.msgs.length>60)BOT.msgs.splice(0,BOT.msgs.length-60);if(!(o&&o.n))botSpeakSoon(t)};
 /* Cierre sutil de cada respuesta: según el estado real del usuario invita a verificar el KYC, depositar USDT u operar. Sin urgencias falsas. */
 function botNudge(){
@@ -1810,7 +1811,7 @@ const BOT_ACTS={
   ann:['📢 Ver anuncios',()=>go('ann')],
   notifs:['🔔 Ver avisos',()=>go('notifs')],
   adm:['🛡️ Panel de admin',()=>go('admin')],
-  wa:['💬 Hablar con soporte',()=>{const w=botWa();if(w)window.open('https://wa.me/'+w,'_blank','noopener')}]
+  wa:['✉️ Escribir a soporte',()=>{location.href='mailto:'+SUP_MAIL}]
 };
 const BOT_MENU=[
   ['Hacer',[['💰','Vender','sell'],['📝','Pedir compra','breq'],['💳','Tarjetas','card'],['🧾','Órdenes','ops']]],
@@ -1823,7 +1824,7 @@ const BOT_KB=[
  {k:['mis fondos','perder mi dinero','perder dinero','puedo perder','que pasa con mi dinero','que pasa con mis usdt','donde quedan','custodia','escrow','bloqueados'],
   a:()=>'Cuando compras, los USDT del vendedor ya están bloqueados en custodia: si pagas y subes tu captura, te llegan cuando él confirma el pago o cuando el administrador resuelve la mediación. Cuando vendes, tus USDT quedan bloqueados mientras la oferta esté publicada y puedes cancelarla para recuperarlos. Tu saldo en la billetera lo puedes proteger con un PIN para los retiros.',acts:['sec','ord']},
  {k:['quien creo','quien esta detras','creador','dueno','fundador','quien administra','quienes son','quien es tororo','quien maneja'],
-  a:()=>'Tororo la administra su equipo. En la app verás la insignia 👑 Creador Tororo y 🛡️ Admin en sus perfiles. Si necesitas hablar con una persona, usa el soporte por WhatsApp o la mediación dentro de la operación.',acts:botWa()?['wa']:[]},
+  a:()=>'Tororo la administra su equipo. En la app verás la insignia 👑 Creador Tororo y 🛡️ Admin en sus perfiles. Si necesitas hablar con una persona, escribe a soporte@tororo.trade o usa la mediación dentro de la operación.',acts:botWa()?['wa']:[]},
  {k:['vendedor real','vendedor confiable','confiar en el vendedor','vendedor verificado','como se que el vendedor','insignia','verificado','elegir vendedor','como elijo'],
   a:()=>'Antes de comprar mira el perfil del vendedor en la oferta: la insignia ✓ significa que verificó su identidad, las ⭐ estrellas son las calificaciones de otras personas y 🔁 son sus operaciones completadas. Paga solo a los datos que aparecen dentro de la operación y sube siempre tu captura.',acts:['mkt']},
  {k:['mis datos','privacidad','informacion personal','datos personales','quien ve mi','ven mis datos','guardan mis'],
@@ -1951,7 +1952,7 @@ function botReply(q,aiFirst){
   if(m('aviso')||m('notificacion')||m('novedades'))
     return{a:S.unread?`Tienes ${S.unread} aviso${S.unread>1?'s':''} sin leer.`:'No tienes avisos sin leer.',acts:['notifs']};
   if(m('soporte')||m('=humano')||m('=persona')||m('=agente')||m('=whatsapp')||m('=contacto')||m('administrador')||m('hablar con'))
-    return{a:(botWa()?'Si necesitas hablar con una persona, escríbenos por WhatsApp. ':'')+'Si el problema es con una operación, entra en ella y toca “Solicitar mediación”: el administrador lo revisa.',acts:botWa()?['wa','ord']:['ord']};
+    return{a:(botWa()?'Si necesitas hablar con una persona, escríbenos a soporte@tororo.trade. ':'')+'Si el problema es con una operación, entra en ella y toca “Solicitar mediación”: el administrador lo revisa.',acts:botWa()?['wa','ord']:['ord']};
   /* aiFirst: el FAQ por palabras clave solo se usa como respaldo si la IA falla (antes interceptaba "ya pagué", "no me llega el pago", etc.) */
   if(aiFirst)return null;
   let best=null,bs=0;
@@ -2198,7 +2199,7 @@ async function botFree(q){
   /* 3) Respaldo solo si la IA no responde: FAQ local y, si tampoco, mensaje de ayuda */
   const fb=botReply(q);
   if(fb)return botSayN(fb.a,fb.acts);
-  botSay('Ahora mismo no logro conectarme para responderte bien 😕. Inténtalo de nuevo en unos segundos, mira la Ayuda completa'+(botWa()?' o escríbele a soporte por WhatsApp.':'.')+(BOT.aiErr?'\n(código: '+BOT.aiErr+')':''),{acts:['help'].concat(botWa()?['wa']:[])})}
+  botSay('Ahora mismo no logro conectarme para responderte bien 😕. Inténtalo de nuevo en unos segundos, mira la Ayuda completa'+(botWa()?' o escríbele a soporte@tororo.trade.':'.')+(BOT.aiErr?'\n(código: '+BOT.aiErr+')':''),{acts:['help'].concat(botWa()?['wa']:[])})}
 function botSend(q,val,voice){
   q=String(q||'').trim().slice(0,300);if(!q||BOT.busy)return;
   const fl=BOT.fl,step=fl&&fl.s,mask=fl&&step==='cardn'&&val===undefined;
@@ -2529,7 +2530,7 @@ function renderReset(){
 function render(){
   const admin=S.profile?.is_admin||S.profile?.is_staff;
   $app.innerHTML=`<header>${brand(30)}<span class="hr"><button class="pill" id="bal" aria-label="Billetera">${cIco('USDT',24)}<span id="hb">${n(S.wallet?.available,2)}</span><small>USDT</small><i class="plus">+</i></button><button class="ib" id="bell" aria-label="Operaciones">${IC.bell}</button><button class="ib" id="thm" aria-label="Modo nocturno"></button><a href="#" id="av" style="display:flex">${avatar(36)}</a></span></header>
-    <main id="main"></main>${(S.settings.whatsapp||CFG.whatsapp)?`<a class="wa" aria-label="Soporte por WhatsApp" href="https://wa.me/${esc(S.settings.whatsapp||CFG.whatsapp)}" target="_blank" rel="noopener">💬 Soporte</a>`:''}
+    <main id="main"></main><a class="wa" aria-label="Escribir a soporte por correo" href="mailto:soporte@tororo.trade">✉️ Soporte</a>
     <div class="fab-bg" id="fabg"></div><div class="fab" id="fab"><button class="fab-m" id="fabm" aria-label="Abrir el asistente"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.9 5.6L17.5 9.5l-5.6 1.9L10 17l-1.9-5.6L2.5 9.5l5.6-1.9z"/><path d="M18.5 13l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg><span id="fabt">Asistente</span><i id="fabbd"></i></button></div><button class="up" id="up" aria-label="Subir">↑</button>
     <nav><button data-v="market">${IC.market}Mercado</button>
     <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
@@ -4093,10 +4094,10 @@ const FAQ=()=>[
  ['¿Cómo protejo mi cuenta?','En Más → Seguridad puedes crear un PIN para los retiros y activar la verificación en dos pasos. También verás tus accesos recientes.'],
  ['¿Para qué sirven las estrellas?','Al terminar una operación puedes calificar a la otra persona. Las estrellas y el número de operaciones se ven en cada oferta para que elijas con confianza.']];
 function viewHelp(){
-  const wa=S.settings.whatsapp||CFG.whatsapp;
+  const wa=SUP_MAIL;
   main().innerHTML=hd('Ayuda')+`<button class="b w" id="tuv" style="margin-bottom:12px">▶ Ver el tutorial</button>`+
    FAQ().map(([q,a])=>`<details class="card"><summary style="cursor:pointer;font-weight:600">${esc(q)}</summary><p class="mut" style="margin:8px 0 0">${esc(a)}</p></details>`).join('')+
-   (wa?`<a style="display:block;text-align:center;text-decoration:none;margin-top:4px;padding:12px;border:1px solid var(--line);border-radius:14px;color:var(--tx)" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">💬 Hablar con soporte</a>`:'');
+   `<a style="display:block;text-align:center;text-decoration:none;margin-top:4px;padding:12px;border:1px solid var(--line);border-radius:14px;color:var(--tx)" href="mailto:${wa}">✉️ Escribir a soporte · ${wa}</a>`;
   bk();$('tuv').onclick=()=>showTuto(0)}
 const GI={shield:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),id:_i('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h3M6 16c.6-1.5 2-2 3-2s2.4.5 3 2"/>'),lock:_i('<rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>'),check:_i('<path d="M5 12l4 4 10-10"/>'),eye:_i('<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/>')};
 const gl=(ic,t,d,ok)=>`<div class="gd-li ${ok?'ok':''}"><span class="gd-s">${ic}</span><div><b>${t}</b><span class="mut">${d}</span></div></div>`;
