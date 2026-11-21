@@ -2236,7 +2236,9 @@ function botListen(){
   /* Enviar la pregunta en cuanto hay silencio: antes se esperaba a onend (que solo llega tras stop()) y con ruido de fondo la respuesta no salía hasta cerrar el micro.
      abort() libera el micrófono al instante; solo después se pide la respuesta, así el navegador no bloquea la reproducción. */
   const send=txt=>{botListenUI(true,'⏳ Pensando…');
+    const tq=Date.now(),iv=setInterval(()=>botListenUI(true,'⏳ Pensando… '+Math.round((Date.now()-tq)/1000)+' s'),1000);
     const pr=botSend(txt,undefined,true);
+    Promise.resolve(pr).then(()=>{clearInterval(iv);console.log('[asistente] pregunta→respuesta',Date.now()-tq,'ms')},()=>clearInterval(iv));
     Promise.resolve(pr).then(botSpeechWait).then(()=>{if(BOT_V.conv){BOT_V.since=Date.now();botListen()}})};
   const done=()=>{clearTimeout(tm);clearTimeout(t0);
     const txt=(fin+itm).trim();
@@ -2347,6 +2349,9 @@ function botSpeakLocal(parts){
 function botSpeak(t){
   try{const s=botSpeakClean(t).slice(0,2200);if(!s)return;
     botSpeakStop();const id=BOT_TS.seq,parts=botSpeakParts(s);
+    /* La voz del servidor (/tts) suena con acento inglés y tarda en generarse: se usa la voz en español del navegador, que suena al instante.
+       Si el teléfono no tiene voz en español, o si se activa con lsSet('bot_srv','1'), se usa la del servidor. */
+    try{if(lsGet('bot_srv')!=='1'&&window.speechSynthesis){if(!BOT_VOICE)BOT_VOICE=botPickVoice();if(BOT_VOICE){botSpeakLocal(parts);return}}}catch(e){}
     BOT_V.playing=true;
     botSpeakServer(parts,id).then(rest=>{if(id!==BOT_TS.seq)return;BOT_V.playing=false;if(rest&&rest.length)botSpeakLocal(rest)})}catch(e){}}
 function botTtsUI(){const b=$('bott');if(!b)return;b.textContent=BOT_V.tts?'🔊':'🔇';b.title=BOT_V.tts?'Respuestas en voz alta: activadas':'Respuestas en voz alta: desactivadas';b.classList.toggle('on',BOT_V.tts)}
