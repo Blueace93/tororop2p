@@ -5438,8 +5438,16 @@ async function adminUnverified(my){
   const paint=()=>{
     const q=Q.trim().toLowerCase(),vis=L.filter(x=>!q||[x.username,x.full_name].some(v=>String(v||'').toLowerCase().includes(q)));
     $('unL').innerHTML=vis.length?vis.slice(0,40).map(x=>{const[t,c]=UT[x.kyc_status]||['Sin verificar',''];
-      return`<div class="card"><div class="row"><b>@${esc(x.username||'—')}</b><span class="tag ${c}">${t}</span></div>${x.full_name||x.created_at?`<div class="mut">${x.full_name?esc(x.full_name):''}${x.full_name&&x.created_at?' · ':''}${x.created_at?'Registrado: '+when(x.created_at):''}</div>`:''}</div>`}).join('')+(vis.length>40?`<p class="mut">Mostrando 40 de ${vis.length}. Usa el buscador para acotar.</p>`:''):'<div class="card mut">'+(L.length?'Sin resultados.':'No hay usuarios sin verificar.')+'</div>'};
+      return`<div class="card"><div class="row"><b>@${esc(x.username||'—')}</b><span class="tag ${c}">${t}</span></div>${x.full_name||x.created_at?`<div class="mut">${x.full_name?esc(x.full_name):''}${x.full_name&&x.created_at?' · ':''}${x.created_at?'Registrado: '+when(x.created_at):''}</div>`:''}<div style="margin-top:8px"><button type="button" class="b gh" data-udel="${esc(x.id||x.user_id||'')}" data-un="${esc(x.username||'')}" style="padding:8px 14px;font-size:13px">🗑️ Eliminar usuario</button></div></div>`}).join('')+(vis.length>40?`<p class="mut">Mostrando 40 de ${vis.length}. Usa el buscador para acotar.</p>`:''):'<div class="card mut">'+(L.length?'Sin resultados.':'No hay usuarios sin verificar.')+'</div>'};
   let t;$('unQ').oninput=e=>{Q=e.target.value;clearTimeout(t);t=setTimeout(paint,150)};
+  /* Eliminar usuario por completo (cuenta, datos y acceso): lo hace la función admin_delete_user en Supabase */
+  $('unL').onclick=e=>{const b=e.target.closest('[data-udel]');if(!b)return;
+    const id=b.dataset.udel,un=b.dataset.un;if(!id)return toast('No se pudo identificar al usuario','err');
+    ask('Eliminar usuario','<p>Se eliminará <b>@'+esc(un)+'</b> de forma definitiva: su cuenta, sus datos y su acceso. <b>No se puede deshacer.</b></p><p class="mut">Solo se permite si no tiene operaciones, saldo, depósitos ni retiros.</p>','Eliminar definitivamente','bad').then(m=>{
+      if(!m)return;m.remove();
+      act(b,async()=>{await rpc('admin_delete_user',{p_user:id});
+        const i=L.findIndex(x=>(x.id||x.user_id)===id);if(i>=0)L.splice(i,1);
+        const h=$('s-unv');if(h)h.textContent='Usuarios sin verificar · '+L.length;paint()},'Usuario eliminado')})};
   paint()}
 
 const KREASONS=['La foto del carnet (frente) no se ve clara','Falta el reverso del carnet','La selfie no se ve clara o no sostienes el carnet','El carnet está vencido','El nombre no coincide con el documento','Los datos del documento no se pueden leer','Documento no válido'];
