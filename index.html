@@ -2542,17 +2542,46 @@ function renderAuth(mode='login'){
     const email=$('em').value.trim(),password=$('pw').value;
     if(!email||!password)throw new Error('Completa correo y contraseña');
     /* Se valida TODO antes de gastar la verificación: un error de formulario ya no hace recargar el captcha */
-    if(reg){const un=($('u').value||'').trim();if(un.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');if(password.length<6)throw new Error('La contraseña debe tener al menos 6 caracteres')}
+    if(reg){const un=($('u').value||'').trim();if(un.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');if(un.includes('@'))throw new Error('El nombre de usuario no puede ser un correo ni llevar @. Elige otro nombre.');if(password.length<6)throw new Error('La contraseña debe tener al menos 6 caracteres')}
     if(!(await cfReady()))throw new Error('La verificación de seguridad aún no termina. Espera a que aparezca el ✔ y toca de nuevo el botón');
     if(reg){
-      const username=($('u').value||'').trim();if(username.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');
+      const username=($('u').value||'').trim();if(username.length<3)throw new Error('El usuario debe tener al menos 3 caracteres');if(username.includes('@'))throw new Error('El nombre de usuario no puede ser un correo ni llevar @. Elige otro nombre.');
       sent=true;
       const{data,error}=await sb.auth.signUp({email,password,options:{data:{username,ref:lsGet('pending_ref')||undefined},captchaToken:CFTOK||undefined}});
       if(error)throw error;
-      if(!data.session){sent=false;renderAuth('login');setTimeout(()=>toast('✅ Cuenta creada. Revisa tu correo (y la carpeta de spam) para confirmarla y luego entra.','good'),50);return}
-    }else{sent=true;const{error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken:CFTOK||undefined}});if(error)throw error}
+      if(!data.session){sent=false;renderConfirm(email);return}
+    }else{sent=true;const{error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken:CFTOK||undefined}});if(error){if(/not confirmed|email_not_confirmed|no confirmado/i.test((error.message||'')+' '+(error.code||''))){sent=false;renderConfirm(email);return}throw error}}
     await boot()}finally{if(sent)cfReset()}});
   cfMount();$('go').onclick=submit;$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};window.scrollTo({top:0,behavior:'instant'})}
+function renderConfirm(email){
+  $app.innerHTML=`<div class="auth"><div class="ac">
+    <div style="display:flex;justify-content:center;margin-bottom:14px">${brand(50)}</div>
+    <div><h1 class="hero">📧 Confirma tu correo</h1>
+    <p class="mut ap">Te enviamos un mensaje a <b>${esc(email)}</b>.</p></div>
+    <div class="glass">
+      <div class="warnbox" style="background:#0e3a30;border-color:var(--ok);color:var(--ok)"><b>Tu cuenta todavía no está activa.</b> Para poder entrar tienes que confirmar tu correo:</div>
+      <ol style="margin:12px 0 6px;padding-left:20px;line-height:1.9">
+        <li>Abre tu correo (Gmail, Outlook…).</li>
+        <li>Busca el mensaje de <b>Tororo</b>. Si no aparece, mira en <b>Spam</b> o <b>Promociones</b>.</li>
+        <li>Toca el botón <b>Confirmar</b> del mensaje.</li>
+        <li>Vuelve aquí y toca <b>Ya confirmé, entrar</b>.</li>
+      </ol>
+      <p class="mut" style="font-size:12.5px;margin:6px 0 10px">¿Escribiste mal el correo? Vuelve atrás y regístrate de nuevo con el correo correcto.</p>
+      <div id="cf" style="display:flex;justify-content:center;margin:8px 0 4px;min-height:65px"></div>
+      <button class="b w" id="cfEnter" style="padding:14px;font-size:15px">Ya confirmé, entrar</button>
+      <button class="b gh w" id="cfRes" style="margin-top:8px">Reenviar correo</button>
+      <p class="mut" style="text-align:center;margin:14px 0 0"><a href="#" id="cfBack">← Volver y corregir mi correo</a></p>
+    </div></div></div>`;
+  cfMount();
+  $('cfEnter').onclick=()=>{renderAuth('login');const e=$('em');if(e){e.value=email;const p=$('pw');if(p)p.focus()}};
+  $('cfBack').onclick=ev=>{ev.preventDefault();renderAuth('register')};
+  const rb=$('cfRes');let cd=0,tm=null;
+  const cool=()=>{cd=60;clearInterval(tm);{const b0=$('cfRes');if(b0){b0.disabled=true;b0.textContent='Reenviar correo (60 s)'}}tm=setInterval(()=>{const b=$('cfRes');if(!b){clearInterval(tm);return}cd--;if(cd<=0){clearInterval(tm);b.disabled=false;b.textContent='Reenviar correo'}else{b.disabled=true;b.textContent='Reenviar correo ('+cd+' s)'}},1000)};
+  rb.onclick=ev=>{
+    if(window.turnstile&&CFID!==null&&!CFTOK)return toast('Completa la verificación de seguridad','err');
+    act(ev.target,async()=>{
+      const{error}=await sb.auth.resend({type:'signup',email,options:{captchaToken:CFTOK||undefined}});
+      cfReset();if(error)throw error;setTimeout(cool,50)},'Correo reenviado. Revisa tu bandeja y el spam')}}
 function renderReset(){
   $app.innerHTML=`<div class="auth"><div class="ac">
     <div style="display:flex;justify-content:center;margin-bottom:14px">${brand(50)}</div>
