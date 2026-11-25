@@ -1250,6 +1250,7 @@ html.lite .tw *{animation:none!important}@media (prefers-reduced-motion:reduce){
 <script>setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<p id="slw" style="margin:0;max-width:280px;text-align:center;font-size:14px;opacity:.75">La conexión está lenta, sigue cargando…</p>')},8000);setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<button id="slr" style="padding:10px 18px;border-radius:12px;border:1px solid #FCD535;background:transparent;color:inherit;font-weight:700" onclick="location.reload()">Reintentar</button>')},35000)</script>
 <div id="toast"></div>
 <style id="rwcss">
+nav:has(button:nth-child(7)) button{font-size:9.5px;letter-spacing:-.3px;padding-left:0;padding-right:0}nav:has(button:nth-child(8)) button{font-size:9px;letter-spacing:-.3px}nav button svg{max-width:100%}
 /* Recompensas (usa las variables del tema del proyecto) */
 main[data-atab="rwd"]>[data-tab]:not([data-tab="rwd"]):not([data-tab="all"]){display:none!important}
 .rw-pool{font-size:34px;font-weight:800;letter-spacing:-.5px;line-height:1.1}.rw-pool small{font-size:15px;font-weight:700;color:var(--mut)}
@@ -1341,7 +1342,7 @@ const withTO=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Err
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 try{const rq=new URLSearchParams(location.search).get('ref');if(rq){lsSet('pending_ref',rq.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12));if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
 const _i=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const IC={gift:_i('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'),market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
+const IC={trophy:_i('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),gift:_i('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'),market:_i('<path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),orders:_i('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),wallet:_i('<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h14a2 2 0 0 0 2-2V6"/>'),profile:_i('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),admin:_i('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'),bell:_i('<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>'),chat:_i('<path d="M4 5h16v11H9l-5 4z"/>')};
 const wfeeTxt=(a,u,d)=>a>0?`Comisión ${n(FE('withdraw'),2)}%: ${n(a*FE('withdraw')/100,d)} ${u} · Recibirás: ${n(a-a*FE('withdraw')/100,d)} ${u}`:'';
 const netOf=x=>x.net_amount!=null?Number(x.net_amount):Number(x.amount)*(1-FE('withdraw')/100);
 document.addEventListener('input',e=>{if(e.target.id!=='ra')return;const el=$('rfee'),k=e.target.dataset.k;if(el)el.textContent=wfeeTxt(+e.target.value,k,k==='CUP'?0:2)});
@@ -2627,6 +2628,7 @@ function render(){
     <button data-v="chat">${IC.chat}Chat<i class="bd" id="cbd" style="display:none"></i></button>
     <button data-v="orders">${IC.orders}${admin?'Órdenes':'Operaciones'}<i class="bd hide" id="bdg"></i></button>
     <button data-v="wallet">${IC.wallet}Billetera</button>
+    <button data-v="rewards">${IC.trophy}Premios</button>
     <button data-v="refs">${IC.gift}Referidos</button>
     <button data-v="profile">${IC.profile}Perfil</button>
     ${admin?`<button data-v="admin">${IC.admin}Admin<i class="bd" id="adbd" style="display:none"></i></button>`:''}</nav>`;
@@ -3970,7 +3972,7 @@ async function bindCards(my){
 /* Las tarjetas ahora viven en Perfil */
 function viewCards(){go('profile')}
 function viewMore(){S.bkTo=null;
-  const it=[['rewards','🏆','Recompensas','Misiones y bono del fondo'],['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
+  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -4040,6 +4042,10 @@ function receipt(x){
 /* ----- Referidos ----- */
 async function viewRefs(){
   const my=NAV;main().innerHTML=hd('Referidos')+skel(3);bk();
+  {let un=false,er=null;
+    try{const{data,error}=await sb.from('reward_state').select('referral_unlocked').eq('user_id',S.user.id).maybeSingle();if(error)throw error;un=!!(data&&data.referral_unlocked)}catch(e){er=e}
+    if(my!==NAV)return;
+    if(!un){main().innerHTML=hd('Referidos')+`<div class="card dg" role="alert"><h3>🔒 Referidos bloqueado</h3><p class="mut" style="margin-top:0">El sistema de referidos se desbloquea al completar todas las misiones de <b>Recompensas</b>. Al terminar, lo que acumulaste pasa a tu saldo y ganas el <b>0,25%</b> de las ventas de tus referidos, de por vida.</p>${er?`<p class="mut" style="font-size:12px">No pudimos comprobar tu avance ahora. Inténtalo de nuevo en unos segundos.</p>`:''}<button class="b w" id="rfgo">Ir a Recompensas</button></div>`;bk();const g=$('rfgo');if(g)g.onclick=()=>go('rewards');return}}
   const pk=rpc('my_referral_nokyc').then(v=>v==null?null:Number(v),()=>null);
   let d;try{d=(await rpc('my_referral_stats'))||{}}catch(e){if(my===NAV){main().innerHTML=hd('Referidos')+warnSql()+`<p class="mut">${esc(e.message)}</p>`;bk()}return}
   if(my!==NAV)return;
@@ -5687,7 +5693,7 @@ const RW_MISS={
   sell_20:'Todavía no llegas a 20 USDT vendidos en órdenes liberadas. Publica una oferta de venta y vuelve a verificar cuando se libere la orden.',
   buy_10:'Todavía no tienes una compra completada de al menos 10 USDT. Compra desde el Mercado y vuelve a verificar cuando se libere la orden.',
   streak_5:'Todavía no tienes 5 órdenes liberadas sin disputas ni strikes. Sigue operando con calma y vuelve a verificar.',
-  invite_3:'Todavía no tienes 3 referidos activos (con KYC aprobado y al menos 1 orden liberada cada uno). Invita a más personas con tu enlace de Más → Referidos y vuelve a verificar.',
+  invite_3:'Todavía no tienes 3 referidos activos (con KYC aprobado y al menos 1 orden liberada cada uno). Invita a más personas con tu enlace de esta misión y vuelve a verificar.',
   unlock_referral:'Esta misión se completa sola cuando termines las 6 anteriores.'};
 const rwLinkify=s=>String(s??'').split(/(https?:\/\/[^\s<>"']+)/).map((p,i)=>{if(i%2===0)return esc(p);const u=p.replace(/[.,;:!?)\]]+$/,'');return`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u)}</a>`+esc(p.slice(u.length))}).join('');
 const rwProofs=x=>{if(Array.isArray(x))return x;try{const a=JSON.parse(x);return Array.isArray(a)?a:[]}catch(e){return[]}};
@@ -5729,18 +5735,15 @@ function rwPaint(msg){
   const{st,tasks,claims}=S.rw,cur=Number(st.current_task)||1,uf=!!st.referral_unlocked;
   const stOf=t=>uf||t.id<cur?'done':t.id===cur?'act':'lock';
   const total=tasks.length||7,done=tasks.filter(t=>stOf(t)==='done').length,pct=total?Math.round(done*100/total):0;
-  const pool=Number(st.pool_balance)||0;
   const pendC=t=>claims?claims.find(c=>c.task_id===t.id&&c.status==='pending'):(Number(st.pending_claims)>0?{}:null);
   const rejC=t=>{const c=claims&&claims.find(c=>c.task_id===t.id);return c&&c.status==='rejected'?c:null};
   const actIdx=tasks.findIndex(t=>stOf(t)==='act');
-  const head=`<div class="card hl"><div class="mut">Fondo de recompensas</div><div class="rw-pool">${n(pool,2)} <small>USDT</small></div>
-    <div class="mut">${pool>0?'Saldo real del fondo. El bono que cobras al completar la misión 7 es proporcional a este fondo.':'Hoy el fondo está en 0: crece con cada operación en Tororo, así que no hay una cifra prometida.'}</div>
+  const head=`<div class="card hl"><div class="mut">Acumulado</div><div class="rw-pool">${n(st.accrued,4)} <small>USDT</small></div>
+    <div class="mut">Es lo que vas sumando con tus misiones. Pasa a tu saldo cuando completes la misión ${total} y se desbloquee el sistema de referidos.</div>
     <div class="row" style="margin-top:12px"><b>Progreso</b><span>${done}/${total} misiones</span></div>
     <div class="rw-bar" role="progressbar" aria-label="Misiones completadas" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><i style="width:${pct}%"></i></div>
     <div class="rw-st"><div class="rw-t"><span class="mut">Puntos</span><b>${n(st.points,0)}</b></div>
-    <div class="rw-t"><span class="mut">Nivel</span><b>${esc(st.level||'—')}</b><small>Multiplicador ×${n(st.multiplier||0,2)}</small></div>
-    <div class="rw-t"><span class="mut">Acumulado</span><b>${n(st.accrued,4)} <small style="display:inline">USDT</small></b><small>Lo que llevas sumado con tus misiones. No se paga por misión: se cobra al completar la misión 7.</small></div>
-    <div class="rw-t"><span class="mut">Bono pendiente</span><b>${n(st.bonus_pending,4)} <small style="display:inline">USDT</small></b><small>Bono proporcional al fondo que recibirás al completar la misión 7.</small></div></div></div>`;
+    <div class="rw-t"><span class="mut">Nivel</span><b>${esc(st.level||'—')}</b><small>Multiplicador ×${n(st.multiplier||0,2)}</small></div></div></div>`;
   const pc=Number(st.pending_claims)||0;
   const pendInfo=pc>0?`<div class="warnbox" role="status">Tienes ${pc} reclamo${pc===1?'':'s'} pendiente${pc===1?'':'s'} de revisión. Un administrador revisará tus capturas.</div>`:'';
   const refBlk=uf?`<div class="card hl" id="rwref"><h3>🎉 Sistema de referidos activado</h3><p class="mut" style="margin-top:0">Completaste las misiones. Ahora ganas el <b>0,25%</b> de las ventas de tus referidos.</p><code id="rwlnk" style="display:block;margin:8px 0;overflow-wrap:anywhere">Cargando tu enlace…</code><div class="grid2"><button class="b" id="rwsh" disabled>Compartir enlace</button><button class="b gh" id="rwcp" disabled>Copiar enlace</button></div><button class="b gh w" id="rwrf" style="margin-top:8px">Ver mis referidos</button></div>`:'';
@@ -5752,7 +5755,7 @@ function rwPaint(msg){
     let ac='';
     if(act&&proof&&pn)ac=`<div class="rw-act"><div class="mut">${pn.created_at?'Enviaste tus capturas el '+when(pn.created_at)+'. ':''}Un administrador las revisará. No puedes reenviarlas mientras tanto.</div></div>`;
     else if(act&&proof)ac=`<div class="rw-act">${rj?`<div class="warnbox bad" role="alert">Tus capturas anteriores fueron rechazadas${rj.note?': '+esc(rj.note):'.'} Puedes volver a enviarlas.</div>`:''}<label for="rwf">Capturas de la misión ${i+1} (necesitas ${need} imagen${need>1?'es':''})</label><input type="file" id="rwf" accept="image/*" multiple><div class="mut" id="rwcnt" aria-live="polite"></div><div class="rw-prev" id="rwprev"></div><button class="b w" id="rwsend" data-t="${t.id}">Enviar capturas</button></div>`;
-    else if(act)ac=`<div class="rw-act"><button class="b w" id="rwchk" data-t="${t.id}">Verificar</button></div>`;
+    else if(act)ac=`<div class="rw-act">${t.code==='invite_3'?`<div class="mut">Tu enlace de invitación para esta misión:</div><code id="rwlnk2" style="display:block;margin:6px 0;overflow-wrap:anywhere">Cargando tu enlace…</code><div class="grid2" style="margin-bottom:10px"><button class="b gh sm" id="rwcp2" disabled>Copiar enlace</button><button class="b gh sm" id="rwsh2" disabled>Compartir</button></div>`:''}<button class="b w" id="rwchk" data-t="${t.id}">Verificar</button></div>`;
     return`<div class="card rw-c ${s}"><div class="rw-m"><span class="rw-n" aria-hidden="true">${s==='done'?'✓':i+1}</span><div><h4>${esc(t.title)}</h4><div style="margin:0 0 6px">${tg}</div><div class="rw-d">${rwLinkify(t.description)}</div><div class="rw-r">${rew}</div>${ac}</div></div></div>`}).join('');
   main().innerHTML=hd('Recompensas')+head+pendInfo+refBlk+(list||'<div class="card"><p class="mut" style="margin:0">Todavía no hay misiones disponibles.</p></div>')+'<div id="rwmsg" class="rw-msg" role="status" aria-live="polite"></div>';
   bk();
@@ -5761,6 +5764,7 @@ function rwPaint(msg){
   const bc=$('rwchk');if(bc)bc.onclick=ev=>rwCheck(ev.currentTarget);
   const br=$('rwrf');if(br)br.onclick=()=>go('refs');
   if(uf)rwRef();
+  if($('rwlnk2'))rwRef('2');
   if(msg)rwMsg(msg.t,msg.text)}
 function rwPrev(f,num){
   (S.rwUrls||[]).forEach(u=>URL.revokeObjectURL(u));S.rwUrls=[];
@@ -5811,15 +5815,15 @@ async function rwCheck(btn){
     const st=S.rw.st,adv=(Number(st.current_task)||1)>prev||(!!st.referral_unlocked&&!prevUf);
     if(adv)rwMsg('ok',st.referral_unlocked&&!prevUf?'¡Completaste todas las misiones! Tu sistema de referidos ya está activo.':'¡Misión completada! Pasaste a la siguiente.');
     else rwMsg('warn',RW_MISS[t.code]||('Todavía no cumples esta misión: '+(t.description||'revisa los requisitos')+'. Vuelve a verificar cuando lo hayas hecho.'))})}
-async function rwRef(){
+async function rwRef(sf=''){
   const my=NAV;
   try{
     if(!S.rwRef){const d=await rpc('my_referral_stats');if(!d||!d.code)throw new Error('sin código');S.rwRef=location.origin+location.pathname+'?ref='+d.code}
-    if(my!==NAV||!$('rwlnk'))return;
-    const l=S.rwRef;$('rwlnk').textContent=l;
-    $('rwcp').disabled=false;$('rwcp').onclick=()=>copy(l);
-    $('rwsh').disabled=false;$('rwsh').onclick=async()=>{const tx=`Únete a ${APP_NAME} P2P y cambia USDT, CUP y saldo con respaldo de un administrador: ${l}`;try{if(navigator.share)await navigator.share({text:tx});else copy(tx)}catch(e){}}
-  }catch(e){const el=$('rwlnk');if(el)el.textContent='No pudimos cargar tu enlace ahora. Ábrelo desde Más → Referidos.'}}
+    if(my!==NAV||!$('rwlnk'+sf))return;
+    const l=S.rwRef;$('rwlnk'+sf).textContent=l;
+    $('rwcp'+sf).disabled=false;$('rwcp'+sf).onclick=()=>copy(l);
+    $('rwsh'+sf).disabled=false;$('rwsh'+sf).onclick=async()=>{const tx=`Únete a ${APP_NAME} P2P y cambia USDT, CUP y saldo con respaldo de un administrador: ${l}`;try{if(navigator.share)await navigator.share({text:tx});else copy(tx)}catch(e){}}
+  }catch(e){const el=$('rwlnk'+sf);if(el)el.textContent='No pudimos cargar tu enlace ahora. Vuelve a abrir Recompensas en unos segundos.'}}
 
 /* ----- Recompensas: sección del panel de admin ----- */
 const rwdChip=()=>{const b=document.querySelector('[data-at="rwd"]');if(b)b.textContent='🎯 Recompensas'+(S.rwPend?' · '+S.rwPend:'')};
