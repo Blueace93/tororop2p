@@ -1249,6 +1249,37 @@ html.lite .tw *{animation:none!important}@media (prefers-reduced-motion:reduce){
 
 <script>setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<p id="slw" style="margin:0;max-width:280px;text-align:center;font-size:14px;opacity:.75">La conexión está lenta, sigue cargando…</p>')},8000);setTimeout(function(){var s=document.getElementById('splash');if(s&&s.isConnected)s.insertAdjacentHTML('beforeend','<button id="slr" style="padding:10px 18px;border-radius:12px;border:1px solid #FCD535;background:transparent;color:inherit;font-weight:700" onclick="location.reload()">Reintentar</button>')},35000)</script>
 <div id="toast"></div>
+<style id="rwcss">
+/* Recompensas (usa las variables del tema del proyecto) */
+main[data-atab="rwd"]>[data-tab]:not([data-tab="rwd"]):not([data-tab="all"]){display:none!important}
+.rw-pool{font-size:34px;font-weight:800;letter-spacing:-.5px;line-height:1.1}.rw-pool small{font-size:15px;font-weight:700;color:var(--mut)}
+.rw-bar{height:10px;border-radius:99px;background:var(--card2);border:1px solid var(--line);overflow:hidden;margin:8px 0 4px}
+.rw-bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s}
+.rw-st{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.rw-t{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:10px;min-width:0}
+.rw-t b{display:block;font-size:19px;margin-top:2px;overflow-wrap:anywhere}
+.rw-t small{display:block;color:var(--mut);font-size:12px;margin-top:4px;line-height:1.35}
+.rw-m{display:flex;gap:12px;align-items:flex-start}
+.rw-m>div:last-child{min-width:0;flex:1}
+.rw-n{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:var(--card2);border:1px solid var(--line);color:var(--tx)}
+.rw-c.done .rw-n{background:var(--ok);border-color:var(--ok);color:#04241c}
+.rw-c.act{border-left:4px solid var(--acc)}.rw-c.act .rw-n{border-color:var(--acc);color:var(--acc)}
+.rw-c.lock{opacity:.5}
+.rw-m h4{margin:0 0 4px;font-size:15px}
+.rw-d{color:var(--mut);font-size:13px;line-height:1.45;overflow-wrap:anywhere}.rw-d a{color:var(--acc);text-decoration:underline}
+.rw-r{font-size:13px;margin-top:8px;font-weight:600}
+.rw-act{margin-top:10px}
+.rw-prev{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.rw-prev img{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.rw-th{padding:0;border:0;background:none;cursor:pointer;border-radius:10px}.rw-th img{width:72px;height:72px}.rw-th:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tag.rwa{background:var(--card2);border:1px solid var(--acc);color:var(--tx);font-weight:700}
+.rw-msg{margin:4px 0 12px;font-size:14px;line-height:1.45}.rw-msg:empty{display:none}
+.rw-msg>div{padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
+.rw-msg .ok{background:rgba(52,211,153,.12);border-color:var(--ok);color:var(--ok)}
+.rw-msg .bad{background:rgba(240,103,92,.12);border-color:var(--bad);color:var(--bad)}
+.rw-msg .warn{background:rgba(242,184,75,.12);border-color:var(--warn);color:var(--warn)}
+@media(min-width:520px){.rw-st{grid-template-columns:repeat(4,1fr)}}
+</style>
 <script src="supabase-2.45.4.min.js"></script>
 <script>window.supabase||document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" crossorigin="anonymous"><\/script>')</script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
@@ -2616,7 +2647,7 @@ function go(v,orderId){if(S.blocked&&!['wallet','hist'].includes(v))v='wallet';
   drawMaint();S.view=v;S._navT=Date.now();if(orderId)S.orderId=orderId;NAV++;clearInterval(POLL);rtLeave();updFab(v);document.body.dataset.view=v;watchLoad();
   {const mm=main();if(mm){mm.classList.remove('adm');delete mm.dataset.atab}if(window._amo){window._amo.disconnect();window._amo=null}}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(v==='order'||v==='trade'?'orders':v==='pchat'||v==='pcon'||v==='comm'?'chat':v)));
-  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,cards:viewCards,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,pchat:viewPchat,pcon:viewPcon,comm:viewComm,admin:viewAdmin}[v]||viewMarket)();
+  ({market:viewMarket,orders:viewOrders,order:viewOrder,wallet:viewWallet,profile:viewProfile,cards:viewCards,trade:viewTrade,notifs:viewNotifs,ann:viewAnn,info:viewInfo,more:viewMore,hist:viewHist,refs:viewRefs,sec:viewSec,help:viewHelp,legal:viewLegal,chat:viewChat,pchat:viewPchat,pcon:viewPcon,comm:viewComm,admin:viewAdmin,rewards:viewRewards}[v]||viewMarket)();
   {const mm=main();if(mm){mm.classList.remove('vin');void mm.offsetWidth;mm.classList.add('vin')}}
   window.scrollTo({top:0,behavior:'instant'})}
 const goKeep=v=>{const y=window.scrollY;go(v);window.scrollTo({top:y,behavior:'instant'})};
@@ -3146,11 +3177,11 @@ async function pollNotifs(){
     if(!S.np0){fresh.slice(0,3).forEach(r=>sysNotify(r.title,r.body));if(fresh.length>3)sysNotify('Tienes '+(fresh.length-3)+' avisos más','Ábrelos en Notificaciones')}
     if((S.profile?.is_admin||S.profile?.is_staff)&&ntDue('a',80000)){
       const c=async(t,f)=>{const{count}=await f(sb.from(t).select('id',{count:'exact',head:true}));return count||0};
-      const v=!S.profile.is_admin?[await c('kyc_submissions',q=>q.eq('status','pending'))]:await Promise.all([c('orders',q=>q.in('status',['seller_confirmed','disputed'])),c('fiat_topups',q=>q.eq('status','pending')),c('fiat_withdrawals',q=>q.eq('status','pending')),c('withdrawals',q=>q.eq('status','pending')),c('deposits',q=>q.eq('status','pending')),c('kyc_submissions',q=>q.eq('status','pending')),c('trades',q=>q.in('status',['pending','review']).eq('asset','MOVIL'))]);
+      const v=!S.profile.is_admin?[await c('kyc_submissions',q=>q.eq('status','pending'))]:await Promise.all([c('orders',q=>q.in('status',['seller_confirmed','disputed'])),c('fiat_topups',q=>q.eq('status','pending')),c('fiat_withdrawals',q=>q.eq('status','pending')),c('withdrawals',q=>q.eq('status','pending')),c('deposits',q=>q.eq('status','pending')),c('kyc_submissions',q=>q.eq('status','pending')),c('trades',q=>q.in('status',['pending','review']).eq('asset','MOVIL')),c('reward_claims',q=>q.eq('status','pending'))]);
       let dupN=0;if(S.profile.is_admin)try{const dr=await sb.rpc('admin_dup_list');dupN=((dr&&dr.data)||[]).filter(x=>x.status==='explained').length}catch(e){}
       S.dupN=dupN;const tot=v.reduce((a,b)=>a+b,0)+dupN;
       if(!S.np0&&!S.pushOn&&tot>(S.lastPend||0))sysNotify('Tienes '+tot+' solicitudes pendientes','Revisa el panel de administrador');
-      S.lastPend=tot;S.adminPend=tot;
+      S.lastPend=tot;S.adminPend=tot;if(S.profile.is_admin){S.rwPend=v[7]||0;rwdChip()}
       const bd=$('adbd');if(bd){bd.textContent=tot;bd.style.display=tot?'block':'none'}}
     if(ntDue('n',80000))try{const{data:la}=await sb.from('announcements').select('id,title,created_at').order('created_at',{ascending:false}).limit(1);const l=la&&la[0];
       if(l){const sn=lsGet('ann_seen_'+S.user.id);S.annNew=!sn||l.created_at>sn;if(!S.np0&&S.annNew&&S.annLast!==l.id)sysNotify('📢 Nuevo anuncio',l.title);S.annLast=l.id;updAnn();if(S.annNew)checkAnnPopup()}}catch(e){}
@@ -3939,7 +3970,7 @@ async function bindCards(my){
 /* Las tarjetas ahora viven en Perfil */
 function viewCards(){go('profile')}
 function viewMore(){S.bkTo=null;
-  const it=[['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
+  const it=[['rewards','🏆','Recompensas','Misiones y bono del fondo'],['refs','🎁','Referidos','Invita amigos y gana'],['hist','🧾','Historial','Operaciones y comprobantes'],['sec','🛡️','Seguridad','PIN, dos pasos y accesos'],['help','❓','Ayuda','Preguntas frecuentes y tutorial'],['legal','📄','Términos y políticas','Condiciones, privacidad y responsabilidad']];
   main().innerHTML=hd('Más')+it.map(([v,i,t,d])=>`<div class="card" style="cursor:pointer" data-mv="${v}"><div class="row" style="flex-wrap:nowrap;justify-content:flex-start;gap:14px"><span style="font-size:26px">${i}</span><div><b>${t}</b><div class="mut">${d}</div></div></div></div>`).join('');
   bk('market');main().querySelectorAll('[data-mv]').forEach(c=>c.onclick=()=>go(c.dataset.mv))}
 
@@ -5581,7 +5612,7 @@ async function viewAdmin(){
   const tl=(ic,lb,c,id)=>`<button class="tile ${c?'hot':''}" data-go="${id}"><span class="tc">${c}</span><span>${ic} ${lb}</span></button>`;
   const tiles=`<div class="tiles" data-tab="pend">${tl('🪪','KYC',(ks.count||0),'s-kyc')}${tl('💸','Retiros',(w.data||[]).length+(cw.data||[]).length,'s-wd')}${tl('📥','Depósitos USDT',(d.data||[]).length,'s-dep')}${DR.length?tl('⚠️','Monto distinto',DR.length,'s-drev'):''}${tl('🛒','Operaciones',orders.length,'s-ord')}</div>`;
   const npend=DR.length+TM.length+orders.length+(d.data||[]).length+(w.data||[]).length+(ct.data||[]).length+(cw.data||[]).length,AT=S.atab||'pend';
-  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','👥 Usuarios',ks.count||0],['stf','🛡️ Admins secundarios',0],['sta','📊 Estadísticas',0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
+  const tabsHtml=`<div class="atabs chips" id="atabs" data-tab="all">${[['pend','📋 Pendientes',npend],['usr','👥 Usuarios',ks.count||0],['stf','🛡️ Admins secundarios',0],['sta','📊 Estadísticas',0],['rwd','🎯 Recompensas',S.rwPend||0],['cfg','⚙️ Ajustes',0]].map(([k,l,c])=>`<button class="chip ${AT===k?'on':''}" data-at="${k}">${l}${c?' · '+c:''}</button>`).join('')}</div>`;
   main().innerHTML=`<h2>Panel de administrador</h2>
   <div class="card hl" style="margin-bottom:12px"><div class="mut">Usuarios activos (KYC aprobado)</div><div class="big">${ac?.count||0}</div></div>
   <div class="grid2" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="mut">Disputas abiertas</div><div class="big" style="color:${nd?'var(--bad)':'var(--ok)'}">${nd}</div></div>
@@ -5629,7 +5660,7 @@ async function viewAdmin(){
   bind('data-cd','admin_complete_fiat_withdrawal','Retiro marcado como enviado');
   bind('data-cx','admin_reject_fiat_withdrawal','Retiro rechazado y saldo devuelto');
   /* Pestañas: cada una carga sus datos solo cuando se abre */
-  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-drev':'pend','s-wd':'pend','s-top':'pend','s-usum':'usr','s-kyc':'usr','s-unv':'usr','s-risk':'usr','s-staff':'stf','s-bal':'stf','s-duty':'stf','s-audit':'stf','s-stfops':'stf','s-stfrules':'stf','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-msg':'cfg','s-info':'cfg','s-ref':'cfg'};
+  const TABOF={'s-stats':'sta','s-movil':'pend','s-ord':'pend','s-dep':'pend','s-drev':'pend','s-wd':'pend','s-top':'pend','s-usum':'usr','s-kyc':'usr','s-unv':'usr','s-risk':'usr','s-staff':'stf','s-bal':'stf','s-duty':'stf','s-audit':'stf','s-stfops':'stf','s-stfrules':'stf','s-fee':'mny','s-cards':'mny','cardsbox':'mny','s-ann':'cfg','s-msg':'cfg','s-info':'cfg','s-ref':'cfg','s-rwd':'rwd'};
   const SUBOF={'s-kyc':'kyc','s-unv':'unv','s-risk':'risk','s-staff':'team','s-bal':'team','s-duty':'duty','s-stfops':'ops','s-audit':'act','s-stfrules':'rules'},SUBDEF={usr:'kyc',stf:'team'};
   S.sub=S.sub||{};
   const mm=main();mm.classList.add('adm');mm.dataset.atab=AT;
@@ -5640,6 +5671,7 @@ async function viewAdmin(){
   const mkSub=(k,items)=>{mm.insertAdjacentHTML('beforeend',`<div class="chips" data-tab="${k}" data-sub="*" style="margin:6px 0 12px">${items.map(([v,l])=>`<button class="chip" data-subchip="${v}" data-tabk="${k}">${l}</button>`).join('')}</div>`);mm.lastElementChild.querySelectorAll('[data-subchip]').forEach(b=>b.onclick=()=>{S.sub[k]=b.dataset.subchip;refreshSub();window.scrollTo({top:0,behavior:'instant'})})};
   const LD={
     sta:()=>adminStats(mm,my),
+    rwd:()=>adminRewards(mm,my),
     usr:()=>{adminUsrSummary();adminOnline(my);mkSub('usr',[['kyc','🪪 Verificaciones'],['unv','👤 Sin verificar'],['risk','🚨 Riesgo']]);adminRiskShell();adminRisk(my);mm.insertAdjacentHTML('beforeend','<h3 id="s-kyc">Verificaciones de identidad (KYC)</h3><div id="kycbox">'+skel(1)+'</div><h3 id="s-unv">Usuarios sin verificar</h3><div id="unvbox">'+skel(1)+'</div>');adminKycUsers(my);adminUnverified(my)},
     stf:()=>{mkSub('stf',[['team','👥 Equipo y saldo'],['duty','🕒 Turnos y permisos'],['ops','⚖️ Operaciones'],['act','📜 Actividad'],['rules','🔒 Reglas de control']]);adminStaffMgmt();adminBalances();adminDuty(my);adminStfOps(my);adminAuditShell();adminStfRules();setTimeout(()=>{const g=$('auditGo');if(g)g.click()},60)},
     cfg:async()=>{adminBlocks();adminMaint();adminPayout();adminRates();const[an2,ai2]=await Promise.all([annSel(c=>sb.from('announcements').select(c).order('created_at',{ascending:false}).limit(30)),sb.from('admin_info').select('full_name,about,photo_paths').eq('id',1).maybeSingle()]);if(my!==NAV)return;adminExtras(an2,ai2,rr)}},done={};
@@ -5647,7 +5679,214 @@ async function viewAdmin(){
     if(LD[k]&&!done[k]){done[k]=1;LD[k]()}refreshSub();if(id)toEl(id)};
   mm.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{openTab(b.dataset.at);window.scrollTo({top:0,behavior:'instant'})});
   mm.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const g=b.dataset.go;if(SUBOF[g])S.sub[TABOF[g]]=SUBOF[g];openTab(TABOF[g]||'pend',g)});
-  openTab(AT)}
+  rwdBadge();openTab(AT)}
+
+/* ---------- Recompensas: misiones del usuario y revisión del admin ---------- */
+const RW_BUCKET='reward-proofs',RW_MAXF=10;
+const RW_MISS={
+  sell_20:'Todavía no llegas a 20 USDT vendidos en órdenes liberadas. Publica una oferta de venta y vuelve a verificar cuando se libere la orden.',
+  buy_10:'Todavía no tienes una compra completada de al menos 10 USDT. Compra desde el Mercado y vuelve a verificar cuando se libere la orden.',
+  streak_5:'Todavía no tienes 5 órdenes liberadas sin disputas ni strikes. Sigue operando con calma y vuelve a verificar.',
+  invite_3:'Todavía no tienes 3 referidos activos (con KYC aprobado y al menos 1 orden liberada cada uno). Invita a más personas con tu enlace de Más → Referidos y vuelve a verificar.',
+  unlock_referral:'Esta misión se completa sola cuando termines las 6 anteriores.'};
+const rwLinkify=s=>String(s??'').split(/(https?:\/\/[^\s<>"']+)/).map((p,i)=>{if(i%2===0)return esc(p);const u=p.replace(/[.,;:!?)\]]+$/,'');return`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u)}</a>`+esc(p.slice(u.length))}).join('');
+const rwProofs=x=>{if(Array.isArray(x))return x;try{const a=JSON.parse(x);return Array.isArray(a)?a:[]}catch(e){return[]}};
+function rwMsg(type,text){const el=$('rwmsg');if(!el)return;el.innerHTML=text?`<div class="${type}">${esc(text)}</div>`:'';if(text)el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function rwLock(st){
+  const k=st==='pending'||st==='rejected'?st:'none';
+  const lb={none:'Sin verificar',pending:'En revisión',rejected:'Rechazada'}[k];
+  const tx={none:'Todavía no has verificado tu identidad.',pending:'Tu verificación está en revisión. Cuando el administrador la apruebe podrás ver tus misiones.',rejected:'Tu verificación fue rechazada. Envíala de nuevo para poder participar.'}[k];
+  return`<div class="card dg" role="alert"><h3>🔒 Verifica tu identidad para entrar</h3><p class="mut" style="margin-top:0">Las misiones y el fondo de recompensas son solo para cuentas con KYC aprobado.</p><p style="margin:8px 0">Estado actual: <span class="tag ${k==='pending'?'warn':'bad'}">${lb}</span> <span class="mut">(${esc(st||'none')})</span></p><p class="mut" style="margin-top:0">${tx}</p>${k==='pending'?'':'<button class="b w" id="rwkyc">Verificar ahora</button>'}</div>`}
+async function viewRewards(){
+  const my=NAV,H=hd('Recompensas');
+  main().innerHTML=H+skel(3);bk();
+  let kyc=S.profile?.kyc_status;
+  try{const{data}=await sb.from('profiles').select('kyc_status').eq('id',S.user.id).maybeSingle();if(data&&data.kyc_status){kyc=data.kyc_status;S.profile.kyc_status=kyc}}catch(e){}
+  if(my!==NAV)return;
+  if(kyc!=='approved'){main().innerHTML=H+rwLock(kyc);bk();const b=$('rwkyc');if(b)b.onclick=()=>go('profile');return}
+  S.rw={};await rwReload(my)}
+async function rwFetch(){
+  const uid=S.user.id;
+  const q=()=>sb.from('reward_state').select('user_id,kyc_status,current_task,points,level,multiplier,referral_unlocked,pending_claims,pool_balance,accrued,bonus_pending').eq('user_id',uid).maybeSingle();
+  const[a,t,c]=await Promise.all([q(),
+    sb.from('reward_tasks').select('id,code,title,description,kind,points,cash,requires_proofs,active').eq('active',true).order('id'),
+    sb.from('reward_claims').select('id,task_id,status,note,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(30)]);
+  if(a.error)throw a.error;if(t.error)throw t.error;
+  let st=a.data;
+  if(!st){await rpc('reward_enroll',{p_user:uid});const b=await q();if(b.error)throw b.error;st=b.data}
+  if(!st)throw new Error('Tu cuenta todavía no tiene un estado de recompensas');
+  return{st,tasks:t.data||[],claims:c.error?null:(c.data||[])}}
+async function rwReload(my,msg){
+  let d;
+  try{d=await rwFetch()}catch(e){
+    if(my!==NAV)return;
+    main().innerHTML=hd('Recompensas')+`<div class="warnbox bad" role="alert">No se pudieron cargar tus misiones: ${esc((e&&e.message)||e)}. Revisa tu conexión y vuelve a intentarlo; si se repite, escribe a soporte@tororo.trade.</div><button class="b gh" id="rwretry">Reintentar</button>`;bk();
+    $('rwretry').onclick=()=>{main().innerHTML=hd('Recompensas')+skel(3);bk();rwReload(my)};return}
+  if(my!==NAV)return;
+  if(d.st.kyc_status&&d.st.kyc_status!=='approved'){main().innerHTML=hd('Recompensas')+rwLock(d.st.kyc_status);bk();const b=$('rwkyc');if(b)b.onclick=()=>go('profile');return}
+  S.rw=Object.assign(S.rw||{},d);rwPaint(msg)}
+function rwPaint(msg){
+  const{st,tasks,claims}=S.rw,cur=Number(st.current_task)||1,uf=!!st.referral_unlocked;
+  const stOf=t=>uf||t.id<cur?'done':t.id===cur?'act':'lock';
+  const total=tasks.length||7,done=tasks.filter(t=>stOf(t)==='done').length,pct=total?Math.round(done*100/total):0;
+  const pool=Number(st.pool_balance)||0;
+  const pendC=t=>claims?claims.find(c=>c.task_id===t.id&&c.status==='pending'):(Number(st.pending_claims)>0?{}:null);
+  const rejC=t=>{const c=claims&&claims.find(c=>c.task_id===t.id);return c&&c.status==='rejected'?c:null};
+  const actIdx=tasks.findIndex(t=>stOf(t)==='act');
+  const head=`<div class="card hl"><div class="mut">Fondo de recompensas</div><div class="rw-pool">${n(pool,2)} <small>USDT</small></div>
+    <div class="mut">${pool>0?'Saldo real del fondo. El bono que cobras al completar la misión 7 es proporcional a este fondo.':'Hoy el fondo está en 0: crece con cada operación en Tororo, así que no hay una cifra prometida.'}</div>
+    <div class="row" style="margin-top:12px"><b>Progreso</b><span>${done}/${total} misiones</span></div>
+    <div class="rw-bar" role="progressbar" aria-label="Misiones completadas" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><i style="width:${pct}%"></i></div>
+    <div class="rw-st"><div class="rw-t"><span class="mut">Puntos</span><b>${n(st.points,0)}</b></div>
+    <div class="rw-t"><span class="mut">Nivel</span><b>${esc(st.level||'—')}</b><small>Multiplicador ×${n(st.multiplier||0,2)}</small></div>
+    <div class="rw-t"><span class="mut">Acumulado</span><b>${n(st.accrued,4)} <small style="display:inline">USDT</small></b><small>Lo que llevas sumado con tus misiones. No se paga por misión: se cobra al completar la misión 7.</small></div>
+    <div class="rw-t"><span class="mut">Bono pendiente</span><b>${n(st.bonus_pending,4)} <small style="display:inline">USDT</small></b><small>Bono proporcional al fondo que recibirás al completar la misión 7.</small></div></div></div>`;
+  const pc=Number(st.pending_claims)||0;
+  const pendInfo=pc>0?`<div class="warnbox" role="status">Tienes ${pc} reclamo${pc===1?'':'s'} pendiente${pc===1?'':'s'} de revisión. Un administrador revisará tus capturas.</div>`:'';
+  const refBlk=uf?`<div class="card hl" id="rwref"><h3>🎉 Sistema de referidos activado</h3><p class="mut" style="margin-top:0">Completaste las misiones. Ahora ganas el <b>0,25%</b> de las ventas de tus referidos.</p><code id="rwlnk" style="display:block;margin:8px 0;overflow-wrap:anywhere">Cargando tu enlace…</code><div class="grid2"><button class="b" id="rwsh" disabled>Compartir enlace</button><button class="b gh" id="rwcp" disabled>Copiar enlace</button></div><button class="b gh w" id="rwrf" style="margin-top:8px">Ver mis referidos</button></div>`:'';
+  const list=tasks.map((t,i)=>{
+    const s=stOf(t),proof=t.kind==='proof',act=s==='act',pn=proof&&act?pendC(t):null,rj=proof&&act&&!pn?rejC(t):null;
+    const tg=s==='done'?'<span class="tag ok">Completada</span>':s==='lock'?'<span class="tag">Bloqueada</span>':pn?'<span class="tag warn">Pendiente de revisión</span>':'<span class="tag rwa">Disponible</span>';
+    const rew=(Number(t.points)>0||Number(t.cash)>0)?`+${n(t.points,0)} pts · ${n(t.cash,2)} USDT al graduarte`:'Desbloquea el sistema de referidos';
+    const need=Math.max(1,Number(t.requires_proofs)||1);
+    let ac='';
+    if(act&&proof&&pn)ac=`<div class="rw-act"><div class="mut">${pn.created_at?'Enviaste tus capturas el '+when(pn.created_at)+'. ':''}Un administrador las revisará. No puedes reenviarlas mientras tanto.</div></div>`;
+    else if(act&&proof)ac=`<div class="rw-act">${rj?`<div class="warnbox bad" role="alert">Tus capturas anteriores fueron rechazadas${rj.note?': '+esc(rj.note):'.'} Puedes volver a enviarlas.</div>`:''}<label for="rwf">Capturas de la misión ${i+1} (necesitas ${need} imagen${need>1?'es':''})</label><input type="file" id="rwf" accept="image/*" multiple><div class="mut" id="rwcnt" aria-live="polite"></div><div class="rw-prev" id="rwprev"></div><button class="b w" id="rwsend" data-t="${t.id}">Enviar capturas</button></div>`;
+    else if(act)ac=`<div class="rw-act"><button class="b w" id="rwchk" data-t="${t.id}">Verificar</button></div>`;
+    return`<div class="card rw-c ${s}"><div class="rw-m"><span class="rw-n" aria-hidden="true">${s==='done'?'✓':i+1}</span><div><h4>${esc(t.title)}</h4><div style="margin:0 0 6px">${tg}</div><div class="rw-d">${rwLinkify(t.description)}</div><div class="rw-r">${rew}</div>${ac}</div></div></div>`}).join('');
+  main().innerHTML=hd('Recompensas')+head+pendInfo+refBlk+(list||'<div class="card"><p class="mut" style="margin:0">Todavía no hay misiones disponibles.</p></div>')+'<div id="rwmsg" class="rw-msg" role="status" aria-live="polite"></div>';
+  bk();
+  const f=$('rwf');if(f)f.onchange=()=>rwPrev(f,actIdx+1);
+  const bs=$('rwsend');if(bs)bs.onclick=ev=>rwSend(ev.currentTarget);
+  const bc=$('rwchk');if(bc)bc.onclick=ev=>rwCheck(ev.currentTarget);
+  const br=$('rwrf');if(br)br.onclick=()=>go('refs');
+  if(uf)rwRef();
+  if(msg)rwMsg(msg.t,msg.text)}
+function rwPrev(f,num){
+  (S.rwUrls||[]).forEach(u=>URL.revokeObjectURL(u));S.rwUrls=[];
+  const box=$('rwprev'),cnt=$('rwcnt');if(!box)return;box.innerHTML='';
+  const fs=[...f.files];
+  if(cnt)cnt.textContent=fs.length?`${fs.length} imagen${fs.length===1?'':'es'} seleccionada${fs.length===1?'':'s'}`:'';
+  fs.forEach((x,i)=>{if(!/^image\//.test(x.type))return;const u=URL.createObjectURL(x);S.rwUrls.push(u);
+    const im=document.createElement('img');im.src=u;im.width=64;im.height=64;im.alt=`Vista previa de la captura ${i+1} de la misión ${num}`;box.appendChild(im)})}
+async function rwBusy(btn,label,fn){
+  if(btn.dataset.busy==='1')return;
+  const all=[...main().querySelectorAll('button,input[type=file]')],was=all.map(x=>x.disabled),orig=btn.textContent;
+  btn.dataset.busy='1';btn.textContent=label;all.forEach(x=>x.disabled=true);
+  try{await fn()}finally{btn.dataset.busy='';if(btn.isConnected){btn.textContent=orig;all.forEach((x,i)=>{x.disabled=was[i]})}}}
+async function rwUp(file,tid){
+  if(!/^image\//.test(file.type))throw new Error('Uno de los archivos no es una imagen. Elige solo capturas en formato JPG, PNG o WEBP');
+  if(/^image\/(heic|heif)$/i.test(file.type))throw new Error('Una foto está en formato HEIC y no es compatible. Haz una captura de pantalla de la foto o elige un JPG o PNG');
+  if(file.size>40*1024*1024)throw new Error('Una imagen es demasiado grande (máximo 40 MB antes de comprimir)');
+  file=await shrinkImg(file);
+  if(file.size>8*1024*1024)throw new Error('Una imagen pesa más de 8 MB. Elige una captura más liviana');
+  const ext=((file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg').slice(0,5);
+  const rnd=Array.from(crypto.getRandomValues(new Uint8Array(4)),b=>b.toString(16).padStart(2,'0')).join('');
+  const path=`${S.user.id}/${tid}-${Date.now()}-${rnd}.${ext}`;
+  const{error}=await sb.storage.from(RW_BUCKET).upload(path,file,{contentType:file.type});
+  if(error)throw error;return path}
+async function rwSend(btn){
+  const my=NAV,uid=S.user.id,t=(S.rw.tasks||[]).find(x=>x.id===+btn.dataset.t);if(!t)return;
+  const f=$('rwf'),files=[...(f&&f.files||[])],need=Math.max(1,Number(t.requires_proofs)||1);
+  if(files.length<need)return rwMsg('bad',`Esta misión pide ${need} captura${need>1?'s':''} y elegiste ${files.length}. Selecciona ${need>1?'las '+need+' imágenes':'la imagen'} y vuelve a tocar “Enviar capturas”.`);
+  if(files.length>RW_MAXF)return rwMsg('bad',`Elegiste ${files.length} imágenes y el máximo es ${RW_MAXF}. Quita algunas y vuelve a intentarlo.`);
+  await rwBusy(btn,'Enviando…',async()=>{
+    const paths=[];
+    try{
+      for(let i=0;i<files.length;i++){rwMsg('warn',`Subiendo captura ${i+1} de ${files.length}…`);paths.push(await rwUp(files[i],t.id))}
+      rwMsg('warn','Enviando a revisión…');
+      await rpc('reward_submit_proof',{p_user:uid,p_task:t.id,p_proofs:paths})
+    }catch(e){
+      if(paths.length)Promise.resolve(sb.storage.from(RW_BUCKET).remove(paths)).catch(()=>{});
+      return rwMsg('bad',`No se pudieron enviar las capturas: ${(e&&e.message)||e}. Revisa tu conexión e inténtalo de nuevo; si el problema sigue, escribe a soporte@tororo.trade.`)}
+    await rwReload(my,{t:'ok',text:'¡Capturas enviadas! Quedaron pendientes de revisión: un administrador las revisará y verás el resultado aquí.'})})}
+async function rwCheck(btn){
+  const my=NAV,uid=S.user.id,t=(S.rw.tasks||[]).find(x=>x.id===+btn.dataset.t);if(!t)return;
+  const prev=Number(S.rw.st.current_task)||1,prevUf=!!S.rw.st.referral_unlocked;
+  await rwBusy(btn,'Verificando…',async()=>{
+    try{await rpc('reward_check_auto',{p_user:uid})}
+    catch(e){return rwMsg('bad',`No se pudo verificar la misión: ${(e&&e.message)||e}. Revisa tu conexión e inténtalo otra vez en unos segundos.`)}
+    await rwReload(my);
+    if(my!==NAV||!S.rw||!S.rw.st)return;
+    const st=S.rw.st,adv=(Number(st.current_task)||1)>prev||(!!st.referral_unlocked&&!prevUf);
+    if(adv)rwMsg('ok',st.referral_unlocked&&!prevUf?'¡Completaste todas las misiones! Tu sistema de referidos ya está activo.':'¡Misión completada! Pasaste a la siguiente.');
+    else rwMsg('warn',RW_MISS[t.code]||('Todavía no cumples esta misión: '+(t.description||'revisa los requisitos')+'. Vuelve a verificar cuando lo hayas hecho.'))})}
+async function rwRef(){
+  const my=NAV;
+  try{
+    if(!S.rwRef){const d=await rpc('my_referral_stats');if(!d||!d.code)throw new Error('sin código');S.rwRef=location.origin+location.pathname+'?ref='+d.code}
+    if(my!==NAV||!$('rwlnk'))return;
+    const l=S.rwRef;$('rwlnk').textContent=l;
+    $('rwcp').disabled=false;$('rwcp').onclick=()=>copy(l);
+    $('rwsh').disabled=false;$('rwsh').onclick=async()=>{const tx=`Únete a ${APP_NAME} P2P y cambia USDT, CUP y saldo con respaldo de un administrador: ${l}`;try{if(navigator.share)await navigator.share({text:tx});else copy(tx)}catch(e){}}
+  }catch(e){const el=$('rwlnk');if(el)el.textContent='No pudimos cargar tu enlace ahora. Ábrelo desde Más → Referidos.'}}
+
+/* ----- Recompensas: sección del panel de admin ----- */
+const rwdChip=()=>{const b=document.querySelector('[data-at="rwd"]');if(b)b.textContent='🎯 Recompensas'+(S.rwPend?' · '+S.rwPend:'')};
+async function rwdBadge(){
+  if(!S.profile||!S.profile.is_admin)return;
+  try{const{count,error}=await sb.from('reward_claims').select('id',{count:'exact',head:true}).eq('status','pending');if(error)return;S.rwPend=count||0;rwdChip()}catch(e){}}
+async function rwdMaps(rows,withRev){
+  const uids=[...new Set(rows.flatMap(r=>[r.user_id,withRev?r.reviewed_by:null]).filter(Boolean))],tids=[...new Set(rows.map(r=>r.task_id).filter(x=>x!=null))];
+  const[u,t]=await Promise.all([uids.length?sb.from('profiles').select('id,username').in('id',uids):{data:[]},tids.length?sb.from('reward_tasks').select('id,title').in('id',tids):{data:[]}]);
+  const U={},T={};(u.data||[]).forEach(x=>U[x.id]=x.username);(t.data||[]).forEach(x=>T[x.id]=x.title);return{U,T}}
+async function rwdThumbs(box,paths,user,ttl){
+  const arr=rwProofs(paths);
+  if(!arr.length){box.innerHTML='<span class="mut">Sin capturas adjuntas</span>';return}
+  box.innerHTML='<span class="mut">Cargando capturas…</span>';
+  const res=await Promise.all(arr.map(p=>sb.storage.from(RW_BUCKET).createSignedUrl(p,3600).then(r=>r,e=>({error:e}))));
+  if(!box.isConnected)return;box.innerHTML='';
+  res.forEach((r,i)=>{
+    const u=r&&r.data&&r.data.signedUrl;
+    if(!u){const s=document.createElement('span');s.className='tag bad';s.textContent=`Captura ${i+1}: no se pudo cargar`+(r&&r.error&&r.error.message?' ('+r.error.message+')':'');box.appendChild(s);return}
+    const b=document.createElement('button');b.type='button';b.className='rw-th';b.setAttribute('aria-label',`Ampliar la captura ${i+1} de la misión ${ttl}`);
+    const im=document.createElement('img');im.src=u;im.loading='lazy';im.width=72;im.height=72;im.alt=`Captura ${i+1} de la misión ${ttl}, enviada por @${user}`;
+    b.appendChild(im);b.onclick=()=>zoom(u);box.appendChild(b)})}
+async function adminRewards(mm,my){
+  if(!S.profile||!S.profile.is_admin)return;
+  mm.insertAdjacentHTML('beforeend',`<div id="s-rwd"><h3>🎯 Recompensas</h3><p class="mut" style="margin-top:0">Capturas de las misiones, de la más antigua a la más reciente.</p><div class="chips" style="margin:6px 0 12px"><button class="chip" data-rs="pend">Pendientes</button><button class="chip" data-rs="hist">Historial</button></div><div id="rwdbox">${skel(2)}</div></div>`);
+  const root=$('s-rwd');S.rwHN=30;
+  const sub=s=>{S.rwSub=s;root.querySelectorAll('[data-rs]').forEach(b=>b.classList.toggle('on',b.dataset.rs===s));rwdRender(my)};
+  root.querySelectorAll('[data-rs]').forEach(b=>b.onclick=()=>{S.rwHN=30;sub(b.dataset.rs)});
+  sub(S.rwSub||'pend')}
+async function rwdRender(my){
+  const box=$('rwdbox');if(!box||!S.profile||!S.profile.is_admin)return;
+  const hist=S.rwSub==='hist';box.innerHTML=skel(2);
+  try{
+    let q=sb.from('reward_claims').select('id,user_id,task_id,status,proofs,reviewed_by,reviewed_at,note,created_at');
+    q=hist?q.in('status',['approved','rejected']).order('reviewed_at',{ascending:false,nullsFirst:false}).limit(S.rwHN):q.eq('status','pending').order('created_at',{ascending:true});
+    const{data,error}=await q;if(error)throw error;
+    const rows=data||[],{U,T}=await rwdMaps(rows,hist);
+    if(my!==NAV||!$('rwdbox'))return;
+    if(!hist){S.rwPend=rows.length;rwdChip()}
+    const nm=r=>U[r.user_id]||'usuario',tt=r=>T[r.task_id]||('Misión '+r.task_id);
+    if(!rows.length){$('rwdbox').innerHTML=`<div class="card"><p class="mut" style="margin:0">${hist?'Todavía no hay reclamos revisados.':'No hay capturas pendientes de revisión'}</p></div>`;return}
+    $('rwdbox').innerHTML=rows.map(r=>hist
+      ?`<div class="card" data-c="${esc(r.id)}"><div class="row"><b>@${esc(nm(r))}</b><span class="tag ${r.status==='approved'?'ok':'bad'}">${r.status==='approved'?'Aprobada':'Rechazada'}</span></div><div>${esc(tt(r))}</div><div class="mut">Enviado: ${when(r.created_at)}</div><div class="mut">Revisó: ${r.reviewed_by?'@'+esc(U[r.reviewed_by]||'admin'):'—'}${r.reviewed_at?' · '+when(r.reviewed_at):''}</div><div class="mut">Nota: ${r.note?esc(r.note):'sin nota'}</div><div class="rw-prev"></div><button class="b gh sm" data-hv="${esc(r.id)}">Ver capturas (${rwProofs(r.proofs).length})</button></div>`
+      :`<div class="card" data-c="${esc(r.id)}"><div class="row"><b>@${esc(nm(r))}</b>${typeof waitTag==='function'?waitTag(r.created_at):''}</div><div>${esc(tt(r))}</div><div class="mut">Enviado: ${when(r.created_at)}</div><div class="rw-prev"></div><label for="rwn-${esc(r.id)}">Nota (opcional)</label><input id="rwn-${esc(r.id)}" type="text" maxlength="300" autocomplete="off" placeholder="Ej.: la captura no muestra que compartiste el video"><div class="grid2"><button class="b ok" data-ap="${esc(r.id)}">Aprobar</button><button class="b bad" data-rj="${esc(r.id)}">Rechazar</button></div></div>`).join('')
+      +(hist&&rows.length>=S.rwHN?'<button class="b gh w" id="rwdmore">Cargar más</button>':'');
+    const byId={};rows.forEach(r=>byId[r.id]=r);
+    $('rwdbox').querySelectorAll('[data-c]').forEach(card=>{
+      const r=byId[card.dataset.c],pv=card.querySelector('.rw-prev');
+      if(!hist)rwdThumbs(pv,r.proofs,nm(r),tt(r));
+      const hv=card.querySelector('[data-hv]');if(hv)hv.onclick=()=>{hv.remove();rwdThumbs(pv,r.proofs,nm(r),tt(r))};
+      const ap=card.querySelector('[data-ap]'),rj=card.querySelector('[data-rj]');
+      if(ap)ap.onclick=()=>rwdReview(ap,card,r.id,true,my);
+      if(rj)rj.onclick=()=>rwdReview(rj,card,r.id,false,my)});
+    const mo=$('rwdmore');if(mo)mo.onclick=()=>{S.rwHN+=30;rwdRender(my)}
+  }catch(e){
+    if(my!==NAV||!$('rwdbox'))return;
+    $('rwdbox').innerHTML=`<div class="warnbox bad" role="alert">No se pudieron cargar los reclamos: ${esc((e&&e.message)||e)}. Toca “Reintentar”.</div><button class="b gh sm" id="rwdre">Reintentar</button>`;
+    $('rwdre').onclick=()=>rwdRender(my)}}
+async function rwdReview(btn,card,id,ok,my){
+  const note=(card.querySelector('input')||{value:''}).value.trim();
+  const m=await ask(ok?'Aprobar misión':'Rechazar captura',ok?'<p>¿Seguro? Esta acción no se puede deshacer.</p>':`<p>¿Seguro? Esta acción no se puede deshacer.</p>${note?'':'<p class="mut">No escribiste una nota: el usuario no sabrá por qué se rechazó.</p>'}`,ok?'Aprobar':'Rechazar',ok?'ok':'bad');
+  if(!m)return;m.remove();
+  await act(btn,async()=>{
+    const bs=[...card.querySelectorAll('button')];bs.forEach(b=>b.disabled=true);
+    try{await rpc('reward_review',{p_claim:id,p_approve:ok,p_admin:S.user.id,p_note:note||null})}
+    catch(e){bs.forEach(b=>b.disabled=false);throw e}
+    await rwdRender(my);S._da=0;try{pollNotifs()}catch(e){}},ok?'Misión aprobada':'Captura rechazada')}
 
 
 /* ---------- Estadísticas del administrador ---------- */
