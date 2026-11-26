@@ -5738,23 +5738,21 @@ function rwPaint(msg){
   const pendC=t=>claims?claims.find(c=>c.task_id===t.id&&c.status==='pending'):(Number(st.pending_claims)>0?{}:null);
   const rejC=t=>{const c=claims&&claims.find(c=>c.task_id===t.id);return c&&c.status==='rejected'?c:null};
   const actIdx=tasks.findIndex(t=>stOf(t)==='act');
-  const poolB=Number(st.pool_balance)||0,bonP=Number(st.bonus_pending)||0;
-  const head=`<div class="card hl"><div class="mut">Fondo de recompensas</div><div class="rw-pool">${n(poolB,4)} <small>USDT</small></div>
-    <div class="mut">Crece con cada operación en Tororo. ${poolB>0?'Es el saldo real disponible hoy para repartir.':'Hoy está en 0: todavía no hay bono por repartir, pero crece con cada operación.'}</div>
+  const bonP=Number(st.bonus_pending)||0;
+  const head=`<div class="card hl"><div class="mut">Ganado con tus ventas</div><div class="rw-pool">${n(st.accrued,4)} <small>USDT</small></div>
+    <div class="mut">Cada venta que haces aporta una parte de la comisión a tu recompensa. Cuando completes la siguiente misión, lo acumulado pasa a tu saldo: ni más ni menos de lo que generaron tus ventas.</div>
     <div class="row" style="margin-top:12px"><b>Progreso</b><span>${done}/${total} misiones</span></div>
     <div class="rw-bar" role="progressbar" aria-label="Misiones completadas" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><i style="width:${pct}%"></i></div>
     <div class="rw-st"><div class="rw-t"><span class="mut">Puntos</span><b>${n(st.points,0)}</b></div>
     <div class="rw-t"><span class="mut">Nivel</span><b>${esc(st.level||'—')}</b><small>Multiplicador ×${n(st.multiplier||0,2)}</small></div></div>
-    <div class="rw-st" style="margin-top:10px"><div class="rw-t"><span class="mut">Tope de tu bono</span><b>${n(st.accrued,4)} USDT</b><small>Máximo que podrías cobrar</small></div>
-    <div class="rw-t"><span class="mut">Bono pendiente</span><b>${n(bonP,4)} USDT</b><small>Por acreditar en tu saldo</small></div></div>
-    <div class="mut" style="margin-top:10px">Al completar la misión ${total} recibes una parte del fondo, hasta tu tope. No es una cantidad fija: depende del saldo del fondo en ese momento.</div></div>`;
+    <div class="rw-st" style="margin-top:10px"><div class="rw-t"><span class="mut">Por acreditar</span><b>${n(bonP,4)} USDT</b><small>Ya liberado, llega a tu saldo en breve</small></div></div></div>`;
   const pc=Number(st.pending_claims)||0;
   const pendInfo=pc>0?`<div class="warnbox" role="status">Tienes ${pc} reclamo${pc===1?'':'s'} pendiente${pc===1?'':'s'} de revisión. Un administrador revisará tus capturas.</div>`:'';
   const refBlk=uf?`<div class="card hl" id="rwref"><h3>🎉 Sistema de referidos activado</h3><p class="mut" style="margin-top:0">Completaste las misiones. Ahora ganas el <b>0,25%</b> de las ventas de tus referidos.</p><code id="rwlnk" style="display:block;margin:8px 0;overflow-wrap:anywhere">Cargando tu enlace…</code><div class="grid2"><button class="b" id="rwsh" disabled>Compartir enlace</button><button class="b gh" id="rwcp" disabled>Copiar enlace</button></div><button class="b gh w" id="rwrf" style="margin-top:8px">Ver mis referidos</button></div>`:'';
   const list=tasks.map((t,i)=>{
     const s=stOf(t),proof=t.kind==='proof',act=s==='act',pn=proof&&act?pendC(t):null,rj=proof&&act&&!pn?rejC(t):null;
     const tg=s==='done'?'<span class="tag ok">Completada</span>':s==='lock'?'<span class="tag">Bloqueada</span>':pn?'<span class="tag warn">Pendiente de revisión</span>':'<span class="tag rwa">Disponible</span>';
-    const rew=(Number(t.points)>0||Number(t.cash)>0)?`+${n(t.points,0)} pts · suma ${n(t.cash,2)} USDT a tu tope de bono`:'Desbloquea el sistema de referidos';
+    const rew=(Number(t.points)>0)?`+${n(t.points,0)} pts · libera lo que hayan generado tus ventas`:'Desbloquea el sistema de referidos';
     const need=Math.max(1,Number(t.requires_proofs)||1);
     let ac='';
     if(act&&proof&&pn)ac=`<div class="rw-act"><div class="mut">${pn.created_at?'Enviaste tus capturas el '+when(pn.created_at)+'. ':''}Un administrador las revisará. No puedes reenviarlas mientras tanto.</div></div>`;
