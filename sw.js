@@ -1,5 +1,5 @@
-// Service worker de Tororo: notificaciones push con la app cerrada + caché para abrir más rápido
-const CACHE = 'tororo-v6';
+// Service worker de Cubita Pay: notificaciones push con la app cerrada + caché para abrir más rápido
+const CACHE = 'tororo-v7';
 const SB_LIB = 'cdn.jsdelivr.net/npm/@supabase/supabase-js';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -81,7 +81,7 @@ self.addEventListener('push', e => {
     // Si la app está abierta y visible, ella misma muestra el aviso y suena (evita duplicados).
     // En Chrome/Android no hace falta mostrar nada; iOS exige mostrar una por cada push o cancela la suscripción.
     if (visible && !IOS) return;
-    await self.registration.showNotification(d.title || 'Tororo', {
+    await self.registration.showNotification(d.title || 'Cubita Pay', {
       body: d.body || '',
       icon: iconoAviso(),
       badge: 'icon-192.png',
