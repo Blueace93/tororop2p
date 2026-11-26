@@ -6253,8 +6253,22 @@ async function adminStaffMgmt(){
 async function adminBalances(){
   if($('s-bal-h'))return;
   main().insertAdjacentHTML('beforeend',`<h3 id="s-bal">Saldo de administradores</h3><span id="s-bal-h"></span>
-   <div class="card"><p class="mut" style="margin-top:0">Pon saldo en la plataforma a ti y a tus administradores, o quítalo cuando ya no haga falta. Cada cambio queda registrado.</p><div id="balL">${skel(1)}</div></div>`);
+   <div class="card"><p class="mut" style="margin-top:0">Pon saldo en la plataforma a ti y a tus administradores, o quítalo cuando ya no haga falta. Cada cambio queda registrado.</p><div id="poolBox" style="padding:12px 0;border-bottom:1px solid var(--line)"><div class="row"><b>🏆 Bote del mes</b><span class="mut" id="poolV"></span></div>
+    <div class="mut" style="margin:4px 0">Aporta dinero de tu propio saldo al bote de recompensas. Se reparte a fin de mes entre los usuarios según sus puntos.</div>
+    <button type="button" class="b ok sm" id="poolAdd">＋ Agregar al bote</button></div>
+    <div id="balL">${skel(1)}</div></div>`);
   const L=$('balL'),cu={USDT:4,CUP:0,USD:2},fmt=(v,c)=>n(v,cu[c]);
+  const loadPool=async()=>{const el=$('poolV');if(!el)return;try{const mi=await rpc('reward_month_info');el.textContent=mi&&mi.pool!=null?n(mi.pool,4)+' USDT':''}catch(e){el.textContent=''}};
+  $('poolAdd').onclick=async()=>{
+    const have=Number(S.wallet&&S.wallet.available)||0;
+    const m=await ask('Agregar al bote',`<p class="mut" style="margin-top:0">Se descontará de <b>tu saldo</b> (${n(have,4)} USDT) y se sumará al bote de recompensas del mes.</p><label>Monto (USDT)</label><input id="pam" inputmode="decimal" placeholder="Ej: 10" autocomplete="off"><label>Nota (opcional)</label><input id="pnt" maxlength="60" placeholder="Ej: impulso de fin de mes" autocomplete="off">`,'Agregar al bote','ok');
+    if(!m)return;
+    const amt=Number(String(m.querySelector('#pam').value).replace(',','.')),note=m.querySelector('#pnt').value.trim();
+    if(!isFinite(amt)||amt<=0){toast('Escribe un monto mayor que 0','err');return}
+    if(amt>have){toast('No tienes tanto saldo: disponible '+n(have,4)+' USDT','err');return}
+    m.remove();
+    act($('poolAdd'),async()=>{await rpc('reward_pool_add',{p_amount:amt,p_note:note||null});await loadBal();await loadPool()},'Aportado al bote')};
+  loadPool();
   const load=async()=>{
     const{data,error}=await sb.rpc('admin_balances_list');
     if(!$('balL'))return;
