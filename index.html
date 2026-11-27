@@ -5722,6 +5722,7 @@ async function rwReload(my,msg){
   if(my!==NAV)return;
   if(d.st.kyc_status&&d.st.kyc_status!=='approved'){main().innerHTML=hd('Recompensas')+rwLock(d.st.kyc_status);bk();const b=$('rwkyc');if(b)b.onclick=()=>go('profile');return}
   S.rw=Object.assign(S.rw||{},d);rwPaint(msg)}
+const rwBrand=x=>String(x==null?'':x).replace(/tororo(?![.\w-])/gi,'Cubita Pay');
 function rwPaint(msg){
   const{st,tasks,claims}=S.rw,mi=S.rw.mi||{},cur=Number(st.current_task)||1,un=cur>=3;
   const stOf=t=>t.id<cur?'done':t.id===cur?'act':'lock';
@@ -5745,12 +5746,12 @@ function rwPaint(msg){
     let ac='';
     if(act&&pn)ac=`<div class="rw-act"><div class="mut">${pn.created_at?'Enviaste tus capturas el '+when(pn.created_at)+'. ':''}Un administrador las revisará. No puedes reenviarlas mientras tanto.</div></div>`;
     else if(act)ac=`<div class="rw-act">${rj?`<div class="warnbox bad" role="alert">Tus capturas anteriores fueron rechazadas${rj.note?': '+esc(rj.note):'.'} Puedes volver a enviarlas.</div>`:''}<label for="rwf">Capturas de la misión ${t.id} (necesitas ${need} imagen${need>1?'es':''})</label><input type="file" id="rwf" accept="image/*" multiple><div class="mut" id="rwcnt" aria-live="polite"></div><div class="rw-prev" id="rwprev"></div><button class="b w" id="rwsend" data-t="${t.id}">Enviar capturas</button></div>`;
-    return`<div class="card rw-c ${s}"><div class="rw-m"><span class="rw-n" aria-hidden="true">${s==='done'?'✓':t.id}</span><div><h4>${esc(t.title)}</h4><div style="margin:0 0 6px">${tg}</div><div class="rw-d">${rwLinkify(t.description)}</div><div class="rw-r">+${n(t.points,0)} pts · una sola vez</div>${ac}</div></div></div>`}).join('');
+    return`<div class="card rw-c ${s}"><div class="rw-m"><span class="rw-n" aria-hidden="true">${s==='done'?'✓':t.id}</span><div><h4>${esc(rwBrand(t.title))}</h4><div style="margin:0 0 6px">${tg}</div><div class="rw-d">${rwLinkify(rwBrand(t.description))}</div><div class="rw-r">+${n(t.points,0)} pts · una sola vez</div>${ac}</div></div></div>`}).join('');
   const mv={sell_month:mi.sell,buy_month:mi.buy,withdraw_month:mi.wd,invite_friends:mi.inv};
   const monHtml=monT.map(t=>{
     const s=un?'done':'lock',v=Number(mv[t.code])||0;
     const tg=un?'<span class="tag ok">Activa</span>':'<span class="tag">Bloqueada</span>';
-    return`<div class="card rw-c ${s}"><div class="rw-m"><span class="rw-n" aria-hidden="true">${un?'✓':'🔒'}</span><div><h4>${esc(t.title)}</h4><div style="margin:0 0 6px">${tg}</div><div class="rw-d">${esc(t.description)}</div><div class="rw-r">${un?(t.code==='invite_friends'?`Este mes: ${n(v,0)} pts · ${n(mi.invn||0,0)} amigo${Number(mi.invn)===1?'':'s'} ya vendieron`:`Este mes: ${n(v,0)} pts`):'Se activa al completar las misiones 1 y 2'}</div>${(un&&t.code==='invite_friends')?`<div class="rw-act"><div class="mut">Tu enlace de invitación:</div><code id="rwlnk2" style="display:block;margin:6px 0;overflow-wrap:anywhere">Cargando tu enlace…</code><div class="grid2"><button class="b gh sm" id="rwcp2" disabled>Copiar enlace</button><button class="b sm" id="rwsh2" disabled>Compartir</button></div></div>`:''}</div></div></div>`}).join('');
+    return`<div class="card rw-c ${s}"><div class="rw-m"><span class="rw-n" aria-hidden="true">${un?'✓':'🔒'}</span><div><h4>${esc(rwBrand(t.title))}</h4><div style="margin:0 0 6px">${tg}</div><div class="rw-d">${esc(rwBrand(t.description))}</div><div class="rw-r">${un?(t.code==='invite_friends'?`Este mes: ${n(v,0)} pts · ${n(mi.invn||0,0)} amigo${Number(mi.invn)===1?'':'s'} ya vendieron`:`Este mes: ${n(v,0)} pts`):'Se activa al completar las misiones 1 y 2'}</div>${(un&&t.code==='invite_friends')?`<div class="rw-act"><div class="mut">Tu enlace de invitación:</div><code id="rwlnk2" style="display:block;margin:6px 0;overflow-wrap:anywhere">Cargando tu enlace…</code><div class="grid2"><button class="b gh sm" id="rwcp2" disabled>Copiar enlace</button><button class="b sm" id="rwsh2" disabled>Compartir</button></div></div>`:''}</div></div></div>`}).join('');
   main().innerHTML=hd('Recompensas')+head+pendInfo+how+proofHtml+monHtml+'<div id="rwmsg" class="rw-msg" role="status" aria-live="polite"></div>';
   bk();
   const f=$('rwf');if(f)f.onchange=()=>rwPrev(f,actT?actT.id:1);
